@@ -23,6 +23,6 @@ search_aliases = ["create-corcept", "CORCEPT", "Claude Code runtime", "agent gov
 anyhow.workspace = true
 clap.workspace = true
 serde_json.workspace = true
-corcept-runtime = { path = "../corcept-runtime" }
+corcept-runtime = { path = "../corcept-runtime", version = "0.5.0" }
 
 [dev-dependencies]
