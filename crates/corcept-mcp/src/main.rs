@@ -14,6 +14,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     registry.register(tools::corcept_audit_verify::Tool::new());
     registry.register(tools::corcept_doctor::Tool::new());
     registry.register(tools::corcept_export_cloudevents::Tool::new());
+    registry.register(tools::corcept_hook_after_file_write::Tool::new());
+    registry.register(tools::corcept_hook_after_run::Tool::new());
+    registry.register(tools::corcept_hook_after_subprocess_exit::Tool::new());
+    registry.register(tools::corcept_hook_before_file_write::Tool::new());
+    registry.register(tools::corcept_hook_before_final_answer::Tool::new());
+    registry.register(tools::corcept_hook_before_network_access::Tool::new());
+    registry.register(tools::corcept_hook_before_run::Tool::new());
+    registry.register(tools::corcept_hook_before_subprocess_spawn::Tool::new());
+    registry.register(tools::corcept_hook_on_claim_emitted::Tool::new());
+    registry.register(tools::corcept_hook_on_error::Tool::new());
     registry.register(tools::corcept_hook_posttool_audit::Tool::new());
     registry.register(tools::corcept_hook_pretool_guard::Tool::new());
     registry.register(tools::corcept_hook_session_start::Tool::new());

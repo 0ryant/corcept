@@ -5,6 +5,8 @@ edition = "2021"
 license = "Apache-2.0"
 description = "MCP adapter for corcept — Claude Code hook governance + append-only audit ledger surface"
 
+[workspace]
+
 [dependencies]
 async-trait = "0.1"
 schemars = { version = "0.8", features = ["derive"] }

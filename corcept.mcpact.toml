@@ -196,6 +196,263 @@ inherit = false
 allow = []
 
 # -----------------------------------------------------------------------------
+# ADR-0006 13-hook canonical surface (v2).
+#
+# Each of the 10 new hook names below maps to `corcept hook <kebab-event>`
+# (a v2 fast-path inside corcept-runtime). Inputs are JSON over stdin
+# matching the typed v2 input shape (see `corcept-runtime/src/hooks_v2.rs`,
+# `#[serde(deny_unknown_fields)]` on every variant).
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_before_run"
+title = "Corcept Hook: BeforeRun"
+description = "ADR-0006 BeforeRun hook — fires when a run contract activates, before any tool use or model emission. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "before-run"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_after_run"
+title = "Corcept Hook: AfterRun"
+description = "ADR-0006 AfterRun hook — fires when the run completes (any outcome). Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "after-run"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_before_subprocess_spawn"
+title = "Corcept Hook: BeforeSubprocessSpawn"
+description = "ADR-0006 BeforeSubprocessSpawn hook — fires before a tool implementation invokes Command::new / execve. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "before-subprocess-spawn"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_after_subprocess_exit"
+title = "Corcept Hook: AfterSubprocessExit"
+description = "ADR-0006 AfterSubprocessExit hook — fires when a subprocess returns. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "after-subprocess-exit"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_before_file_write"
+title = "Corcept Hook: BeforeFileWrite"
+description = "ADR-0006 BeforeFileWrite hook — fires before a write touches disk. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "before-file-write"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_after_file_write"
+title = "Corcept Hook: AfterFileWrite"
+description = "ADR-0006 AfterFileWrite hook — fires after a write completes. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "after-file-write"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_before_network_access"
+title = "Corcept Hook: BeforeNetworkAccess"
+description = "ADR-0006 BeforeNetworkAccess hook — fires before any outbound socket / HTTP call. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "before-network-access"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_before_final_answer"
+title = "Corcept Hook: BeforeFinalAnswer"
+description = "ADR-0006 BeforeFinalAnswer hook — fires once before the model's terminal response is emitted. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "before-final-answer"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_on_claim_emitted"
+title = "Corcept Hook: OnClaimEmitted"
+description = "ADR-0006 OnClaimEmitted hook — fires every time the model emits a typed claim. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "on-claim-emitted"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_on_error"
+title = "Corcept Hook: OnError"
+description = "ADR-0006 OnError hook — fires on any phase error. Authority: Observe. Trust ceiling: Reviewed."
+command = ["hook", "on-error"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
 # Audit ledger inspection
 # -----------------------------------------------------------------------------
 

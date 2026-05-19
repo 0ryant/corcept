@@ -1,6 +1,16 @@
 pub mod corcept_audit_verify;
 pub mod corcept_doctor;
 pub mod corcept_export_cloudevents;
+pub mod corcept_hook_after_file_write;
+pub mod corcept_hook_after_run;
+pub mod corcept_hook_after_subprocess_exit;
+pub mod corcept_hook_before_file_write;
+pub mod corcept_hook_before_final_answer;
+pub mod corcept_hook_before_network_access;
+pub mod corcept_hook_before_run;
+pub mod corcept_hook_before_subprocess_spawn;
+pub mod corcept_hook_on_claim_emitted;
+pub mod corcept_hook_on_error;
 pub mod corcept_hook_posttool_audit;
 pub mod corcept_hook_pretool_guard;
 pub mod corcept_hook_session_start;

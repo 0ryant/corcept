@@ -16,6 +16,16 @@ cargo run -- serve
 - `corcept_audit_verify` — Verify the integrity of the append-only ledger hash chain. With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe.
 - `corcept_doctor` — Run corcept's health-check (ledger presence, permissions, schema sanity). Authority: Observe. Trust ceiling: Reviewed.
 - `corcept_export_cloudevents` — Project the hash-chained ledger lines to CloudEvents JSONL (derived, non-authority). Authority: Observe (the source ledger is read-only; the output file is a derived artefact, not authority). Trust ceiling: Reviewed.
+- `corcept_hook_after_file_write` — ADR-0006 AfterFileWrite hook — fires after a write completes. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_after_run` — ADR-0006 AfterRun hook — fires when the run completes (any outcome). Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_after_subprocess_exit` — ADR-0006 AfterSubprocessExit hook — fires when a subprocess returns. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_before_file_write` — ADR-0006 BeforeFileWrite hook — fires before a write touches disk. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_before_final_answer` — ADR-0006 BeforeFinalAnswer hook — fires once before the model's terminal response is emitted. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_before_network_access` — ADR-0006 BeforeNetworkAccess hook — fires before any outbound socket / HTTP call. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_before_run` — ADR-0006 BeforeRun hook — fires when a run contract activates, before any tool use or model emission. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_before_subprocess_spawn` — ADR-0006 BeforeSubprocessSpawn hook — fires before a tool implementation invokes Command::new / execve. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_on_claim_emitted` — ADR-0006 OnClaimEmitted hook — fires every time the model emits a typed claim. Authority: Observe. Trust ceiling: Reviewed.
+- `corcept_hook_on_error` — ADR-0006 OnError hook — fires on any phase error. Authority: Observe. Trust ceiling: Reviewed.
 - `corcept_hook_posttool_audit` — Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Hook input JSON arrives on stdin; ledger writes are confined to .corcept/ledger/.
 - `corcept_hook_pretool_guard` — Evaluate the PreToolUse guard against a candidate tool call. Authority: Plan (returns a gate decision without itself mutating the ledger; the matched posttool-audit row attests the actual decision downstream). Trust ceiling: Reviewed. Hook input JSON arrives on stdin.
 - `corcept_hook_session_start` — Process a Claude Code SessionStart hook event. Authority: Analyze. Trust ceiling: Reviewed. Hook input JSON arrives on stdin.

@@ -3,7 +3,7 @@ package_name = "corcept-mcp"
 package_version = "0.5.0"
 generator = "mcpact-generate 0.1.0"
 trust = "Reviewed"
-source_manifest_sha256 = "c66999b24b4fd3ba7e23ec006bf63bbde18a9cb9e441b24b629b9ed3565eb094"
+source_manifest_sha256 = "325c4a68693df6d5209cea49609ec9bd864284bed8d180f2878c3c0096592370"
 
 [[generated_files]]
 path = ".mcpact/hosts/claude.json"
@@ -22,8 +22,8 @@ sha256 = "60d906fdc04ccf13d13fc559941d393a0f1da952bd7f526b39d4e5815f6664ee"
 
 [[generated_files]]
 path = ".mcpact/source.mcpact.toml"
-bytes = 8567
-sha256 = "c66999b24b4fd3ba7e23ec006bf63bbde18a9cb9e441b24b629b9ed3565eb094"
+bytes = 14897
+sha256 = "325c4a68693df6d5209cea49609ec9bd864284bed8d180f2878c3c0096592370"
 
 [[generated_files]]
 path = ".mcpact/tools/corcept_audit_verify.json"
@@ -39,6 +39,56 @@ sha256 = "d96a7cce5c4c4c659bf716ed2782187a7dc6fb219e06ffae480560b720684f18"
 path = ".mcpact/tools/corcept_export_cloudevents.json"
 bytes = 1097
 sha256 = "a6e22d797c7bc3e4d30e93d406fa8147cdf1456bfd39b8c346ee08a6659b5e7b"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_after_file_write.json"
+bytes = 515
+sha256 = "ae6253759044a299fe19f850d605f0d0c37910560a3de4ba569003ebf1947675"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_after_run.json"
+bytes = 502
+sha256 = "1f2936291e9a2312f05982f2fa5d3ed0dfea9240d9e44c31571d24c0098b8cbc"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_after_subprocess_exit.json"
+bytes = 537
+sha256 = "378d46d45bf5251fc22cd68ea8ce07100082aeb13dea59ec681c0b16ba6851c8"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_before_file_write.json"
+bytes = 523
+sha256 = "568ae92769b0e9f66b177871384cba9293987b60f0cd85f2a951f5696eac708d"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_before_final_answer.json"
+bytes = 556
+sha256 = "a33897bc92f440008a95c6246d83270550eb007cc57cd0378792840f2b57d6bb"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_before_network_access.json"
+bytes = 550
+sha256 = "d3859c7af6749f132b879e976bd2c91f2a9f8f77b42c865202f15c0828288a0c"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_before_run.json"
+bytes = 538
+sha256 = "e1d0846bf55b638f0f7c635472b38db3e5120ed3e2a2dbdd663c9da78c0edef0"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_before_subprocess_spawn.json"
+bytes = 578
+sha256 = "c6ab45adc1613706ec456d1626a96f5237c15968c07db762d45e1f4c6d278102"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_on_claim_emitted.json"
+bytes = 532
+sha256 = "0d3dfdd301cffd534c1b45ce8b2eeb83529809b0d4f337fe68a610313973f5fe"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_on_error.json"
+bytes = 480
+sha256 = "da588bc231d5ab1344396eb358f7525f4d759f82caf89b30f6c34e4d5f55ddb5"
 
 [[generated_files]]
 path = ".mcpact/tools/corcept_hook_posttool_audit.json"
@@ -77,13 +127,13 @@ sha256 = "6372e9b60ae836c0ea5a6f58e233a58e8fde6de7cda5ff029109b9589bb00c16"
 
 [[generated_files]]
 path = "README.md"
-bytes = 2114
-sha256 = "438f41661e3ef5af4420789a793377f01954a4ace77286ee14f3f649b5e85e97"
+bytes = 3742
+sha256 = "198913b49660046e6bd95f6466d2cb59c2b8b54a505179c1e54943507dec46ee"
 
 [[generated_files]]
 path = "src/main.rs"
-bytes = 1084
-sha256 = "7055018e971311e6fafbf0a897367b28356a93c4f057370a0fca4f9183ba3b15"
+bytes = 1824
+sha256 = "6ee7c7fb6e6240cbdcfc459866bc05b62dae65123e06f487e8f1e7c2e7f19205"
 
 [[generated_files]]
 path = "src/server_config.rs"
@@ -104,6 +154,56 @@ sha256 = "5b6a84ebb5077c7f73e22f8920892748ec7d5f17f177faf863ef90208c44861d"
 path = "src/tools/corcept_export_cloudevents.rs"
 bytes = 5780
 sha256 = "9f8ea25c4a05a2cedf467b92a17d0d2d18823a2eb46b73543e2c9083faf84d41"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_after_file_write.rs"
+bytes = 5369
+sha256 = "333f5ef66f4521be3ab87d1950c66cc59c6812f3f0b474b6d03eadb627d28eba"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_after_run.rs"
+bytes = 5296
+sha256 = "376ed9aa5cf7d2c3ef7e0f965d8a6929cccb44e6f2312cc810aa2aa63d62aeff"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_after_subprocess_exit.rs"
+bytes = 5436
+sha256 = "5b06ed8e026b26e1d8351c3cdf6976dd344c7ced4c3670fa2496f4597d1bcd8b"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_before_file_write.rs"
+bytes = 5386
+sha256 = "3ad09ba81d7be73d67f92216f37536ea910e6b3fab33b5e4521d0aeaa1d27865"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_before_final_answer.rs"
+bytes = 5437
+sha256 = "f9c108dc8ad0b9bc7f7e16480c8c205831607204e3d2bf0514580b00cfbecf1f"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_before_network_access.rs"
+bytes = 5449
+sha256 = "23d6354ec5fe65c87105f03fc612c5394efb5b9fc05ef8ea4cc086813445c043"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_before_run.rs"
+bytes = 5341
+sha256 = "a74243c9ef0971f2d0fb0ad4abfc8b6056256d4f331c4f40793660dcf1fed58e"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_before_subprocess_spawn.rs"
+bytes = 5495
+sha256 = "5b6eab1bcccf419f08af1116b1487ad35e9942cd170bd6e8bc9747198bbe0fdf"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_on_claim_emitted.rs"
+bytes = 5386
+sha256 = "bfbcd8b77796d8c1afb1d0d8bc9a5d61669c7ad64d880551dcbf93d7aa4ca3dd"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_on_error.rs"
+bytes = 5265
+sha256 = "a640640fb85f6c3d3faf44eb3a962185082aa6cb874c9900f5332cc7c3d78bca"
 
 [[generated_files]]
 path = "src/tools/corcept_hook_posttool_audit.rs"
@@ -137,5 +237,5 @@ sha256 = "8eab4719f76a6f2ecf27dc7da79a03c520e744f3a8a031047c979445eabd7df2"
 
 [[generated_files]]
 path = "src/tools/mod.rs"
-bytes = 303
-sha256 = "c0dba3e021e31092028ce781de3383c158ec8acc1f6c860a71360b38da67ed5e"
+bytes = 693
+sha256 = "ce0f8e90c10a0ac0b38d7014425f86cac9a6be88b4d7f64035e683eeb51fa60f"
