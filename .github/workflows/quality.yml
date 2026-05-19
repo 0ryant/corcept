@@ -66,3 +66,25 @@ jobs:
             --repo-root ../.. \
             --plugin-dir ../../plugins/corcept \
             --skip-agent
+
+  # Ecosystem `quality` job order (standardise-ecosystem.md): fmt → clippy → test → deny → audit.
+  # `cargo audit` also runs in governance.yml via supply-chain-gate.sh; the
+  # quality-job version makes the standard step order visible at the
+  # canonical surface and ensures local `cargo deny check` parity with CI.
+  deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: EmbarkStudios/cargo-deny-action@6c8f9facfa5047ec02d8485b6bf52b587b7777d1 # v2
+        with:
+          command: check
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
