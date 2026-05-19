@@ -118,15 +118,28 @@ To verify ledger integrity after a session:
 
 ```bash
 corcept audit verify
-corcept audit verify --signed   # if Ed25519 signing is configured
+corcept audit verify --signed   # only meaningful when rows were signed at append time
 ```
+
+**Signing is opt-in, not on-by-default.** Even after `corcept key generate`
+provisions an Ed25519 key, ledger rows are appended **unsigned** unless the
+append path is explicitly opted in via `CORCEPT_SIGN_LEDGER=1` (the
+`should_sign_append()` check in `crates/corcept-ledger/src/lib.rs:159-164`).
+`corcept audit verify --signed` then re-checks each row's signature; it does
+not retroactively sign unsigned rows. Default v0.5.0 posture is hash-chained
+but unsigned — signed rows are an explicit operator opt-in (key generation
+plus the env var on the writer).
 
 **Expected output:** Append-only JSONL row matching
 `schemas/corcept.event.tool_use.v1.json` with `event_id`, `tool_name`,
 `input_hash`, `mutation_summary`, `prev_hash` (hash chain link), and
-optional `signature`. `audit verify` returns success iff the chain is intact.
+optional `signature` (present only when `CORCEPT_SIGN_LEDGER=1` was set at
+append time). `audit verify` returns success iff the chain is intact.
 
 **Common pitfalls:**
+- Assuming signed rows out of the box because `corcept key generate` ran.
+  Key provisioning is necessary but not sufficient; the writer process must
+  also see `CORCEPT_SIGN_LEDGER=1` in its environment.
 - Tampering with `.corcept/ledger/events.jsonl` by hand — the hash chain
   (ADR 0006) breaks immediately and `audit verify` will fail loudly.
 - Running long-running tool calls without rotating the ledger — the file
@@ -142,9 +155,18 @@ optional `signature`. `audit verify` returns success iff the chain is intact.
 ## Skill: stop-check-with-evidence
 
 **When:** Claude Code is about to declare a task complete (the Stop event
-fires). Corcept blocks completion when **tests are stale** (no `cargo test`
-ledger row newer than the latest source mutation) or **evidence is missing**
-(an expected artefact / receipt is not present in the ledger).
+fires). Corcept blocks completion when **source files have changed after the
+last recorded passing test run** — concretely, when a `Bash`/`Edit`/`Write`
+mutation to a tracked source path is recorded in the ledger after the most
+recent successful `cargo test` (or equivalent test-runner) row.
+
+**Scope is narrower than "evidence completeness."** The v0.5.0 stop-check is
+**stale-tests-after-source-change** only. There is **no wired check for
+"expected artefact / receipt present in the ledger"** — the broader
+evidence-completeness pattern is design intent but not implemented at this
+gate today. Configure stale-test detection via `corcept doctrine` rules; do
+not assume the gate will fail on a missing tapprove receipt, missing
+deploy-attestation, etc. unless you wire it yourself.
 
 **How (golden invocation):**
 
@@ -155,19 +177,21 @@ Stop events) routes to:
 corcept hook stop-check < hook-input.json > hook-output.json
 ```
 
-Configure evidence requirements via `corcept doctrine` rules; the stop-check
-evaluator reads the current doctrine and checks the ledger for the required
-event types since the last source mutation.
+The stop-check evaluator reads the current doctrine and checks the ledger
+for a successful test-run row newer than the most recent source-mutation row.
 
 **Expected output:** Hook JSON with `"decision": "block"` and a `reason`
-naming the missing evidence (e.g. `"test run stale: last cargo test row at
+naming the staleness (e.g. `"test run stale: last cargo test row at
 event_id 0x42; source mutation at event_id 0x48"`). The agent must run tests
-(or generate the missing evidence) and re-emit Stop.
+and re-emit Stop.
 
 **Common pitfalls:**
-- Treating a Stop block as a bug — it is the design. The Stop gate
-  (ADR 0020) is the only place that enforces evidence-completeness across an
-  entire session. If the block is wrong, fix the doctrine rule, not the gate.
+- Expecting the gate to block on broader evidence gaps (missing receipts,
+  missing artefacts, missing deploy attestations). It will not in v0.5.0 —
+  only on stale tests after source change. Other evidence requirements
+  belong outside this gate today.
+- Treating a Stop block as a bug — it is the design. If the block is wrong,
+  fix the doctrine rule, not the gate.
 - Running `corcept doctor --strict` and seeing green but Stop still blocks —
   doctor reports static health; Stop reports dynamic ledger state. Both must
   be green before promotion.
