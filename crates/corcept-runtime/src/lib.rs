@@ -4,7 +4,7 @@ use corcept_doctrine::{default_documents, validate as validate_doctrine};
 use corcept_guards::{
     evaluate_pre_tool, evaluate_stop, extract_command, extract_path, StopVerdict,
 };
-use corcept_ledger::{ensure_ledger, read_events, verify_hash_chain};
+use corcept_ledger::{ensure_ledger, read_events, verify_hash_chain_readonly};
 use corcept_memory::ensure_dirs as ensure_memory_dirs;
 use corcept_sink::{build_ledger_event, SinkDispatcher, SinkRecord};
 use corcept_types::{
@@ -277,7 +277,7 @@ pub fn doctor_with_options(path: impl AsRef<Path>, options: DoctorOptions) -> Re
         },
     );
 
-    let hash_valid = verify_hash_chain(root).unwrap_or(false);
+    let hash_valid = verify_hash_chain_readonly(root).unwrap_or(false);
     push_check(
         &mut checks,
         "ledger_hash_chain",
@@ -354,7 +354,7 @@ fn push_check(checks: &mut Vec<CheckResult>, name: &str, pass: bool, detail: &st
 
 pub fn audit(path: impl AsRef<Path>) -> Result<AuditReport> {
     let events = read_events(&path).unwrap_or_default();
-    let hash_chain_valid = verify_hash_chain(&path).unwrap_or(false);
+    let hash_chain_valid = verify_hash_chain_readonly(&path).unwrap_or(false);
     let mut warnings = Vec::new();
     if !hash_chain_valid {
         warnings.push("Ledger hash chain is invalid or ledger is missing.".to_string());

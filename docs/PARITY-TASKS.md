@@ -10,6 +10,12 @@ Align CORCEPT with **engineering-doctrine** ([event-contracts](https://github.co
 
 **Parity definition:** every public wire surface (hook I/O, ledger lines, CLI JSON, eval receipts) has a versioned contract, golden fixtures validated in CI, an explicit lifecycle/state model, and optional CloudEvents projection — without replacing the hash-chained ledger as authority.
 
+## Status update — bounded MCP v1
+
+`corcept serve` now exists as an opt-in bounded local MCP server. It is intentionally read-mostly and limited to doctor, audit, doctrine validation, candidate-memory listing, and CloudEvents preview. It is not a default install path, not a shell bridge, and not an alternate authority surface.
+
+Any future MCP expansion should preserve that posture unless a new ADR explicitly widens the trust boundary.
+
 **Current gaps (observed):**
 
 | Area | CORCEPT today | Sibling baseline |
