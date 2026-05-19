@@ -246,47 +246,115 @@ receives the sub-agent's final report and decides next steps.
 
 ---
 
-## Skills via MCP (mcpact-generated)
+## Skills via MCP (mcpact-generated) — multi-client surface
 
-corcept-cli is also exposed as an MCP server compiled by mcpact. The MCP tools mirror the CLI subcommands with typed authority classes and policy gates. Spin up the MCP server with:
+`corcept-mcp` is a Rust MCP server crate generated from `corcept.mcpact.toml`
+via `mcpact generate`. It exposes **10 native MCP tools** (v0.6+) to any
+MCP-speaking client: Claude Code, Cursor, Codex, and the pai-axiom runtime.
+
+**This is the structural extension that closes the 3 previously uncovered client quadrants.**
+
+### Host registration
+
+| Client | File | Status |
+|--------|------|--------|
+| Claude Code | `crates/corcept-mcp/.mcpact/hosts/claude.json` | Merge into `~/.claude/claude_desktop_config.json` |
+| Cursor | `crates/corcept-mcp/.mcpact/hosts/cursor.json` | Merge into Cursor MCP server config |
+| Codex | `crates/corcept-mcp/.mcpact/hosts/codex.toml` | Merge into `~/.codex/config.toml` |
+| pai-axiom | `crates/corcept-mcp/.mcpact/hosts/axiom.json` | Merge into `~/.claude/pai-axiom/mcp-servers.json` |
+
+### Coverage matrix
+
+The corcept enforcement model has two tiers:
+1. **Claude Code hooks** (`plugins/corcept/` PreToolUse / PostToolUse / Stop) — these
+   DENY an LLM tool call before it executes. Only Claude Code fires these.
+2. **MCP authority layer** (`crates/corcept-mcp/`) — these surface hook-state and gate
+   decisions as MCP authority decisions, visible to all MCP clients.
+
+| Quadrant | Hook enforcement | MCP authority visible |
+|----------|-----------------|----------------------|
+| Claude Code (primary) | ✓ native PreToolUse deny | ✓ (v0.6+) |
+| Cursor | ✗ no native hook | ✓ (v0.6+) |
+| Codex | ✗ no native hook | ✓ (v0.6+) |
+| pai-axiom runtime | ✗ no native hook | ✓ (v0.6+) |
+
+Honest gap: PreToolUse deny-before-execution is **Claude Code-specific**. The MCP
+layer makes corcept's governance decisions visible to Cursor, Codex, and axiom,
+but those clients must implement their own pre-execution gate if they want the
+equivalent of `"decision": "block"`. The MCP tools expose the information needed
+to drive that gate; the gate itself is outside corcept's scope for non-Claude clients.
+
+### MCP tool surface
+
+Start the server:
 
 ```bash
-corcept mcp serve
+cargo run -p corcept-mcp
+# or after cargo install:
+corcept-mcp
 ```
 
-| Tool | Authority class | Trust ceiling | When |
-|------|-----------------|---------------|------|
-| corcept_doctor | Observe | Reviewed | Health checks before trusting other tools |
-| corcept_hook_session_start | Analyze | Reviewed | Programmatic session-start event ingestion |
-| corcept_hook_pretool_guard | Plan | Reviewed | Driver-driven gate decisions |
-| corcept_hook_posttool_audit | Mutate | Signed | Driver-driven audit row writes |
-| corcept_hook_stop_check | Plan | Reviewed | Completion gating |
-| corcept_audit_verify | Observe | Signed | Hash-chain integrity reads |
-| corcept_export_cloudevents | Observe | Reviewed | Ledger-to-CloudEvents conversion |
-| corcept_key_generate | Credential | Verified | Approval-gated Ed25519 keygen |
+| Tool | Authority | Approval | When |
+|------|-----------|----------|------|
+| `corcept_doctor` | Observe | never | Health checks before trusting other tools |
+| `corcept_hook_session_start` | Analyze | never | Programmatic session-start event ingestion |
+| `corcept_hook_user_prompt_submit` | Analyze | never | Prompt-injection guard ingestion |
+| `corcept_hook_pretool_guard` | Plan | never | Driver-driven gate decisions (returns block/allow) |
+| `corcept_hook_posttool_audit` | Mutate | on-mutation | Audit row writes (hash-chained ledger append) |
+| `corcept_hook_stop_check` | Plan | never | Completion gating (stale-test detection) |
+| `corcept_audit_verify` | Observe | never | Hash-chain ledger integrity reads |
+| `corcept_export_cloudevents` | Observe | never | Ledger-to-CloudEvents conversion |
+| `corcept_key_generate` | Credential | always | Approval-gated Ed25519 keygen |
+| `corcept_memory_promote` | Plan | on-mutation | Promote candidate memory to cortex (gated) |
 
-The MCP surface is the recommended path for non-Claude-Code agents to drive corcept's governance. Claude Code itself continues to use the hook surface directly.
+All `*Args` structs carry `#[serde(deny_unknown_fields)]` to prevent key-rename tamper
+attacks at the deserialization boundary (per Wave 71 eval finding §1.2.5). All tool
+dispatch uses `mcpact_runtime::SafeCommand` — no `std::process::Command::new` in tool
+sources (verified by `test_4_no_direct_command_new_in_tool_sources`).
 
 ### Skill: corcept-as-mcp-server-for-agents
 
-**When:** the agent / driver is not Claude Code, but still needs corcept's hook-state and audit chain.
+**When:** the agent / driver is not Claude Code, but still needs corcept's hook-state
+and audit chain. The MCP layer is the correct path. Claude Code continues to use
+`plugins/corcept/` hook surface directly; the MCP surface and hook surface can run
+in parallel.
 
 **How (golden invocation):**
 
 ```bash
-corcept mcp serve --workdir <path> &
-# then call via MCP transport:
+# Start the MCP server (stdio transport):
+cargo run -p corcept-mcp
+# or:
+corcept-mcp
+
+# Then call via MCP:
 #   tool: corcept_audit_verify
-#   params: { "ledger_path": "<path>/.corcept/ledger" }
+#   params: { "signed": false }
+
+# Approval-gated example (key generation):
+#   MCPACT_APPROVED=1 corcept-mcp
+#   tool: corcept_key_generate
+#   params: {}
 ```
 
-**Expected output:** JSON-RPC 2.0 over stdio; tools follow `corcept_*` naming; authority classes carried in tool annotations.
+**Expected output:** JSON-RPC 2.0 over stdio; tools follow `corcept_*` naming;
+authority classes carried in tool annotations as `{ "mcpact": { "authority": "...",
+"trustCeiling": "...", "shellAccess": false } }`.
 
 **Common pitfalls:**
-- Hook-event ingestion via MCP does NOT replace Claude Code hooks; both surfaces are valid and can run in parallel.
-- `corcept_key_generate` requires explicit approval gate; will refuse without it.
+- Hook-event ingestion via MCP does NOT replace Claude Code hooks; both surfaces
+  are valid and can run in parallel.
+- `corcept_key_generate` and `corcept_hook_posttool_audit` require operator approval
+  (`MCPACT_APPROVED=1`); they will refuse without it.
+- `corcept_memory_promote` is approval-gated on mutation. Dry-run (`--dry-run`) does
+  not require approval.
+- For Cursor: the JSON registration at `.mcpact/hosts/cursor.json` uses the same
+  `mcpServers` shape as Claude Code; Cursor's MCP config format is identical.
+- For Codex: merge the TOML at `.mcpact/hosts/codex.toml` into `~/.codex/config.toml`
+  under `[mcp_servers]`.
+- For pai-axiom: merge `.mcpact/hosts/axiom.json` into your axiom runtime MCP config.
 
-**See also:** `docs/MCP_GUIDE.md` (if present, otherwise the generated crate's README).
+**See also:** `crates/corcept-mcp/README.md`, `docs/MCP_GUIDE.md`.
 
 ---
 

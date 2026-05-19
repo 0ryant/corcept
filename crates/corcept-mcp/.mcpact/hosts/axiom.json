@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "corcept-mcp": {
+      "command": "corcept-mcp",
+      "args": [],
+      "description": "corcept hook governance + audit ledger MCP server. Exposes 9 tools: corcept_doctor, corcept_hook_session_start, corcept_hook_user_prompt_submit, corcept_hook_pretool_guard, corcept_hook_posttool_audit, corcept_hook_stop_check, corcept_audit_verify, corcept_export_cloudevents, corcept_key_generate, corcept_memory_promote.",
+      "note": "Merge into ~/.claude/pai-axiom/mcp-servers.json or the axiom runtime MCP config. The corcept-mcp binary must be on PATH (cargo install --path crates/corcept-mcp) or specified as an absolute path."
+    }
+  }
+}

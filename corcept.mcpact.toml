@@ -311,3 +311,50 @@ timeout_seconds = 30
 [tools.env]
 inherit = false
 allow = ["XDG_DATA_HOME"]
+
+# -----------------------------------------------------------------------------
+# Memory promotion — Plan authority, approval gated on mutation.
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_memory_promote"
+title = "Corcept Memory Promote"
+description = "Promote a candidate memory from the corcept session ledger to the cortex memory store. Authority: Plan (dry-run evaluation) escalating to Mutate on actual promotion. Trust ceiling: Reviewed. Approval-gated on mutation (approval = on-mutation). Confined to .corcept/ ledger paths."
+command = ["memory", "promote"]
+
+[tools.args.candidate_id]
+type = "string"
+required = true
+description = "Ledger event_id of the candidate memory to promote."
+flag = "--candidate-id"
+
+[tools.args.dry_run]
+type = "bool"
+required = false
+description = "Evaluate eligibility without writing (Plan authority path)."
+flag = "--dry-run"
+default = false
+
+[tools.args.path]
+type = "path"
+required = false
+description = "Workspace root containing .corcept/ledger (defaults to current directory)."
+flag = "--path"
+within_workspace = true
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Plan"
+read_only = false
+network = false
+writes_files = false
+approval = "on-mutation"
+timeout_seconds = 60
+
+[tools.env]
+inherit = false
+allow = ["CORTEX_URL", "CORCEPT_LEDGER_PATH"]

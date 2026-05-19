@@ -7,3 +7,4 @@ pub mod corcept_hook_session_start;
 pub mod corcept_hook_stop_check;
 pub mod corcept_hook_user_prompt_submit;
 pub mod corcept_key_generate;
+pub mod corcept_memory_promote;

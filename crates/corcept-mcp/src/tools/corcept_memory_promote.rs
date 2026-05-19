@@ -1,4 +1,4 @@
-//! Generated tool `corcept_hook_pretool_guard`.
+//! Generated tool `corcept_memory_promote`.
 
 use crate::server_config;
 use async_trait::async_trait;
@@ -14,7 +14,16 @@ use std::collections::BTreeSet;
 /// caught at deserialization time rather than silently dropped.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct CorceptHookPretoolGuardArgs {}
+pub struct CorceptMemoryPromoteArgs {
+    /// Ledger event_id of the candidate memory to promote.
+    pub candidate_id: String,
+    /// Evaluate eligibility without writing (Plan authority path).
+    #[serde(default)]
+    pub dry_run: bool,
+    /// Workspace root containing .corcept/ledger (defaults to current directory).
+    #[serde(default)]
+    pub path: Option<String>,
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Tool;
@@ -26,11 +35,11 @@ impl Tool {
 #[async_trait]
 impl McpTool for Tool {
     fn definition(&self) -> ToolDefinition {
-        let schema = schemars::schema_for!(CorceptHookPretoolGuardArgs);
+        let schema = schemars::schema_for!(CorceptMemoryPromoteArgs);
         ToolDefinition {
-            name: "corcept_hook_pretool_guard".into(),
-            title: Some("Corcept Hook: PreToolUse Guard".into()),
-            description: "Evaluate the PreToolUse guard against a candidate tool call. Authority: Plan (returns a gate decision without itself mutating the ledger; the matched posttool-audit row attests the actual decision downstream). Trust ceiling: Reviewed. Hook input JSON arrives on stdin.".into(),
+            name: "corcept_memory_promote".into(),
+            title: Some("Corcept Memory Promote".into()),
+            description: "Promote a candidate memory from the corcept session ledger to the cortex memory store. Authority: Plan (dry-run evaluation) escalating to Mutate on actual promotion. Trust ceiling: Reviewed. Approval-gated on mutation (approval = on-mutation). Confined to .corcept/ ledger paths.".into(),
             input_schema: serde_json::to_value(&schema).unwrap_or_else(|_| json!({"type":"object"})),
             output_schema: None,
             annotations: Some(mcpact_mcp::ToolDefinition::mcpact_annotations(mcpact_core::AuthorityClass::Plan, server_config::TRUST)),
@@ -38,12 +47,12 @@ impl McpTool for Tool {
     }
 
     async fn call(&self, arguments: serde_json::Value) -> ToolCallResult {
-        let args: CorceptHookPretoolGuardArgs = match serde_json::from_value(arguments) {
+        let args: CorceptMemoryPromoteArgs = match serde_json::from_value(arguments) {
             Ok(args) => args,
             Err(err) => return ToolCallResult::error(format!("invalid arguments: {err}")),
         };
 
-        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(concat!("../../.mcpact/tools/corcept_hook_pretool_guard.json"))) {
+        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(concat!("../../.mcpact/tools/corcept_memory_promote.json"))) {
             Ok(spec) => spec,
             Err(err) => return ToolCallResult::error(format!("tool spec load failed: {err}")),
         };
@@ -64,7 +73,7 @@ impl McpTool for Tool {
             Ok(decision) => {
                 let reason = decision.reason.clone();
                 let event = mcpact_audit::EvidenceEvent::tool_denied(
-                    "corcept_hook_pretool_guard",
+                    "corcept_memory_promote",
                     mcpact_core::AuthorityClass::Plan,
                     &reason,
                 );
@@ -74,7 +83,7 @@ impl McpTool for Tool {
             }
             Err(err) => {
                 let event = mcpact_audit::EvidenceEvent::tool_denied(
-                    "corcept_hook_pretool_guard",
+                    "corcept_memory_promote",
                     mcpact_core::AuthorityClass::Plan,
                     err.to_string(),
                 );
@@ -86,13 +95,21 @@ impl McpTool for Tool {
 
         let mut plan = ExecutionPlan::new(server_config::binary_path().to_string_lossy().to_string());
         plan.argv = Vec::new();
-        plan.argv.push("hook".into());
-        plan.argv.push("pretool-guard".into());
+        plan.argv.push("memory".into());
+        plan.argv.push("promote".into());
+        plan.argv.push("--candidate-id".into());
+        plan.argv.push(args.candidate_id.clone());
+        if args.dry_run { plan.argv.push("--dry-run".into()); }
+        if args.path.is_some() {
+            plan.argv.push("--path".into());
+            plan.argv.push(match args.path { Some(v) => v, None => String::new() });
+        }
         let redacted = Vec::new();
         plan.redacted_arg_indexes = redacted;
         plan.env.inherit = false;
+        plan.env.allow = vec!["CORTEX_URL".into(), "CORCEPT_LEDGER_PATH".into()];
 
-        plan.timeout = std::time::Duration::from_secs(30);
+        plan.timeout = std::time::Duration::from_secs(60);
         plan.max_output_bytes = 524288;
         plan.output_mode = mcpact_runtime::OutputMode::Json;
         plan.authority = mcpact_core::AuthorityClass::Plan;
@@ -100,7 +117,7 @@ impl McpTool for Tool {
         let plan_for_audit = plan.clone();
         match Executor::default().execute(plan).await {
             Ok(result) => {
-                let event = mcpact_audit::EvidenceEvent::tool_executed("corcept_hook_pretool_guard", &plan_for_audit, &result);
+                let event = mcpact_audit::EvidenceEvent::tool_executed("corcept_memory_promote", &plan_for_audit, &result);
                 let sink = server_config::audit_sink();
                 let _ = sink.emit(&event).await;
                 if let Some(value) = result.structured {
@@ -113,7 +130,7 @@ impl McpTool for Tool {
             }
             Err(err) => {
                 let event = mcpact_audit::EvidenceEvent::tool_failed(
-                    "corcept_hook_pretool_guard",
+                    "corcept_memory_promote",
                     &plan_for_audit,
                     err.to_string(),
                 );
