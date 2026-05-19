@@ -263,7 +263,10 @@ impl McpServer {
     }
 }
 
-fn parse_bool(arguments: Option<&Map<String, Value>>, key: &str) -> std::result::Result<bool, String> {
+fn parse_bool(
+    arguments: Option<&Map<String, Value>>,
+    key: &str,
+) -> std::result::Result<bool, String> {
     match arguments.and_then(|args| args.get(key)) {
         None => Ok(false),
         Some(Value::Bool(value)) => Ok(*value),

@@ -87,8 +87,7 @@ pub fn list_candidates(root: impl AsRef<Path>, limit: usize) -> Result<Vec<Memor
     if !candidates_dir.exists() {
         return Ok(Vec::new());
     }
-    let mut entries = fs::read_dir(&candidates_dir)?
-        .collect::<std::result::Result<Vec<_>, _>>()?;
+    let mut entries = fs::read_dir(&candidates_dir)?.collect::<std::result::Result<Vec<_>, _>>()?;
     entries.sort_by_key(|entry| entry.path());
 
     let mut candidates = Vec::new();
@@ -99,9 +98,8 @@ pub fn list_candidates(root: impl AsRef<Path>, limit: usize) -> Result<Vec<Memor
             .and_then(|ext| ext.to_str())
             .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml") || ext.eq_ignore_ascii_case("yml"));
         if entry.file_type()?.is_file() && is_candidate_file {
-            let raw = fs::read_to_string(entry.path()).with_context(|| {
-                format!("reading memory candidate {}", entry.path().display())
-            })?;
+            let raw = fs::read_to_string(entry.path())
+                .with_context(|| format!("reading memory candidate {}", entry.path().display()))?;
             let candidate = serde_yaml::from_str(&raw)?;
             candidates.push(candidate);
             if candidates.len() >= limit {

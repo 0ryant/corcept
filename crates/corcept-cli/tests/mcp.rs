@@ -200,7 +200,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
     }));
     let doctor = harness.recv();
     assert_eq!(doctor["result"]["structuredContent"]["status"], "pass");
-    assert!(!sidecar.exists(), "doctor_report must not recreate last_hash");
+    assert!(
+        !sidecar.exists(),
+        "doctor_report must not recreate last_hash"
+    );
 
     harness.send(json!({
         "jsonrpc": "2.0",
@@ -212,11 +215,16 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
     }));
     let audit = harness.recv();
     assert_eq!(audit["result"]["structuredContent"]["status"], "pass");
-    assert!(audit["result"]["structuredContent"]["event_count"]
-        .as_u64()
-        .unwrap()
-        >= 1);
-    assert!(!sidecar.exists(), "audit_report must not recreate last_hash");
+    assert!(
+        audit["result"]["structuredContent"]["event_count"]
+            .as_u64()
+            .unwrap()
+            >= 1
+    );
+    assert!(
+        !sidecar.exists(),
+        "audit_report must not recreate last_hash"
+    );
 
     harness.send(json!({
         "jsonrpc": "2.0",
@@ -321,12 +329,10 @@ fn serve_returns_typed_invalid_argument_error() {
         response["result"]["structuredContent"]["error"]["code"],
         "invalid_arguments"
     );
-    assert!(
-        response["result"]["content"][0]["text"]
-            .as_str()
-            .unwrap()
-            .contains("limit must be >= 1")
-    );
+    assert!(response["result"]["content"][0]["text"]
+        .as_str()
+        .unwrap()
+        .contains("limit must be >= 1"));
 
     harness.shutdown();
 }

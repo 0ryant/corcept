@@ -670,7 +670,7 @@ For completed coding work, report files changed, tests run, test result, known u
 mod tests {
     use super::*;
     use corcept_types::LedgerEventKind;
-    use serde_json::json;
+    use serde_json::{json, Value};
     use std::fs;
     use std::path::PathBuf;
 
@@ -684,7 +684,9 @@ mod tests {
     fn load_fixture(name: &str, cwd: &Path) -> String {
         let raw = fs::read_to_string(repo_root().join("tests/fixtures/hooks").join(name))
             .unwrap_or_else(|_| panic!("fixture {name}"));
-        raw.replace("__CWD__", &cwd.to_string_lossy())
+        let mut value: Value = serde_json::from_str(&raw).expect("fixture json");
+        value["cwd"] = Value::String(cwd.to_string_lossy().into_owned());
+        serde_json::to_string(&value).expect("fixture json string")
     }
 
     fn init_temp_project() -> tempfile::TempDir {

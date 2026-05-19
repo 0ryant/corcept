@@ -4,6 +4,7 @@ use corcept_ledger::{append_event, ensure_ledger};
 use corcept_runtime::{handle_hook, init_project, InitOptions};
 use corcept_sink_cloudevents::{event_fingerprint, export_cloudevents, project_event};
 use corcept_types::{AuthorityLevel, LedgerEventKind, LEDGER_EVENT_SCHEMA};
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fs;
 
@@ -20,7 +21,9 @@ fn hook_ledger_and_cloudevents_share_ids_and_fingerprint() {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/hooks/pretool-bash-rm-rf.json");
     let raw = fs::read_to_string(&root).unwrap();
-    let input = raw.replace("__CWD__", &dir.path().to_string_lossy());
+    let mut input: Value = serde_json::from_str(&raw).unwrap();
+    input["cwd"] = Value::String(dir.path().to_string_lossy().into_owned());
+    let input = serde_json::to_string(&input).unwrap();
     handle_hook(&input, "pretool-guard").unwrap();
 
     let ledger_path = dir.path().join(".corcept/ledger/events.jsonl");

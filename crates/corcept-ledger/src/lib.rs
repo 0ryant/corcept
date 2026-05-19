@@ -159,7 +159,7 @@ fn verify_hash_chain_impl(root: &Path, update_sidecar: bool) -> Result<bool> {
     }
     if update_sidecar {
         if let Some(hash) = previous {
-        fs::write(last_hash_path(root), hash.as_bytes())?;
+            fs::write(last_hash_path(root), hash.as_bytes())?;
         }
     }
     Ok(true)
