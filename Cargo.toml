@@ -10,7 +10,8 @@ members = [
   "crates/corcept-contract",
   "crates/corcept-sink",
   "crates/corcept-sink-cloudevents",
-  "crates/create-corcept"
+  "crates/create-corcept",
+  "crates/corcept-mcp"
 ]
 resolver = "2"
 

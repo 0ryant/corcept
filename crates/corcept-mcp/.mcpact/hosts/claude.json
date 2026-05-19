@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "corcept-mcp": {
+      "args": [],
+      "command": "target/debug\\corcept-mcp",
+      "cwd": "."
+    }
+  }
+}

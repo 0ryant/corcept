@@ -1,0 +1,313 @@
+schema_version = "mcpact.manifest.v1"
+
+[package]
+name = "corcept-mcp"
+version = "0.5.0"
+description = "MCP adapter for corcept — Claude Code hook governance + append-only audit ledger surface"
+# Package-level trust ceiling. Per-tool ceilings are annotated in each tool's
+# description (Reviewed / Signed / Verified) and enforced via the policy
+# (approval gate + path scoping) declared on each [[tools]] entry.
+trust = "Reviewed"
+
+[cli]
+name = "corcept"
+binary = "corcept"
+version_command = ["--version"]
+
+[audit]
+sink = "jsonl"
+path = ".mcpact/audit.jsonl"
+
+# -----------------------------------------------------------------------------
+# Health / inspection
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_doctor"
+title = "Corcept Doctor"
+description = "Run corcept's health-check (ledger presence, permissions, schema sanity). Authority: Observe. Trust ceiling: Reviewed."
+command = ["doctor"]
+
+[tools.args.path]
+type = "path"
+required = false
+description = "Workspace root to inspect (defaults to current directory)."
+flag = "--path"
+within_workspace = true
+
+[tools.args.validate_perms]
+type = "bool"
+required = false
+description = "Check owner-only (0700) permissions on ledger and operator data dirs."
+flag = "--validate-perms"
+
+[tools.args.strict]
+type = "bool"
+required = false
+description = "Fail on any check failure; validate ledger rows against JSON Schema."
+flag = "--strict"
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+# Hook surface — programmatic ingress for non-Claude-Code drivers.
+# Each hook tool wraps `corcept hook <event>` which reads its hook-input JSON
+# from stdin in the underlying CLI. When invoked over MCP, drivers must supply
+# the hook JSON via the MCP host's stdin-bridging facility (or run the
+# corcept-cli directly for piped-payload workflows).
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_session_start"
+title = "Corcept Hook: SessionStart"
+description = "Process a Claude Code SessionStart hook event. Authority: Analyze. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+command = ["hook", "session-start"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Analyze"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_user_prompt_submit"
+title = "Corcept Hook: UserPromptSubmit"
+description = "Process a Claude Code UserPromptSubmit hook event. Authority: Analyze. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+command = ["hook", "user-prompt-submit"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Analyze"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_pretool_guard"
+title = "Corcept Hook: PreToolUse Guard"
+description = "Evaluate the PreToolUse guard against a candidate tool call. Authority: Plan (returns a gate decision without itself mutating the ledger; the matched posttool-audit row attests the actual decision downstream). Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+command = ["hook", "pretool-guard"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Plan"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_posttool_audit"
+title = "Corcept Hook: PostToolUse Audit"
+description = "Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Hook input JSON arrives on stdin; ledger writes are confined to .corcept/ledger/."
+command = ["hook", "posttool-audit"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Mutate"
+read_only = false
+network = false
+writes_files = true
+approval = "on-mutation"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = ["CORCEPT_LEDGER_PATH"]
+
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_hook_stop_check"
+title = "Corcept Hook: Stop Check"
+description = "Evaluate completion-gating (stale tests / missing evidence) on a Claude Code Stop event. Authority: Plan. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+command = ["hook", "stop-check"]
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Plan"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+# Audit ledger inspection
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_audit_verify"
+title = "Corcept Audit Verify"
+description = "Verify the integrity of the append-only ledger hash chain. With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe."
+command = ["audit", "verify"]
+
+[tools.args.path]
+type = "path"
+required = false
+description = "Workspace root containing the ledger (defaults to current directory)."
+flag = "--path"
+within_workspace = true
+
+[tools.args.signed]
+type = "bool"
+required = false
+description = "Require Ed25519 signatures on every ledger row (Verified ceiling)."
+flag = "--signed"
+default = false
+
+[tools.output]
+mode = "json"
+max_bytes = 1048576
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = true
+network = false
+writes_files = false
+approval = "never"
+timeout_seconds = 60
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+# Ledger export (derived, non-authority)
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_export_cloudevents"
+title = "Corcept Export CloudEvents"
+description = "Project the hash-chained ledger lines to CloudEvents JSONL (derived, non-authority). Authority: Observe (the source ledger is read-only; the output file is a derived artefact, not authority). Trust ceiling: Reviewed."
+command = ["export", "cloudevents"]
+
+[tools.args.ledger]
+type = "path"
+required = false
+description = "Path to the ledger JSONL file (default: .corcept/ledger/events.jsonl)."
+flag = "--ledger"
+must_exist = true
+within_workspace = true
+
+[tools.args.out]
+type = "path"
+required = true
+description = "Output CloudEvents JSONL path."
+flag = "--out"
+within_workspace = true
+
+[tools.output]
+mode = "json"
+max_bytes = 524288
+expose_stderr = false
+
+[tools.policy]
+authority = "Observe"
+read_only = false
+network = false
+writes_files = true
+approval = "never"
+timeout_seconds = 120
+
+[tools.env]
+inherit = false
+allow = []
+
+# -----------------------------------------------------------------------------
+# Credential surface — approval-gated.
+# -----------------------------------------------------------------------------
+
+[[tools]]
+name = "corcept_key_generate"
+title = "Corcept Key Generate"
+description = "Generate an operator Ed25519 signing key under the XDG data home. Authority: Credential. Trust ceiling: Verified. Approval-gated: always requires explicit operator approval before execution; refuses without it."
+command = ["key", "generate"]
+
+[tools.args.force]
+type = "bool"
+required = false
+description = "Overwrite an existing key (still gated by approval)."
+flag = "--force"
+default = false
+
+[tools.output]
+mode = "json"
+max_bytes = 65536
+expose_stderr = false
+
+[tools.policy]
+authority = "Credential"
+read_only = false
+network = false
+writes_files = true
+approval = "always"
+timeout_seconds = 30
+
+[tools.env]
+inherit = false
+allow = ["XDG_DATA_HOME"]

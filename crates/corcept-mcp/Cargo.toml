@@ -1,0 +1,21 @@
+[package]
+name = "corcept-mcp"
+version = "0.5.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "MCP adapter for corcept — Claude Code hook governance + append-only audit ledger surface"
+
+[dependencies]
+async-trait = "0.1"
+schemars = { version = "0.8", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+toml = "0.8"
+sha2 = "0.10"
+mcpact-core = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-core" }
+mcpact-runtime = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-runtime" }
+mcpact-audit = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-audit" }
+mcpact-policy = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-policy" }
+mcpact-mcp = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-mcp" }
+mcpact-manifest = { path = "C:/Users/0ryant/prj/mcpact/crates/mcpact-manifest" }

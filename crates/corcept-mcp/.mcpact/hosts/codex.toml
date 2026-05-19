@@ -1,0 +1,5 @@
+# McPact-generated MCP server registration for OpenAI Codex CLI.
+# Merge into ~/.codex/config.toml under [mcp_servers].
+[mcp_servers.corcept-mcp]
+command = "target/debug\\corcept-mcp"
+cwd = "."
