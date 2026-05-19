@@ -10,14 +10,15 @@ members = [
   "crates/corcept-contract",
   "crates/corcept-sink",
   "crates/corcept-sink-cloudevents",
-  "crates/create-corcept"
+  "crates/create-corcept",
+  "crates/corcept-mcp"
 ]
 resolver = "2"
 
 [workspace.package]
 version = "0.5.0"
 edition = "2021"
-rust-version = "1.86"
+rust-version = "1.88"
 authors = ["Ryan Tilcock <rytilcock@gmail.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/0ryant/corcept"

@@ -1,0 +1,141 @@
+schema_version = "mcpact.lock.v1"
+package_name = "corcept-mcp"
+package_version = "0.5.0"
+generator = "mcpact-generate 0.1.0"
+trust = "Reviewed"
+source_manifest_sha256 = "c66999b24b4fd3ba7e23ec006bf63bbde18a9cb9e441b24b629b9ed3565eb094"
+
+[[generated_files]]
+path = ".mcpact/hosts/claude.json"
+bytes = 133
+sha256 = "60d906fdc04ccf13d13fc559941d393a0f1da952bd7f526b39d4e5815f6664ee"
+
+[[generated_files]]
+path = ".mcpact/hosts/codex.toml"
+bytes = 194
+sha256 = "a06d0272f58cae25df59e72291954a41418ee6d0126ac20734308aa8aca564de"
+
+[[generated_files]]
+path = ".mcpact/hosts/cursor.json"
+bytes = 133
+sha256 = "60d906fdc04ccf13d13fc559941d393a0f1da952bd7f526b39d4e5815f6664ee"
+
+[[generated_files]]
+path = ".mcpact/source.mcpact.toml"
+bytes = 8567
+sha256 = "c66999b24b4fd3ba7e23ec006bf63bbde18a9cb9e441b24b629b9ed3565eb094"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_audit_verify.json"
+bytes = 1139
+sha256 = "5eacdb486b804afe3f231aa7569cbb9f2fff6d75a82d4a1a05a79c8801cb888a"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_doctor.json"
+bytes = 1272
+sha256 = "d96a7cce5c4c4c659bf716ed2782187a7dc6fb219e06ffae480560b720684f18"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_export_cloudevents.json"
+bytes = 1097
+sha256 = "a6e22d797c7bc3e4d30e93d406fa8147cdf1456bfd39b8c346ee08a6659b5e7b"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_posttool_audit.json"
+bytes = 640
+sha256 = "86fb4e6a6368dd223f4b4d852217e413b5ef865207bedf0a40c84f9a0c194fb0"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_pretool_guard.json"
+bytes = 668
+sha256 = "8177c72aaed0e6f8a7130893648169fb53e4a7ba6f8f03c239d168f0ea6c7120"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_session_start.json"
+bytes = 524
+sha256 = "dac60b166d799ecf1ce84b680477d3e2fab7015c1f9c6e5e7982dabaefa24385"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_stop_check.json"
+bytes = 552
+sha256 = "d50dd58da692f4808a6e911c14d4c5a82dca584dde382c5cf2708cfc0cb7f9a0"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_hook_user_prompt_submit.json"
+bytes = 542
+sha256 = "c77d68b539b5c8c2a1ac20e0a8e877d00722e647b6ee27f9d27260c1e924a524"
+
+[[generated_files]]
+path = ".mcpact/tools/corcept_key_generate.json"
+bytes = 855
+sha256 = "995c04cf814fcd6eb84234635a38b214a97220c99ce4d5346bc074f3c4c9a35a"
+
+[[generated_files]]
+path = "Cargo.toml"
+bytes = 916
+sha256 = "6372e9b60ae836c0ea5a6f58e233a58e8fde6de7cda5ff029109b9589bb00c16"
+
+[[generated_files]]
+path = "README.md"
+bytes = 2114
+sha256 = "438f41661e3ef5af4420789a793377f01954a4ace77286ee14f3f649b5e85e97"
+
+[[generated_files]]
+path = "src/main.rs"
+bytes = 1084
+sha256 = "7055018e971311e6fafbf0a897367b28356a93c4f057370a0fca4f9183ba3b15"
+
+[[generated_files]]
+path = "src/server_config.rs"
+bytes = 3361
+sha256 = "d4861f3ca26896d4041665a2fea2d20e28662cc3bd506a1fbc024dd8ded5f5bc"
+
+[[generated_files]]
+path = "src/tools/corcept_audit_verify.rs"
+bytes = 5718
+sha256 = "360bee48eb2876e40df7e3b01c82200518e40d69e1ceffe8da96f5f35a2d359f"
+
+[[generated_files]]
+path = "src/tools/corcept_doctor.rs"
+bytes = 5627
+sha256 = "5b6a84ebb5077c7f73e22f8920892748ec7d5f17f177faf863ef90208c44861d"
+
+[[generated_files]]
+path = "src/tools/corcept_export_cloudevents.rs"
+bytes = 5780
+sha256 = "9f8ea25c4a05a2cedf467b92a17d0d2d18823a2eb46b73543e2c9083faf84d41"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_posttool_audit.rs"
+bytes = 5510
+sha256 = "bedb72e23080601d7e4ca9fdf29afc0056902c0fa028d960c0dc36fb3912a41e"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_pretool_guard.rs"
+bytes = 5489
+sha256 = "d7a601fa542ae5811921e986b3ee5df4142e42b63af26832fe9ebfc29f593eaf"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_session_start.rs"
+bytes = 5354
+sha256 = "73e9921387d4b92d9c542ca835943f751898c813be32c18866746e80eb744717"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_stop_check.rs"
+bytes = 5346
+sha256 = "7fb430129af760bbd98f278e72534fcfe659515a5ca7161fcb41875842dc6ab6"
+
+[[generated_files]]
+path = "src/tools/corcept_hook_user_prompt_submit.rs"
+bytes = 5414
+sha256 = "4167265a3e3b8b4f52eaa22aff98474dca83e1e397b778c578882743a11aacc9"
+
+[[generated_files]]
+path = "src/tools/corcept_key_generate.rs"
+bytes = 5538
+sha256 = "8eab4719f76a6f2ecf27dc7da79a03c520e744f3a8a031047c979445eabd7df2"
+
+[[generated_files]]
+path = "src/tools/mod.rs"
+bytes = 303
+sha256 = "c0dba3e021e31092028ce781de3383c158ec8acc1f6c860a71360b38da67ed5e"
