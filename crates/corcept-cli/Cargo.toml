@@ -34,3 +34,4 @@ corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }
 corcept-ledger = { path = "../corcept-ledger" }
 
 [dev-dependencies]
+tempfile.workspace = true
