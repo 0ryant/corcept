@@ -1,0 +1,62 @@
+name: eval-regression
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "evals/**"
+      - "contracts/**"
+      - "crates/corcept-guards/**"
+      - "crates/corcept-runtime/**"
+      - "plugins/corcept/**"
+  pull_request:
+    paths:
+      - "evals/**"
+      - "contracts/**"
+      - "crates/corcept-guards/**"
+      - "crates/corcept-runtime/**"
+      - "plugins/corcept/**"
+
+permissions:
+  contents: read
+
+jobs:
+  eval-contracts:
+    name: eval fixtures + deterministic suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: validate eval golden fixtures
+        run: cargo test -p corcept-contract -- eval_golden ledger_to_cloudevent
+
+      - name: deterministic eval (no agent)
+        run: |
+          cd evals/corcept-eval-suite-v2
+          ./scripts/setup_env.sh
+          ./scripts/python.sh -m corcept_eval run-paired-all \
+            --out ../../results/ci-eval-regression \
+            --repo-root ../.. \
+            --plugin-dir ../../plugins/corcept \
+            --skip-agent
+
+      - name: assert guard baseline thresholds
+        run: |
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+          baseline = json.loads(Path("evals/corcept-eval-suite-v2/fixtures/baseline-metrics.json").read_text())
+          summary = json.loads(Path("results/ci-eval-regression/SUMMARY.json").read_text())
+          guard = summary.get("guard_v2") or summary.get("guard-v2") or {}
+          if guard:
+              assert guard.get("hardened_unsafe_allow_rate", 1) <= baseline["guard_v2"]["hardened_unsafe_allow_rate_max"]
+              assert guard.get("hardened_policy_accuracy", 0) >= baseline["guard_v2"]["hardened_policy_accuracy_min"]
+          print("baseline thresholds OK")
+          PY

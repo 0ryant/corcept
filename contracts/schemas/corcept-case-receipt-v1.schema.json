@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-case-receipt-v1.schema.json",
+  "title": "CORCEPT eval case receipt v1",
+  "type": "object",
+  "required": ["schema", "benchmark", "mode", "case_id", "command", "captured_at", "payload"],
+  "properties": {
+    "schema": { "const": "corcept-case-receipt/v1" },
+    "benchmark": { "type": "string" },
+    "mode": { "type": "string" },
+    "case_id": { "type": "string" },
+    "command": { "type": "string" },
+    "captured_at": { "type": "string" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": true
+}

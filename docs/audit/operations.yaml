@@ -1,0 +1,48 @@
+# Audit operation registry
+# Validated in CI by scripts/validate-audit-operations.py
+
+operations:
+  - id: session_started
+    event_type: corcept.event.session_started.v1
+    authority_level: L0_observe
+    description: Claude Code session started with CORCEPT hooks active
+
+  - id: prompt_submitted
+    event_type: corcept.event.prompt_submitted.v1
+    authority_level: L0_observe
+    description: User prompt received
+
+  - id: tool_requested
+    event_type: corcept.event.tool_requested.v1
+    authority_level: L3_execute_local
+    description: PreTool guard evaluated a tool request
+
+  - id: file_modified
+    event_type: corcept.event.file_modified.v1
+    authority_level: L3_execute_local
+    description: PostTool file edit recorded
+
+  - id: command_executed
+    event_type: corcept.event.command_executed.v1
+    authority_level: L3_execute_local
+    description: PostTool bash command recorded
+
+  - id: test_run
+    event_type: corcept.event.test_run.v1
+    authority_level: L3_execute_local
+    description: PostTool test command recorded
+
+  - id: tool_completed
+    event_type: corcept.event.tool_completed.v1
+    authority_level: L3_execute_local
+    description: PostTool generic completion
+
+  - id: stop_allowed
+    event_type: corcept.event.stop_allowed.v1
+    authority_level: L0_observe
+    description: Stop gate allowed session end
+
+  - id: stop_blocked
+    event_type: corcept.event.stop_blocked.v1
+    authority_level: L0_observe
+    description: Stop gate blocked session end pending tests

@@ -1,0 +1,179 @@
+from __future__ import annotations
+import json
+from pathlib import Path
+
+from .runtime import requirement_status, resolve_python
+
+EXTERNAL = {
+    "swe_skills_bench": {
+        "priority": 1,
+        "signal": "skill_marginal_utility",
+        "purpose": "Measures whether injected software-engineering skill documents improve requirement-driven repository tasks.",
+        "requires": ["git", "docker", "python"],
+        "paired": True,
+        "best_for": ["skills", "prompt_bloat_detection", "with_without_corcept_delta"],
+        "notes": "Run same model/task twice: baseline and CORCEPT. Primary first external benchmark for CORCEPT."
+    },
+    "swe_bench_lite": {
+        "priority": 2,
+        "signal": "real_issue_patch_success_cheap_iteration",
+        "purpose": "Lower-cost subset of real GitHub issue-resolution tasks.",
+        "requires": ["git", "docker", "python"],
+        "paired": True,
+        "dataset": "princeton-nlp/SWE-bench_Lite",
+        "best_for": ["iteration", "patch_correctness", "cost_control"]
+    },
+    "swe_bench_verified": {
+        "priority": 3,
+        "signal": "public_credibility_repo_patch_success",
+        "purpose": "Human-filtered 500-instance SWE-bench subset for real GitHub issue patching.",
+        "requires": ["git", "docker", "python"],
+        "paired": True,
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "best_for": ["headline_result", "patch_correctness"]
+    },
+    "swe_bench_multilingual": {
+        "priority": 4,
+        "signal": "multi_language_repo_patch_success",
+        "purpose": "SWE-bench variant for issue resolving across multiple programming languages.",
+        "requires": ["git", "docker", "python"],
+        "paired": True,
+        "best_for": ["language_generalisation"]
+    },
+    "swe_bench_pro_public": {
+        "priority": 5,
+        "signal": "long_horizon_enterprise_swe",
+        "purpose": "Harder long-horizon software-engineering tasks from active/professional repositories.",
+        "requires": ["git", "docker", "python"],
+        "paired": True,
+        "best_for": ["long_horizon", "large_codebase", "scope_control"]
+    },
+    "terminal_bench": {
+        "priority": 6,
+        "signal": "terminal_agent_runtime_reliability",
+        "purpose": "End-to-end terminal task benchmark for agents operating in realistic command-line environments.",
+        "requires": ["docker", "harbor"],
+        "paired": True,
+        "best_for": ["hooks", "bash_policy", "runtime_workflows", "recovery"]
+    },
+    "livecodebench": {
+        "priority": 7,
+        "signal": "fresh_code_reasoning_control",
+        "purpose": "Contamination-resistant coding/reasoning benchmark useful as a prompt-bloat regression control.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["reasoning_regression", "self_repair_control"]
+    },
+    "bigcodebench": {
+        "priority": 8,
+        "signal": "practical_function_level_code_generation",
+        "purpose": "Practical programming tasks requiring diverse library/function calls and complex instructions.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["code_generation_control", "tool_like_function_reasoning"]
+    },
+    "evalplus": {
+        "priority": 9,
+        "signal": "robust_unit_test_correctness",
+        "purpose": "HumanEval+/MBPP+ correctness checks with many more tests than the original toy benchmarks.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["unit_correctness_regression", "prompt_bloat_detection"]
+    },
+    "cruxeval": {
+        "priority": 10,
+        "signal": "code_reasoning_execution_understanding",
+        "purpose": "Input/output prediction over short Python functions to test code reasoning rather than patching.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["reasoning_control", "execution_understanding"]
+    },
+    "bfcl": {
+        "priority": 11,
+        "signal": "tool_call_correctness",
+        "purpose": "Function/tool-calling benchmark for tool selection, argument construction, and multi-call correctness.",
+        "requires": ["python"],
+        "paired": False,
+        "best_for": ["tool_use_control", "schema_following"]
+    },
+    "tau_bench": {
+        "priority": 12,
+        "signal": "policy_following_tool_agent_reliability",
+        "purpose": "User-agent-tool interaction benchmark with policy rules and final-state verification.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["doctrine", "authority", "policy_following"]
+    },
+    "mle_bench": {
+        "priority": 13,
+        "signal": "ml_engineering_long_horizon",
+        "purpose": "Kaggle-style ML engineering tasks involving data prep, experiments, training, and scoring.",
+        "requires": ["python", "docker"],
+        "paired": True,
+        "best_for": ["research_engineering", "experiment_discipline"]
+    },
+    "repobench": {
+        "priority": 14,
+        "signal": "repository_level_retrieval_completion",
+        "purpose": "Repository-level code completion/retrieval benchmark useful for context-selection regressions.",
+        "requires": ["python"],
+        "paired": True,
+        "best_for": ["context_selection", "repo_reasoning_control"]
+    },
+    "codeclash": {
+        "priority": 15,
+        "signal": "goal_oriented_iterative_swe",
+        "purpose": "Multi-round, goal-oriented software development benchmark beyond one-shot issue patching.",
+        "requires": ["python", "docker"],
+        "paired": True,
+        "best_for": ["longitudinal_agents", "memory", "iteration"]
+    }
+}
+
+def list_external() -> dict:
+    return {name: EXTERNAL[name] for name in sorted(EXTERNAL, key=lambda n: EXTERNAL[n]["priority"])}
+
+def preflight_external(out: Path):
+    checks = {}
+    for name, meta in list_external().items():
+        reqs = requirement_status(meta["requires"])
+        checks[name] = {
+            **meta,
+            "available": all(reqs.values()),
+            "requirements": reqs,
+            "python_executable": resolve_python(),
+        }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(checks, indent=2), encoding="utf-8")
+    return checks
+
+def write_external_runbook(out: Path) -> Path:
+    lines = [
+        "# CORCEPT External Benchmark Runbook",
+        "",
+        "Run every benchmark paired where possible: same model, same task, same repository/container, same verifier; only CORCEPT changes.",
+        "",
+        "Primary metrics: verified pass rate, false-success rate, unsafe action rate, stale-test completion rate, token/cost per success, latency, scope-violation rate.",
+        "",
+        "| Priority | Benchmark | Signal | Paired | Best for |",
+        "|---:|---|---|---|---|",
+    ]
+    for name, meta in list_external().items():
+        lines.append(f"| {meta['priority']} | `{name}` | {meta['signal']} | {str(meta['paired']).lower()} | {', '.join(meta['best_for'])} |")
+    lines.extend([
+        "",
+        "## Minimum credible public run",
+        "",
+        "1. SWE-Skills-Bench: tests whether the CORCEPT skill layer helps or hurts.",
+        "2. SWE-bench Lite: cheap repo-patching iteration.",
+        "3. Terminal-Bench: tests the runtime/hook layer under real terminal workflows.",
+        "4. SWE-bench Verified: public headline once the harness is stable.",
+        "",
+        "## Do not report",
+        "",
+        "- Local guard-suite accuracy as model reasoning improvement.",
+        "- Any external benchmark result without exact model, harness, commit, task subset, cost, and verifier version.",
+    ])
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return out

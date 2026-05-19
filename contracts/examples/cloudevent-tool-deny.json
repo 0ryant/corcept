@@ -1,0 +1,27 @@
+{
+  "specversion": "1.0",
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "source": "io.corcept/ledger",
+  "type": "io.corcept.hook.tool_decided.v1",
+  "subject": "s1",
+  "datacontenttype": "application/json",
+  "time": "2026-05-18T12:00:00.000Z",
+  "data": {
+    "ledger_event_id": "550e8400-e29b-41d4-a716-446655440001",
+    "schema": "corcept.ledger_event.v1",
+    "event_type": "corcept.event.tool_decided.v1",
+    "authority_level": "L3_execute_local",
+    "decision": "deny",
+    "decision_reason": "Destructive command blocked by policy",
+    "tool": "Bash",
+    "target": "rm -rf /",
+    "fingerprint": "a1b2c3d4e5f6789012345678abcdef01",
+    "transition_id": null
+  },
+  "correlationid": "s1",
+  "provenancerepo": "corcept",
+  "provenanceproducer": "corcept-sink-cloudevents",
+  "provenanceversion": "0.1.1",
+  "provenancekind": "audit",
+  "corcepteventfingerprint": "a1b2c3d4e5f6789012345678abcdef01"
+}

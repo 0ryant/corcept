@@ -1,0 +1,37 @@
+[package]
+name = "corcept-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Project initialization, doctor, audit, and Claude Code hook orchestration for Corcept."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "corcept-runtime - Corcept Runtime crate"
+seo_description = "Project initialization, doctor, audit, and Claude Code hook orchestration for Corcept."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["corcept-runtime", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+chrono.workspace = true
+corcept-types = { path = "../corcept-types" }
+corcept-ledger = { path = "../corcept-ledger" }
+corcept-guards = { path = "../corcept-guards" }
+corcept-doctrine = { path = "../corcept-doctrine" }
+corcept-memory = { path = "../corcept-memory" }
+corcept-sink = { path = "../corcept-sink" }
+corcept-contract = { path = "../corcept-contract" }
+
+[dev-dependencies]
+tempfile.workspace = true

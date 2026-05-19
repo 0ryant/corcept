@@ -1,0 +1,38 @@
+{
+  "name": "corcept",
+  "description": "Doctrine-first Claude Code governance runtime with bounded agents, hooks, audit ledger, memory promotion and eval harness integration.",
+  "version": "0.5.0",
+  "author": {
+    "name": "Ryan Tilcock",
+    "email": "rytilcock@gmail.com"
+  },
+  "homepage": "https://github.com/rytilcock/corcept",
+  "repository": "https://github.com/rytilcock/corcept",
+  "license": "Apache-2.0",
+  "keywords": [
+    "claude-code",
+    "hooks",
+    "agents",
+    "skills",
+    "governance",
+    "audit-ledger",
+    "memory",
+    "doctrine",
+    "rust",
+    "hardening",
+    "command-classification",
+    "security-benchmark"
+  ],
+  "tags": [
+    "claude-code",
+    "agent-governance",
+    "pretooluse",
+    "posttooluse",
+    "stop-hook",
+    "memory-promotion",
+    "doctrine",
+    "hardening",
+    "command-classification",
+    "security-benchmark"
+  ]
+}

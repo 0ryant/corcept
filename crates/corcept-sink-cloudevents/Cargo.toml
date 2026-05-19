@@ -1,0 +1,27 @@
+[package]
+name = "corcept-sink-cloudevents"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CloudEvents 1.0 projection for CORCEPT ledger audit events."
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+hex.workspace = true
+corcept-types = { path = "../corcept-types" }
+corcept-ledger = { path = "../corcept-ledger" }
+
+[dev-dependencies]
+tempfile.workspace = true
+jsonschema = "0.26"
+corcept-runtime = { path = "../corcept-runtime" }
+corcept-types = { path = "../corcept-types" }
+corcept-ledger = { path = "../corcept-ledger" }
+serde_json.workspace = true

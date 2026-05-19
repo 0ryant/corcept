@@ -1,0 +1,31 @@
+name: corcept-runtime
+version: 0.1.0
+status: hardened-scaffold-complete
+seo:
+  title: Corcept Runtime - governed Claude Code Rust scaffold
+  description: Rust workspace and Claude Code plugin for bounded agents, hooks, doctrine, memory, and audit ledger.
+  keywords:
+    - Claude Code plugin
+    - Claude Code hooks
+    - Rust CLI
+    - AI governance
+    - agent audit ledger
+    - memory promotion
+    - doctrine runtime
+tags:
+  - claude-code
+  - rust
+  - governance
+  - hooks
+  - agents
+  - audit-ledger
+  - memory
+  - doctrine
+  - security
+  - hardening
+  - command-classification
+  - pretooluse
+  - security-benchmark
+
+  - corcept
+  - release-identity

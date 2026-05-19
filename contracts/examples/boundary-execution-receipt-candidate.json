@@ -1,0 +1,10 @@
+{
+  "schema": "corcept.boundary.execution_receipt.v1",
+  "receipt_id": "rcpt_eval_pretool_001",
+  "correlation_id": "sess-fixture-1",
+  "producer": "corcept-eval-suite-v2",
+  "outcome": "candidate",
+  "evidence_class": "observed",
+  "ledger_event_ids": ["evt_550e8400"],
+  "fingerprint": "a1b2c3d4e5f6789012345678abcdef01"
+}

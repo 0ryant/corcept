@@ -1,0 +1,37 @@
+[package]
+name = "corcept-ledger"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Hash-chained JSONL audit ledger for Corcept."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "corcept-ledger - Corcept Runtime crate"
+seo_description = "Hash-chained JSONL audit ledger for Corcept."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["corcept-ledger", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+uuid.workspace = true
+ed25519-dalek.workspace = true
+base64.workspace = true
+rand.workspace = true
+corcept-types = { path = "../corcept-types" }
+
+[dev-dependencies]
+tempfile.workspace = true
+proptest.workspace = true

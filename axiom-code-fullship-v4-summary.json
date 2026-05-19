@@ -1,0 +1,50 @@
+{
+  "final_zip": "/mnt/data/axiom-code-fullship-v4.zip",
+  "final_sha256": "76ef2dc4b03f68162b5d6ad16cc7e69c5beaa977b97ae8dd88cd988654eeee65",
+  "final_zip_valid": true,
+  "zip_size_bytes": 376390,
+  "manifest": "/mnt/data/axiom-code-fullship-v4/release-manifest.json",
+  "counts": {
+    "files_total": 338,
+    "scaffold_files": 282,
+    "rust_crates": 8,
+    "plugin_agents": 9,
+    "plugin_skills": 16,
+    "adrs": 16,
+    "subtasks": 25,
+    "eval_registry_benchmarks": 15
+  },
+  "local_eval_summary": {
+    "governance": {
+      "total": 52,
+      "passed": 52,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "stop_gate": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "memory_doctrine": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "mini_swe_oracle_noop": {
+      "tasks": 3,
+      "noop_passed": 0,
+      "oracle_passed": 3,
+      "oracle_expected_pass_rate": 1.0,
+      "noop_expected_fail_rate": 1.0
+    }
+  },
+  "json_errors": [],
+  "zip_valid": {
+    "axiom-code-plugin-v4.zip": true,
+    "axiom-eval-suite-v2.zip": true,
+    "axiom-local-results-v4.zip": true
+  }
+}

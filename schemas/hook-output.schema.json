@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Code Hook Output",
+  "type": "object",
+  "properties": {
+    "continue": {
+      "type": "boolean"
+    },
+    "suppressOutput": {
+      "type": "boolean"
+    },
+    "stopReason": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "systemMessage": {
+      "type": "string"
+    },
+    "hookSpecificOutput": {
+      "type": "object"
+    }
+  }
+}

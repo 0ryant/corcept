@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CORCEPT Memory Candidate",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "claim",
+    "scope",
+    "evidence",
+    "confidence",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "claim": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string"
+    },
+    "expiry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "risk_if_wrong": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "proposed_by": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  }
+}

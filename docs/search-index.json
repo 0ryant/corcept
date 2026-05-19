@@ -1,0 +1,1200 @@
+{
+  "generated_at": "2026-05-18T21:40:00Z",
+  "entries": [
+    {
+      "path": "API.md",
+      "title": "API Reference",
+      "tags": [
+        "api",
+        "rust",
+        "cli",
+        "runtime"
+      ],
+      "excerpt": "--- title: API Reference description: Public Rust crate API and CLI command reference. seo: title: API Reference - Corcept Runtime description: Public Rust crate API and CLI command reference. keywords: ['api', 'rust', 'cli', 'runtime', 'Corcept',"
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "title": "Architecture",
+      "tags": [
+        "architecture",
+        "runtime",
+        "hooks",
+        "ledger",
+        "memory",
+        "doctrine"
+      ],
+      "excerpt": "--- title: Architecture description: System architecture for Corcept Runtime. seo: title: Architecture - Corcept Runtime description: System architecture for Corcept Runtime. keywords: ['architecture', 'runtime', 'hooks', 'ledger', 'memory', 'do"
+    },
+    {
+      "path": "BENCHMARKS.md",
+      "title": "CORCEPT Benchmark Plan",
+      "tags": [],
+      "excerpt": "# CORCEPT Benchmark Plan CORCEPT must be evaluated as a runtime, not just a coding prompt. ## Minimum credible stack 1. SWE-Skills-Bench \u2014 skill marginal utility. 2. SWE-bench Lite \u2014 cheap real issue patching. 3. Terminal-Bench \u2014 terminal/runtime behaviour. 4."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "title": "Changelog",
+      "tags": [
+        "changelog",
+        "release-notes"
+      ],
+      "excerpt": "--- title: Changelog description: Changelog for scaffold versions. seo: title: Changelog - Corcept Runtime description: Changelog for scaffold versions. keywords: ['changelog', 'release-notes', 'Corcept', 'Claude Code', 'Rust'] tags: ['changelog',"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "title": "Contributing",
+      "tags": [
+        "contributing",
+        "development",
+        "quality"
+      ],
+      "excerpt": "--- title: Contributing description: Contribution process and quality gates. seo: title: Contributing - Corcept Runtime description: Contribution process and quality gates. keywords: ['contributing', 'development', 'quality', 'Corcept', 'Claude Cod"
+    },
+    {
+      "path": "EVAL-RUNBOOK.md",
+      "title": "CORCEPT Eval Runbook",
+      "tags": [],
+      "excerpt": "# CORCEPT Eval Runbook ## Local deterministic suite ```bash cd evals/corcept-eval-suite-v2 python -m corcept_eval run-local --out results/local python -m corcept_eval preflight --out results/preflight.json python -m corcept_eval list-benchmarks --out results/benchmark"
+    },
+    {
+      "path": "GOVERNANCE.md",
+      "title": "Governance",
+      "tags": [
+        "governance",
+        "authority",
+        "doctrine",
+        "memory",
+        "audit"
+      ],
+      "excerpt": "--- title: Governance description: Authority model, doctrine precedence, memory promotion rules, and audit controls. seo: title: Governance - Corcept Runtime description: Authority model, doctrine precedence, memory promotion rules, and audit controls."
+    },
+    {
+      "path": "INSTALL.md",
+      "title": "Installation",
+      "tags": [
+        "install",
+        "claude-code",
+        "plugin",
+        "cli"
+      ],
+      "excerpt": "--- title: Installation description: Install, dry-run, plugin, and local development instructions. seo: title: Installation - Corcept Runtime description: Install, dry-run, plugin, and local development instructions. keywords: ['install', 'claude-code"
+    },
+    {
+      "path": "PLUGIN.md",
+      "title": "Claude Code Plugin",
+      "tags": [
+        "plugin",
+        "claude-code",
+        "hooks",
+        "skills",
+        "agents"
+      ],
+      "excerpt": "--- title: Claude Code Plugin description: Plugin layout, hooks, skills, agents, and packaging rules. seo: title: Claude Code Plugin - Corcept Runtime description: Plugin layout, hooks, skills, agents, and packaging rules. keywords: ['plugin', 'claude"
+    },
+    {
+      "path": "README.md",
+      "title": "Corcept Runtime",
+      "tags": [
+        "claude-code",
+        "rust",
+        "hooks",
+        "agents",
+        "plugin",
+        "governance",
+        "audit-ledger",
+        "memory",
+        "doctrine",
+        "corcept"
+      ],
+      "excerpt": "--- title: Corcept Runtime description: Doctrine-first Claude Code governance runtime with Rust hooks, bounded agents, audit ledger, memory promotion, and plugin packaging. seo: title: Corcept Runtime - governed Claude Code hooks, agents, memory, and a"
+    },
+    {
+      "path": "RELEASE.md",
+      "title": "Release",
+      "tags": [
+        "release",
+        "packaging",
+        "checksums"
+      ],
+      "excerpt": "--- title: Release description: Release checklist, plugin zip packaging, checksums, and versioning. seo: title: Release - Corcept Runtime description: Release checklist, plugin zip packaging, checksums, and versioning. keywords: ['release', 'packaging"
+    },
+    {
+      "path": "ROADMAP.md",
+      "title": "Roadmap",
+      "tags": [
+        "roadmap",
+        "mvp",
+        "runtime"
+      ],
+      "excerpt": "--- title: Roadmap description: Versioned roadmap for Corcept Runtime. seo: title: Roadmap - Corcept Runtime description: Versioned roadmap for Corcept Runtime. keywords: ['roadmap', 'mvp', 'runtime', 'Corcept', 'Claude Code', 'Rust'] tags: ["
+    },
+    {
+      "path": "SECURITY.md",
+      "title": "Security",
+      "tags": [
+        "security",
+        "secrets",
+        "supply-chain",
+        "hooks"
+      ],
+      "excerpt": "--- title: Security description: Threat model, trust boundaries, secret handling, and safe installation policy. seo: title: Security - Corcept Runtime description: Threat model, trust boundaries, secret handling, and safe installation policy. keywords"
+    },
+    {
+      "path": "SHIP-README.md",
+      "title": "Corcept Fullship v4",
+      "tags": [],
+      "excerpt": "# Corcept Fullship v4 This is the single shippable archive for Corcept. ## Contents - `corcept/` \u2014 full Rust workspace, Claude Code plugin, docs, ADRs, subtasks, schemas and eval suite. - `dist/corcept-plugin-v4.zip` \u2014 standalone Claude Code plu"
+    },
+    {
+      "path": "TASKS.md",
+      "title": "Completed Tasks",
+      "tags": [
+        "tasks",
+        "completed",
+        "subtasks"
+      ],
+      "excerpt": "--- title: Completed Tasks description: Completed subtasks for the generated scaffold. seo: title: Completed Tasks - Corcept Runtime description: Completed subtasks for the generated scaffold. keywords: ['tasks', 'completed', 'subtasks', 'Corcept',"
+    },
+    {
+      "path": "TESTING.md",
+      "title": "Testing",
+      "tags": [
+        "testing",
+        "rust",
+        "fixtures",
+        "hooks"
+      ],
+      "excerpt": "--- title: Testing description: Unit, fixture, integration, hook, and plugin validation strategy. seo: title: Testing - Corcept Runtime description: Unit, fixture, integration, hook, and plugin validation strategy. keywords: ['testing', 'rust', 'fixtu"
+    },
+    {
+      "path": "USAGE.md",
+      "title": "Usage",
+      "tags": [
+        "usage",
+        "cli",
+        "skills",
+        "agents",
+        "hooks"
+      ],
+      "excerpt": "--- title: Usage description: Operational usage patterns for CORCEPT CLI, hooks, skills, agents, memory, and doctrine. seo: title: Usage - Corcept Runtime description: Operational usage patterns for CORCEPT CLI, hooks, skills, agents, memory, and doctrine."
+    },
+    {
+      "path": "benchmarks/corcept-benchmark-report-v2.md",
+      "title": "Corcept benchmark v2: hardened guard pass",
+      "tags": [],
+      "excerpt": "# Corcept benchmark v2: hardened guard pass ## Summary | Metric | Without CORCEPT | CORCEPT v0.1 | CORCEPT v0.1.1 hardened | |---|---:|---:|---:| | PreTool cases | 59 | 59 | 59 | | Risk intervention rate | 0.0% | 43.8% | 100.0% | | Residual unsafe allow rate |"
+    },
+    {
+      "path": "benchmarks/results/corcept-benchmark-report-v2.md",
+      "title": "Corcept benchmark v2: hardened guard pass",
+      "tags": [],
+      "excerpt": "# Corcept benchmark v2: hardened guard pass ## Summary | Metric | Without CORCEPT | CORCEPT v0.1 | CORCEPT v0.1.1 hardened | |---|---:|---:|---:| | PreTool cases | 59 | 59 | 59 | | Risk intervention rate | 0.0% | 43.8% | 100.0% | | Residual unsafe allow rate |"
+    },
+    {
+      "path": "crates/corcept-cli/README.md",
+      "title": "corcept-cli",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-cli description: Operator CLI and hook entrypoint for Corcept. seo: title: corcept-cli crate - Corcept Runtime description: Operator CLI and hook entrypoint for Corcept. keywords: [Corcept, corcept-cli, Rust, Claude Code, hooks,"
+    },
+    {
+      "path": "crates/corcept-doctrine/README.md",
+      "title": "corcept-doctrine",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-doctrine description: Doctrine loading, defaults, and validation for Corcept. seo: title: corcept-doctrine crate - Corcept Runtime description: Doctrine loading, defaults, and validation for Corcept. keywords: [Corcept, corcept-d"
+    },
+    {
+      "path": "crates/corcept-guards/README.md",
+      "title": "corcept-guards",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-guards description: Deterministic guard evaluation for bash, filesystem, secrets, and stop gates. seo: title: corcept-guards crate - Corcept Runtime description: Deterministic guard evaluation for bash, filesystem, secrets, and stop gates"
+    },
+    {
+      "path": "crates/corcept-ledger/README.md",
+      "title": "corcept-ledger",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-ledger description: Hash-chained JSONL audit ledger for Corcept. seo: title: corcept-ledger crate - Corcept Runtime description: Hash-chained JSONL audit ledger for Corcept. keywords: [Corcept, corcept-ledger, Rust, Claude Code,"
+    },
+    {
+      "path": "crates/corcept-memory/README.md",
+      "title": "corcept-memory",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-memory description: Evidence-backed memory candidate and promotion lifecycle for Corcept. seo: title: corcept-memory crate - Corcept Runtime description: Evidence-backed memory candidate and promotion lifecycle for Corcept. keywor"
+    },
+    {
+      "path": "crates/corcept-runtime/README.md",
+      "title": "corcept-runtime",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-runtime description: Project initialization, doctor, audit, and Claude Code hook orchestration for Corcept. seo: title: corcept-runtime crate - Corcept Runtime description: Project initialization, doctor, audit, and Claude Code hook or"
+    },
+    {
+      "path": "crates/corcept-types/README.md",
+      "title": "corcept-types",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: corcept-types description: Shared config, hook, event, memory, and doctrine types for Corcept. seo: title: corcept-types crate - Corcept Runtime description: Shared config, hook, event, memory, and doctrine types for Corcept. keywords: [A"
+    },
+    {
+      "path": "crates/create-corcept/README.md",
+      "title": "create-corcept",
+      "tags": [
+        "crate",
+        "rust",
+        "corcept",
+        "claude-code",
+        "hooks",
+        "governance"
+      ],
+      "excerpt": "--- title: create-corcept description: Dedicated project installer binary for Corcept. seo: title: create-corcept crate - Corcept Runtime description: Dedicated project installer binary for Corcept. keywords: [Corcept, create-corcept"
+    },
+    {
+      "path": "docs/OPERATING-MODEL.md",
+      "title": "Operating Model",
+      "tags": [
+        "operating-model",
+        "governance",
+        "hooks",
+        "memory"
+      ],
+      "excerpt": "--- title: Operating Model description: CORCEPT operating model for Claude Code governed execution. seo: title: Corcept operating model description: Operating model for doctrine, memory, agents, hooks, and audit in Corcept. keywords: [CORCEPT, Claude C"
+    },
+    {
+      "path": "docs/README.md",
+      "title": "Docs Index",
+      "tags": [
+        "docs",
+        "index",
+        "corcept"
+      ],
+      "excerpt": "--- title: Corcept Docs Index description: Documentation index for Corcept Runtime. seo: title: Corcept documentation index description: Index of ADRs, subtasks, runtime docs, plugin docs, and governance material. keywords: [Corcept, docs, AD"
+    },
+    {
+      "path": "docs/adr/0001-doctrine-first-runtime.md",
+      "title": "Doctrine-first runtime",
+      "tags": [
+        "adr",
+        "doctrine",
+        "governance"
+      ],
+      "excerpt": "--- title: Doctrine-first runtime description: Choose doctrine and audit as the primary product surface instead of a large prompt catalogue. seo: title: Doctrine-first runtime - Corcept ADR description: Choose doctrine and audit as the primary product s"
+    },
+    {
+      "path": "docs/adr/0002-rust-workspace.md",
+      "title": "Rust workspace",
+      "tags": [
+        "adr",
+        "rust",
+        "workspace"
+      ],
+      "excerpt": "--- title: Rust workspace description: Use Rust for the CLI, hooks, guard evaluation, ledger, memory, and doctrine runtime. seo: title: Rust workspace - Corcept ADR description: Use Rust for the CLI, hooks, guard evaluation, ledger, memory, and doctrine"
+    },
+    {
+      "path": "docs/adr/0003-plugin-directory-layout.md",
+      "title": "Claude Code plugin layout",
+      "tags": [
+        "adr",
+        "plugin",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Claude Code plugin layout description: Use root-level plugin components with `.claude-plugin/plugin.json`, skills, agents, hooks, bin, and settings. seo: title: Claude Code plugin layout - Corcept ADR description: Use root-level plugin compon"
+    },
+    {
+      "path": "docs/adr/0004-command-hooks-json-stdin.md",
+      "title": "Command hooks over HTTP hooks",
+      "tags": [
+        "adr",
+        "hooks",
+        "security"
+      ],
+      "excerpt": "--- title: Command hooks over HTTP hooks description: Use command hooks that read JSON from stdin instead of default HTTP hooks. seo: title: Command hooks over HTTP hooks - Corcept ADR description: Use command hooks that read JSON from stdin instead of"
+    },
+    {
+      "path": "docs/adr/0005-authority-model.md",
+      "title": "Authority model",
+      "tags": [
+        "adr",
+        "authority",
+        "governance"
+      ],
+      "excerpt": "--- title: Authority model description: Adopt L0-L4 authority levels for observe, propose, modify, execute, and external side effects. seo: title: Authority model - Corcept ADR description: Adopt L0-L4 authority levels for observe, propose, modify, exec"
+    },
+    {
+      "path": "docs/adr/0006-event-ledger-hash-chain.md",
+      "title": "Event ledger hash chain",
+      "tags": [
+        "adr",
+        "ledger",
+        "audit"
+      ],
+      "excerpt": "--- title: Event ledger hash chain description: Record auditable JSONL events with a previous-hash chain. seo: title: Event ledger hash chain - Corcept ADR description: Record auditable JSONL events with a previous-hash chain. keywords: ['adr', 'ledge"
+    },
+    {
+      "path": "docs/adr/0007-memory-promotion.md",
+      "title": "Evidence-backed memory promotion",
+      "tags": [
+        "adr",
+        "memory",
+        "evidence"
+      ],
+      "excerpt": "--- title: Evidence-backed memory promotion description: Separate observations, candidates, accepted memory, and doctrine. seo: title: Evidence-backed memory promotion - Corcept ADR description: Separate observations, candidates, accepted memory, and do"
+    },
+    {
+      "path": "docs/adr/0008-no-default-mcp.md",
+      "title": "No default MCP",
+      "tags": [
+        "adr",
+        "mcp",
+        "security"
+      ],
+      "excerpt": "--- title: No default MCP description: Avoid default MCP installation because connectors expand trust boundaries. seo: title: No default MCP - Corcept ADR description: Avoid default MCP installation because connectors expand trust boundaries. keywords"
+    },
+    {
+      "path": "docs/adr/0009-dry-run-installer.md",
+      "title": "Dry-run installer",
+      "tags": [
+        "adr",
+        "installer",
+        "dry-run"
+      ],
+      "excerpt": "--- title: Dry-run installer description: Installer must support dry-run and avoid global mutation by default. seo: title: Dry-run installer - Corcept ADR description: Installer must support dry-run and avoid global mutation by default. keywords: ['ad"
+    },
+    {
+      "path": "docs/adr/0010-protected-files-policy.md",
+      "title": "Protected files policy",
+      "tags": [
+        "adr",
+        "secrets",
+        "filesystem"
+      ],
+      "excerpt": "--- title: Protected files policy description: Hard-protect secrets and sensitive config from reads and writes. seo: title: Protected files policy - Corcept ADR description: Hard-protect secrets and sensitive config from reads and writes. keywords: ['"
+    },
+    {
+      "path": "docs/adr/0011-skill-inventory.md",
+      "title": "Small canonical skill inventory",
+      "tags": [
+        "adr",
+        "skills",
+        "product"
+      ],
+      "excerpt": "--- title: Small canonical skill inventory description: Prefer a compact set of high-signal skills over a giant catalogue. seo: title: Small canonical skill inventory - Corcept ADR description: Prefer a compact set of high-signal skills over a giant cat"
+    },
+    {
+      "path": "docs/adr/0012-testing-strategy.md",
+      "title": "Testing strategy",
+      "tags": [
+        "adr",
+        "testing",
+        "ci"
+      ],
+      "excerpt": "--- title: Testing strategy description: Use crate unit tests, hook fixtures, runtime integration tests, and CI gates. seo: title: Testing strategy - Corcept ADR description: Use crate unit tests, hook fixtures, runtime integration tests, and CI gates."
+    },
+    {
+      "path": "docs/adr/0013-hardened-command-classification.md",
+      "title": "ADR-0013: Hardened Command Classification",
+      "tags": [
+        "adr",
+        "security",
+        "hooks",
+        "pretooluse",
+        "command-classification",
+        "benchmark"
+      ],
+      "excerpt": "--- title: ADR-0013 Hardened Command Classification status: accepted date: 2026-05-18 seo: title: Hardened command classification for Corcept guards description: Decision record for adversarial shell parsing, package mutation gates, protected path detec"
+    },
+    {
+      "path": "docs/adr/0014-evaluation-stack.md",
+      "title": "ADR-0014: Paired evaluation stack",
+      "tags": [],
+      "excerpt": "# ADR-0014: Paired evaluation stack Status: accepted Date: 2026-05-18 Tags: benchmark, evaluation, SWE-bench, Terminal-Bench, SWE-Skills-Bench, CORCEPT, governance, correctness, reasoning ## Context CORCEPT cannot be validated by guard fixtures alone. The r"
+    },
+    {
+      "path": "docs/adr/0015-expanded-benchmark-suite.md",
+      "title": "ADR-0015: Expanded benchmark stack",
+      "tags": [
+        "evaluation",
+        "swe-bench",
+        "terminal-bench",
+        "reasoning",
+        "correctness",
+        "benchmark"
+      ],
+      "excerpt": "--- id: ADR-0015 title: Expanded benchmark stack status: accepted date: 2026-05-18 tags: [evaluation, swe-bench, terminal-bench, reasoning, correctness, benchmark] seo: title: Expanded CORCEPT benchmark stack description: Adds SWE, terminal, reasoning, tool-"
+    },
+    {
+      "path": "docs/adr/0016-single-release-archive.md",
+      "title": "ADR-0016: Single release archive",
+      "tags": [
+        "release",
+        "packaging",
+        "zip",
+        "artifact",
+        "distribution"
+      ],
+      "excerpt": "--- id: ADR-0016 title: Single release archive status: accepted date: 2026-05-18 tags: [release, packaging, zip, artifact, distribution] seo: title: CORCEPT single release archive packaging description: Defines one canonical fullship zip containing source, p"
+    },
+    {
+      "path": "docs/subtasks/ST-001-product-shape.md",
+      "title": "Define governance product shape",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Define governance product shape description: Completed implementation subtask for Corcept Runtime. seo: title: Define governance product shape - Corcept completed subtask description: Completed implementation record for Define governance p"
+    },
+    {
+      "path": "docs/subtasks/ST-002-workspace.md",
+      "title": "Create Rust workspace",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Create Rust workspace description: Completed implementation subtask for Corcept Runtime. seo: title: Create Rust workspace - Corcept completed subtask description: Completed implementation record for Create Rust workspace. keywords: [AXI"
+    },
+    {
+      "path": "docs/subtasks/ST-003-types.md",
+      "title": "Implement shared types",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement shared types description: Completed implementation subtask for Corcept Runtime. seo: title: Implement shared types - Corcept completed subtask description: Completed implementation record for Implement shared types. keywords: ["
+    },
+    {
+      "path": "docs/subtasks/ST-004-ledger.md",
+      "title": "Implement ledger",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement ledger description: Completed implementation subtask for Corcept Runtime. seo: title: Implement ledger - Corcept completed subtask description: Completed implementation record for Implement ledger. keywords: [Corcept, subtas"
+    },
+    {
+      "path": "docs/subtasks/ST-005-guards.md",
+      "title": "Implement guards",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement guards description: Completed implementation subtask for Corcept Runtime. seo: title: Implement guards - Corcept completed subtask description: Completed implementation record for Implement guards. keywords: [Corcept, subtas"
+    },
+    {
+      "path": "docs/subtasks/ST-006-doctrine.md",
+      "title": "Implement doctrine",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement doctrine description: Completed implementation subtask for Corcept Runtime. seo: title: Implement doctrine - Corcept completed subtask description: Completed implementation record for Implement doctrine. keywords: [Corcept,"
+    },
+    {
+      "path": "docs/subtasks/ST-007-memory.md",
+      "title": "Implement memory",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement memory description: Completed implementation subtask for Corcept Runtime. seo: title: Implement memory - Corcept completed subtask description: Completed implementation record for Implement memory. keywords: [Corcept, subtas"
+    },
+    {
+      "path": "docs/subtasks/ST-008-runtime.md",
+      "title": "Implement runtime",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement runtime description: Completed implementation subtask for Corcept Runtime. seo: title: Implement runtime - Corcept completed subtask description: Completed implementation record for Implement runtime. keywords: [Corcept, sub"
+    },
+    {
+      "path": "docs/subtasks/ST-009-cli.md",
+      "title": "Implement CLI",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement CLI description: Completed implementation subtask for Corcept Runtime. seo: title: Implement CLI - Corcept completed subtask description: Completed implementation record for Implement CLI. keywords: [Corcept, subtask, comple"
+    },
+    {
+      "path": "docs/subtasks/ST-010-installer.md",
+      "title": "Implement installer",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Implement installer description: Completed implementation subtask for Corcept Runtime. seo: title: Implement installer - Corcept completed subtask description: Completed implementation record for Implement installer. keywords: [CORCEPT Cod"
+    },
+    {
+      "path": "docs/subtasks/ST-011-plugin-manifest.md",
+      "title": "Write plugin manifest",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write plugin manifest description: Completed implementation subtask for Corcept Runtime. seo: title: Write plugin manifest - Corcept completed subtask description: Completed implementation record for Write plugin manifest. keywords: [AXI"
+    },
+    {
+      "path": "docs/subtasks/ST-012-skills.md",
+      "title": "Write skills",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write skills description: Completed implementation subtask for Corcept Runtime. seo: title: Write skills - Corcept completed subtask description: Completed implementation record for Write skills. keywords: [Corcept, subtask, completed"
+    },
+    {
+      "path": "docs/subtasks/ST-013-agents.md",
+      "title": "Write agents",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write agents description: Completed implementation subtask for Corcept Runtime. seo: title: Write agents - Corcept completed subtask description: Completed implementation record for Write agents. keywords: [Corcept, subtask, completed"
+    },
+    {
+      "path": "docs/subtasks/ST-014-hooks.md",
+      "title": "Wire hooks",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Wire hooks description: Completed implementation subtask for Corcept Runtime. seo: title: Wire hooks - Corcept completed subtask description: Completed implementation record for Wire hooks. keywords: [Corcept, subtask, completed, scaf"
+    },
+    {
+      "path": "docs/subtasks/ST-015-bin-wrappers.md",
+      "title": "Write binaries",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write binaries description: Completed implementation subtask for Corcept Runtime. seo: title: Write binaries - Corcept completed subtask description: Completed implementation record for Write binaries. keywords: [Corcept, subtask, com"
+    },
+    {
+      "path": "docs/subtasks/ST-016-schemas.md",
+      "title": "Write schemas",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write schemas description: Completed implementation subtask for Corcept Runtime. seo: title: Write schemas - Corcept completed subtask description: Completed implementation record for Write schemas. keywords: [Corcept, subtask, comple"
+    },
+    {
+      "path": "docs/subtasks/ST-017-root-docs.md",
+      "title": "Write root docs",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write root docs description: Completed implementation subtask for Corcept Runtime. seo: title: Write root docs - Corcept completed subtask description: Completed implementation record for Write root docs. keywords: [Corcept, subtask,"
+    },
+    {
+      "path": "docs/subtasks/ST-018-adrs.md",
+      "title": "Write ADRs",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write ADRs description: Completed implementation subtask for Corcept Runtime. seo: title: Write ADRs - Corcept completed subtask description: Completed implementation record for Write ADRs. keywords: [Corcept, subtask, completed, scaf"
+    },
+    {
+      "path": "docs/subtasks/ST-019-tests.md",
+      "title": "Write tests",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Write tests description: Completed implementation subtask for Corcept Runtime. seo: title: Write tests - Corcept completed subtask description: Completed implementation record for Write tests. keywords: [Corcept, subtask, completed, s"
+    },
+    {
+      "path": "docs/subtasks/ST-020-package.md",
+      "title": "Package zip",
+      "tags": [
+        "subtask",
+        "completed",
+        "corcept",
+        "rust",
+        "claude-code"
+      ],
+      "excerpt": "--- title: Package zip description: Completed implementation subtask for Corcept Runtime. seo: title: Package zip - Corcept completed subtask description: Completed implementation record for Package zip. keywords: [Corcept, subtask, completed, s"
+    },
+    {
+      "path": "docs/subtasks/ST-021-hardening-pass.md",
+      "title": "ST-021: Hardening pass",
+      "tags": [
+        "subtask",
+        "complete",
+        "hardening",
+        "security",
+        "benchmark"
+      ],
+      "excerpt": "--- title: ST-021 Hardening pass status: complete completed_at: 2026-05-18 seo: title: Corcept hardening pass completed description: Completed subtask covering command classification, secret path heuristics, adversarial guard tests, and fast ledger appe"
+    },
+    {
+      "path": "docs/subtasks/ST-022-evaluation-suite.md",
+      "title": "ST-022: Evaluation suite",
+      "tags": [],
+      "excerpt": "# ST-022: Evaluation suite Status: completed Completed: 2026-05-18 Tags: benchmark, evaluation, paired-run, SWE-bench, Terminal-Bench, correctness, reasoning, CORCEPT ## Scope - Add standalone CORCEPT Eval Suite v0.1. - Add runnable local governance, stop-g"
+    },
+    {
+      "path": "docs/subtasks/ST-023-expanded-benchmarks.md",
+      "title": "ST-023: Expanded external benchmark adapters",
+      "tags": [
+        "benchmark",
+        "swe-bench",
+        "terminal-bench",
+        "code-reasoning",
+        "evals"
+      ],
+      "excerpt": "--- id: ST-023 title: Expanded external benchmark adapters status: completed date: 2026-05-18 tags: [benchmark, swe-bench, terminal-bench, code-reasoning, evals] --- # ST-023: Expanded external benchmark adapters Completed: - Added benchmark registry with p"
+    },
+    {
+      "path": "docs/subtasks/ST-024-policy-aligned-guard-benchmark.md",
+      "title": "ST-024: Align Rust guard with memory/doctrine benchmark",
+      "tags": [
+        "guards",
+        "memory",
+        "doctrine",
+        "correctness",
+        "tests"
+      ],
+      "excerpt": "--- id: ST-024 title: Align Rust guard with memory/doctrine benchmark status: completed date: 2026-05-18 tags: [guards, memory, doctrine, correctness, tests] --- # ST-024: Align Rust guard with memory/doctrine benchmark Completed: - Protected writes now har"
+    },
+    {
+      "path": "docs/subtasks/ST-025-single-fullship-zip.md",
+      "title": "ST-025: Create single fullship archive",
+      "tags": [
+        "release",
+        "packaging",
+        "zip",
+        "manifest",
+        "checksums"
+      ],
+      "excerpt": "--- id: ST-025 title: Create single fullship archive status: completed date: 2026-05-18 tags: [release, packaging, zip, manifest, checksums] --- # ST-025: Create single fullship archive Completed: - Consolidated source scaffold, plugin, eval suite and resul"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/README.md",
+      "title": "CORCEPT Eval Suite v0.2",
+      "tags": [],
+      "excerpt": "# CORCEPT Eval Suite v0.2 CORCEPT Eval Suite is a paired benchmark harness for measuring whether CORCEPT improves agentic software-engineering behaviour rather than merely adding prompt surface. ## What it measures - deterministic governance/tool-call policy corr"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/adapters/README.md",
+      "title": "External adapters",
+      "tags": [],
+      "excerpt": "# External adapters These adapters are intentionally command-template based rather than locked to one agent. CORCEPT is a runtime/plugin layer, so the fair experiment is to run exactly the same model/agent command twice: once without CORCEPT, once with CORCEPT load"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/adapters/swe_bench_verified.md",
+      "title": "SWE-bench Verified adapter",
+      "tags": [],
+      "excerpt": "# SWE-bench Verified adapter Recommended first external sequence: 1. Run `MariusHobbhahn/swe-bench-verified-mini` for a 50-task smoke test. 2. Run `princeton-nlp/SWE-bench_Verified` for the 500-task headline benchmark. 3. Report baseline vs CORCEPT with the sa"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/adapters/terminal_bench.md",
+      "title": "Terminal-Bench / Harbor adapter",
+      "tags": [],
+      "excerpt": "# Terminal-Bench / Harbor adapter Terminal-Bench is the runtime-layer benchmark. Use it to test whether CORCEPT improves real terminal workflows, not just toy command classification. Expected local preflight: ```bash harbor datasets list ``` Experiment: ```"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/docs/BENCHMARK-REGISTRY.md",
+      "title": "Benchmark Registry",
+      "tags": [],
+      "excerpt": "# Benchmark Registry The eval suite exposes the benchmark registry through: ```bash python -m corcept_eval list-benchmarks ``` Priorities are not prestige rankings. They are usefulness rankings for CORCEPT's claim: 1. skill marginal utility 2. repository issue"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/docs/BENCHMARK-STACK.md",
+      "title": "Benchmark stack",
+      "tags": [],
+      "excerpt": "# Benchmark stack SEO tags: SWE-bench, SWE-bench Verified, SWE-Skills-Bench, Terminal-Bench, LiveCodeBench, BFCL, tau-bench, Claude Code, CORCEPT, agent correctness, agent safety, tool-use reliability. ## External benchmarks | Benchmark | CORCEPT question it an"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/docs/EXTERNAL-BENCHMARKS.md",
+      "title": "External benchmark adapter notes",
+      "tags": [],
+      "excerpt": "# External benchmark adapter notes ## SWE-Skills-Bench Direct fit for CORCEPT's skill layer. Run this before claiming that CORCEPT skills help. Pairing: ```text baseline = same agent, no CORCEPT skill/plugin context corcept = same agent, CORCEPT skills/plugin loaded"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/README.md",
+      "title": "CORCEPT Eval Results v0.1",
+      "tags": [],
+      "excerpt": "# CORCEPT Eval Results v0.1 Generated: 2026-05-18. ## Local deterministic benchmark | Suite | Total | Passed | Failed | Accuracy | |---|---:|---:|---:|---:| | Governance | 52 | 52 | 0 | 100.0% | | Stop gate | 10 | 10 | 0 | 100.0% | | Memory/doctrine | 8 | 8 |"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_001_slugify_unicode/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_001_slugify_unicode/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_001_slugify_unicode/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix slugify so accented Latin letters normalize to ASCII, punctuation collapses to single hyphens, and empty results return 'untitled'."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_002_rate_limiter_boundary/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_002_rate_limiter_boundary/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_002_rate_limiter_boundary/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix the fixed-window rate limiter so the Nth request inside the window is allowed and the N+1th request is blocked."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_003_redact_nested/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_003_redact_nested/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/noop/mini_003_redact_nested/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix redact() so it recursively redacts secret/token/password/api_key values in nested dictionaries and lists without mutating the input."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_001_slugify_unicode/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_001_slugify_unicode/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_001_slugify_unicode/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix slugify so accented Latin letters normalize to ASCII, punctuation collapses to single hyphens, and empty results return 'untitled'."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_002_rate_limiter_boundary/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_002_rate_limiter_boundary/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_002_rate_limiter_boundary/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix the fixed-window rate limiter so the Nth request inside the window is allowed and the N+1th request is blocked."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_003_redact_nested/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_003_redact_nested/PROMPT.md",
+      "title": "evals/corcept-eval-suite-v2/results/local/mini_swe/oracle/mini_003_redact_nested/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix redact() so it recursively redacts secret/token/password/api_key values in nested dictionaries and lists without mutating the input."
+    },
+    {
+      "path": "evals/corcept-eval-suite-v2/results/local/report.md",
+      "title": "CORCEPT Eval Report",
+      "tags": [],
+      "excerpt": "# CORCEPT Eval Report Source: `/mnt/data/corcept-eval-results-v1/local/results.json` ## Local deterministic results | Suite | Total | Passed | Failed | Accuracy | |---|---:|---:|---:|---:| | governance | 52 | 52 | 0 | 100.0% | | stop_gate | 10 | 10 | 0 | 100.0%"
+    },
+    {
+      "path": "examples/README.md",
+      "title": "Examples",
+      "tags": [],
+      "excerpt": "# Examples Hook input fixtures are stored in `examples/fixtures/` and can be piped into the CLI once built: ```bash cat examples/fixtures/pretool-bash-rm-rf.json | corcept hook pretool-guard ```"
+    },
+    {
+      "path": "plugins/corcept/README.md",
+      "title": "Corcept Plugin",
+      "tags": [
+        "plugin",
+        "claude-code",
+        "hooks",
+        "skills",
+        "agents",
+        "corcept"
+      ],
+      "excerpt": "--- title: Corcept Plugin description: Claude Code plugin for CORCEPT governed runtime. seo: title: Corcept Plugin - Claude Code hooks, skills, and agents description: Claude Code plugin scaffold containing CORCEPT skills, agents, lifecycle hooks, and CL"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-architect.md",
+      "title": "corcept-architect",
+      "tags": [],
+      "excerpt": "--- name: corcept-architect description: Architecture and decomposition specialist. Use for system boundaries, trade-offs, and implementation plans. model: opus effort: high maxTurns: 20 tools: Read, Grep, Glob, Bash --- # corcept-architect You are `corcept-archit"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-auditor.md",
+      "title": "corcept-auditor",
+      "tags": [],
+      "excerpt": "--- name: corcept-auditor description: Evidence auditor for completion, tests, doctrine, memory, and unresolved risk. model: opus effort: high maxTurns: 20 tools: Read, Grep, Glob, Bash --- # corcept-auditor You are `corcept-auditor` inside Corcept. ## Jurisdi"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-implementer.md",
+      "title": "corcept-implementer",
+      "tags": [],
+      "excerpt": "--- name: corcept-implementer description: Bounded local implementation specialist. Use only after scope and acceptance criteria are clear. model: sonnet effort: medium maxTurns: 20 tools: Read, Grep, Glob, Edit, Write, Bash --- # corcept-implementer You are `ax"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-memory-curator.md",
+      "title": "corcept-memory-curator",
+      "tags": [],
+      "excerpt": "--- name: corcept-memory-curator description: Memory curator that proposes candidates with evidence but cannot promote memory. model: sonnet effort: medium maxTurns: 20 tools: Read, Grep, Glob, Write --- # corcept-memory-curator You are `corcept-memory-curator` in"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-principal.md",
+      "title": "corcept-principal",
+      "tags": [],
+      "excerpt": "--- name: corcept-principal description: Top-level CORCEPT coordinator. Use for task intake, delegation, acceptance criteria, and final synthesis. model: opus effort: high maxTurns: 20 tools: Read, Grep, Glob, Bash, Agent --- # corcept-principal You are `corcept-pri"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-researcher.md",
+      "title": "corcept-researcher",
+      "tags": [],
+      "excerpt": "--- name: corcept-researcher description: Research specialist for external or internal source gathering without implementation. model: sonnet effort: medium maxTurns: 20 tools: Read, Grep, Glob, WebSearch, WebFetch --- # corcept-researcher You are `corcept-researc"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-reviewer.md",
+      "title": "corcept-reviewer",
+      "tags": [],
+      "excerpt": "--- name: corcept-reviewer description: Diff reviewer for correctness, maintainability, scope, and doctrine compliance. model: sonnet effort: medium maxTurns: 20 tools: Read, Grep, Glob, Bash --- # corcept-reviewer You are `corcept-reviewer` inside Corcept. ##"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-security.md",
+      "title": "corcept-security",
+      "tags": [],
+      "excerpt": "--- name: corcept-security description: Security and threat-model specialist for secrets, auth, dependencies, prompt injection, and production risk. model: opus effort: high maxTurns: 20 tools: Read, Grep, Glob, Bash --- # corcept-security You are `corcept-securit"
+    },
+    {
+      "path": "plugins/corcept/agents/corcept-test-runner.md",
+      "title": "corcept-test-runner",
+      "tags": [],
+      "excerpt": "--- name: corcept-test-runner description: Testing and verification specialist that reports exact commands and exit codes. model: sonnet effort: medium maxTurns: 20 tools: Read, Grep, Glob, Bash --- # corcept-test-runner You are `corcept-test-runner` inside CORCEPT"
+    },
+    {
+      "path": "plugins/corcept/skills/audit/SKILL.md",
+      "title": "CORCEPT audit",
+      "tags": [],
+      "excerpt": "--- description: Audit current work for evidence, tests, doctrine, memory, risks, and completion. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test"
+    },
+    {
+      "path": "plugins/corcept/skills/debug/SKILL.md",
+      "title": "CORCEPT debug",
+      "tags": [],
+      "excerpt": "--- description: Investigate a defect using evidence-first diagnosis and bounded experiments. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT debug State hypoth"
+    },
+    {
+      "path": "plugins/corcept/skills/doctor/SKILL.md",
+      "title": "CORCEPT doctor",
+      "tags": [],
+      "excerpt": "--- description: Validate CORCEPT installation, hooks, config, doctrine, memory, and ledger. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) ---"
+    },
+    {
+      "path": "plugins/corcept/skills/doctrine-add/SKILL.md",
+      "title": "CORCEPT doctrine-add",
+      "tags": [],
+      "excerpt": "--- description: Add, amend, supersede, or deprecate doctrine. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT doctrine-add Creat"
+    },
+    {
+      "path": "plugins/corcept/skills/doctrine-check/SKILL.md",
+      "title": "CORCEPT doctrine-check",
+      "tags": [],
+      "excerpt": "--- description: Check current work against active doctrine. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT doctrine-check Load relevant doctrine and check cur"
+    },
+    {
+      "path": "plugins/corcept/skills/implement/SKILL.md",
+      "title": "CORCEPT implement",
+      "tags": [],
+      "excerpt": "--- description: Execute an approved CORCEPT plan with bounded local edits and evidence tracking. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT implement Implem"
+    },
+    {
+      "path": "plugins/corcept/skills/intake/SKILL.md",
+      "title": "CORCEPT intake",
+      "tags": [],
+      "excerpt": "--- description: Classify a task, identify authority level, risks, likely files, agents, and acceptance criteria. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT"
+    },
+    {
+      "path": "plugins/corcept/skills/map-codebase/SKILL.md",
+      "title": "CORCEPT map-codebase",
+      "tags": [],
+      "excerpt": "--- description: Map relevant codebase structure without producing a giant summary. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT map-codebase Read only the r"
+    },
+    {
+      "path": "plugins/corcept/skills/memory-promote/SKILL.md",
+      "title": "CORCEPT memory-promote",
+      "tags": [],
+      "excerpt": "--- description: Promote an evidence-backed memory candidate into accepted memory. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT"
+    },
+    {
+      "path": "plugins/corcept/skills/memory-propose/SKILL.md",
+      "title": "CORCEPT memory-propose",
+      "tags": [],
+      "excerpt": "--- description: Create an evidence-backed memory candidate. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT memory-propose Create a candidate memory only. Incl"
+    },
+    {
+      "path": "plugins/corcept/skills/plan-change/SKILL.md",
+      "title": "CORCEPT plan-change",
+      "tags": [],
+      "excerpt": "--- description: Create a bounded implementation plan with scope, risks, test plan, and rollback path. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm"
+    },
+    {
+      "path": "plugins/corcept/skills/retro/SKILL.md",
+      "title": "CORCEPT retro",
+      "tags": [],
+      "excerpt": "--- description: Produce a retrospective from ledger evidence and propose follow-up improvements. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT retro Use the"
+    },
+    {
+      "path": "plugins/corcept/skills/review/SKILL.md",
+      "title": "CORCEPT review",
+      "tags": [],
+      "excerpt": "--- description: Review current diff against doctrine, correctness, security, and scope. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT review Review the curre"
+    },
+    {
+      "path": "plugins/corcept/skills/ship/SKILL.md",
+      "title": "CORCEPT ship",
+      "tags": [],
+      "excerpt": "--- description: Final readiness gate before PR, release, merge, or deployment. disable-model-invocation: true allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT sh"
+    },
+    {
+      "path": "plugins/corcept/skills/test/SKILL.md",
+      "title": "CORCEPT test",
+      "tags": [],
+      "excerpt": "--- description: Run and summarize tests with exact commands, exit codes, and untested risks. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT test Run or reques"
+    },
+    {
+      "path": "plugins/corcept/skills/threat-model/SKILL.md",
+      "title": "CORCEPT threat-model",
+      "tags": [],
+      "excerpt": "--- description: Perform adversarial security and prompt-injection review for a change. allowed-tools: Read Grep Glob Bash(git status *) Bash(git diff *) Bash(corcept *) Bash(cargo test *) Bash(npm test *) Bash(pnpm test *) --- # CORCEPT threat-model Review secr"
+    },
+    {
+      "path": "results/external-runbook.md",
+      "title": "CORCEPT External Benchmark Runbook",
+      "tags": [],
+      "excerpt": "# CORCEPT External Benchmark Runbook Run every benchmark paired where possible: same model, same task, same repository/container, same verifier; only CORCEPT changes. Primary metrics: verified pass rate, false-success rate, unsafe action rate, stale-test complet"
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_001_slugify_unicode/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_001_slugify_unicode/PROMPT.md",
+      "title": "results/local-v4/mini_swe/noop/mini_001_slugify_unicode/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix slugify so accented Latin letters normalize to ASCII, punctuation collapses to single hyphens, and empty results return 'untitled'."
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_002_rate_limiter_boundary/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_002_rate_limiter_boundary/PROMPT.md",
+      "title": "results/local-v4/mini_swe/noop/mini_002_rate_limiter_boundary/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix the fixed-window rate limiter so the Nth request inside the window is allowed and the N+1th request is blocked."
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_003_redact_nested/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/noop/mini_003_redact_nested/PROMPT.md",
+      "title": "results/local-v4/mini_swe/noop/mini_003_redact_nested/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix redact() so it recursively redacts secret/token/password/api_key values in nested dictionaries and lists without mutating the input."
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_001_slugify_unicode/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_001_slugify_unicode/PROMPT.md",
+      "title": "results/local-v4/mini_swe/oracle/mini_001_slugify_unicode/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix slugify so accented Latin letters normalize to ASCII, punctuation collapses to single hyphens, and empty results return 'untitled'."
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_002_rate_limiter_boundary/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_002_rate_limiter_boundary/PROMPT.md",
+      "title": "results/local-v4/mini_swe/oracle/mini_002_rate_limiter_boundary/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix the fixed-window rate limiter so the Nth request inside the window is allowed and the N+1th request is blocked."
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_003_redact_nested/.pytest_cache/README.md",
+      "title": "pytest cache directory",
+      "tags": [],
+      "excerpt": "# pytest cache directory # This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](https://docs.pytest.org/en/stable"
+    },
+    {
+      "path": "results/local-v4/mini_swe/oracle/mini_003_redact_nested/PROMPT.md",
+      "title": "results/local-v4/mini_swe/oracle/mini_003_redact_nested/PROMPT.md",
+      "tags": [],
+      "excerpt": "Fix redact() so it recursively redacts secret/token/password/api_key values in nested dictionaries and lists without mutating the input."
+    },
+    {
+      "path": "results/local-v4/report.md",
+      "title": "CORCEPT Eval Report",
+      "tags": [],
+      "excerpt": "# CORCEPT Eval Report Source: `/mnt/data/corcept-fullship-v4/results/local/results.json` ## Local deterministic results | Suite | Total | Passed | Failed | Accuracy | |---|---:|---:|---:|---:| | governance | 52 | 52 | 0 | 100.0% | | stop_gate | 10 | 10 | 0"
+    },
+    {
+      "path": "tests/README.md",
+      "title": "Integration Tests",
+      "tags": [
+        "tests",
+        "integration",
+        "rust",
+        "hooks"
+      ],
+      "excerpt": "--- title: CORCEPT Integration Tests description: Integration testing notes and fixture contract. seo: title: Corcept integration tests description: Integration tests for Corcept hook runtime, installer, guards, ledger, memory, and doctrine. keywords"
+    },
+    {
+      "path": "RENAME.md",
+      "title": "Corcept identity manifest",
+      "tags": [
+        "corcept",
+        "rename",
+        "release",
+        "metadata"
+      ],
+      "excerpt": "Corcept fullship package identity, namespace, state directory, plugin, crates, evals, and release artifacts."
+    },
+    {
+      "path": "docs/adr/0017-corcept-release-identity.md",
+      "title": "ADR-0017 Corcept release identity",
+      "tags": [
+        "corcept",
+        "adr",
+        "release",
+        "governance"
+      ],
+      "excerpt": "Architecture decision for Corcept identity across runtime, plugin, crates, hooks, evals, metadata, and artifacts."
+    },
+    {
+      "path": "docs/subtasks/ST-026-corcept-release-rename.md",
+      "title": "ST-026 Corcept release rename",
+      "tags": [
+        "corcept",
+        "subtask",
+        "completed",
+        "packaging"
+      ],
+      "excerpt": "Completed repository-wide Corcept naming and release packaging."
+    }
+  ]
+}

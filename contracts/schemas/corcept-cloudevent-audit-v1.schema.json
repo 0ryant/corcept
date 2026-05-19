@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-cloudevent-audit-v1.schema.json",
+  "title": "CORCEPT CloudEvents Audit Projection v1",
+  "type": "object",
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "time",
+    "correlationid",
+    "provenancerepo",
+    "provenanceproducer",
+    "provenanceversion",
+    "provenancekind",
+    "corcepteventfingerprint"
+  ],
+  "properties": {
+    "specversion": { "const": "1.0" },
+    "id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "type": {
+      "type": "string",
+      "pattern": "^io\\.corcept\\.hook\\.[a-z_]+\\.v1$"
+    },
+    "subject": { "type": ["string", "null"] },
+    "datacontenttype": { "type": "string" },
+    "time": { "type": "string" },
+    "data": { "type": "object" },
+    "correlationid": { "type": "string" },
+    "provenancerepo": { "type": "string" },
+    "provenanceproducer": { "type": "string" },
+    "provenanceversion": { "type": "string" },
+    "provenancekind": { "type": "string" },
+    "corcepteventfingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    }
+  },
+  "additionalProperties": true
+}

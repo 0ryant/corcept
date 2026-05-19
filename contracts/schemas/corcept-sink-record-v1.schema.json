@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-sink-record-v1.schema.json",
+  "title": "CORCEPT Sink Record v1",
+  "type": "object",
+  "required": ["schema", "correlation_id", "event_type", "ts", "outcome"],
+  "properties": {
+    "schema": { "const": "corcept.sink_record.v1" },
+    "correlation_id": { "type": "string" },
+    "event_type": { "type": "string" },
+    "ts": { "type": "string" },
+    "outcome": { "type": "string" },
+    "hook_event": { "type": ["string", "null"] },
+    "duration_ms": { "type": ["integer", "null"] },
+    "metadata": { "type": "object" }
+  }
+}

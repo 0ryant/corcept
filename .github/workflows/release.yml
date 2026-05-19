@@ -1,0 +1,207 @@
+name: release
+
+# Tag push v*.*.* → quality gate, multi-platform `corcept` binaries, plugin zip,
+# SHA256SUMS, optional minisign when MINISIGN_SECRET_KEY is configured.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: make check
+        run: make check
+        env:
+          PROPTEST_CASES: 32
+
+  build:
+    name: build (${{ matrix.target }})
+    needs: quality-gate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: corcept-${{ github.ref_name }}-x86_64-unknown-linux-gnu.tar.gz
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: corcept-${{ github.ref_name }}-aarch64-unknown-linux-gnu.tar.gz
+            cross: true
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            archive: corcept-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            archive: corcept-${{ github.ref_name }}-x86_64-apple-darwin.tar.gz
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            archive: corcept-${{ github.ref_name }}-x86_64-pc-windows-msvc.zip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install cross (Linux arm64)
+        if: matrix.cross == true
+        run: cargo install cross --locked
+
+      - name: Build corcept CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.cross }}" == "true" ]]; then
+            cross build --release --target ${{ matrix.target }} -p corcept-cli --locked
+          else
+            cargo build --release --target ${{ matrix.target }} -p corcept-cli --locked
+          fi
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/corcept" dist/
+          tar czf "${{ matrix.archive }}" -C dist corcept
+          sha256sum "${{ matrix.archive }}" > "${{ matrix.archive }}.sha256"
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/corcept.exe" dist/
+          Compress-Archive -Path dist/corcept.exe -DestinationPath "${{ matrix.archive }}"
+          $hash = (Get-FileHash "${{ matrix.archive }}" -Algorithm SHA256).Hash.ToLower()
+          "$hash  ${{ matrix.archive }}" | Out-File -Encoding ascii "${{ matrix.archive }}.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            ${{ matrix.archive }}
+            ${{ matrix.archive }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+  plugin:
+    name: Plugin zip
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build plugin archive
+        run: |
+          make plugin-zip
+          mv dist/corcept-plugin.zip "corcept-plugin-${{ github.ref_name }}.zip"
+          sha256sum "corcept-plugin-${{ github.ref_name }}.zip" > "corcept-plugin-${{ github.ref_name }}.zip.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: |
+            corcept-plugin-*.zip
+            corcept-plugin-*.zip.sha256
+          if-no-files-found: error
+
+  github-release:
+    name: GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, plugin]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Aggregate checksums
+        run: |
+          cd dist
+          cat *.sha256 > SHA256SUMS || true
+          ls -la
+
+      - name: Install minisign
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y minisign
+
+      - name: Sign release artifacts (when secret configured)
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MINISIGN_SECRET_KEY:-}" ]; then
+            echo "MINISIGN_SECRET_KEY not set — publishing unsigned artifacts + SHA256SUMS only"
+            exit 0
+          fi
+          umask 077
+          printf '%s\n' "$MINISIGN_SECRET_KEY" > /tmp/minisign.key
+          for f in dist/*.{tar.gz,zip}; do
+            [[ -f "$f" ]] || continue
+            minisign -Sm "$f" -s /tmp/minisign.key -x "${f}.minisig"
+          done
+          rm -f /tmp/minisign.key
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          signed="unsigned"
+          if [ -n "${{ secrets.MINISIGN_SECRET_KEY }}" ]; then signed="minisign"; fi
+          body="CORCEPT ${{ github.ref_name }} — doctrine parity release.
+
+          Artifacts: corcept CLI per platform + plugin zip + SHA256SUMS.
+          Release signing: ${signed} (set MINISIGN_SECRET_KEY for minisign sidecars).
+
+          Verify:
+          \`\`\`bash
+          shasum -a 256 -c SHA256SUMS
+          corcept audit verify
+          \`\`\`
+
+          See docs/release-trust.md and docs/RELEASE_GATES.md."
+          gh release create "${{ github.ref_name }}" \
+            --title "CORCEPT ${{ github.ref_name }}" \
+            --verify-tag \
+            --notes "$body" \
+            dist/*

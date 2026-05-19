@@ -1,0 +1,14 @@
+{
+  "schema": "corcept-case-receipt/v1",
+  "benchmark": "pretool-live",
+  "mode": "corcept",
+  "case_id": "pretool_001",
+  "command": "corcept-guard Bash",
+  "captured_at": "2026-05-18T22:41:01.292518+00:00",
+  "payload": {
+    "decision": "allow",
+    "reason": "No CORCEPT guard matched.",
+    "expected": "allow",
+    "passed": true
+  }
+}

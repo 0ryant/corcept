@@ -1,0 +1,55 @@
+{
+  "bfcl": {
+    "paired": false,
+    "priority": 6,
+    "requires": [
+      "python"
+    ]
+  },
+  "livecodebench": {
+    "paired": true,
+    "priority": 5,
+    "requires": [
+      "python"
+    ]
+  },
+  "swe_bench_verified": {
+    "dataset": "princeton-nlp/SWE-bench_Verified",
+    "paired": true,
+    "priority": 3,
+    "requires": [
+      "docker",
+      "git",
+      "python"
+    ]
+  },
+  "swe_bench_verified_mini": {
+    "dataset": "MariusHobbhahn/swe-bench-verified-mini",
+    "paired": true,
+    "priority": 2,
+    "requires": [
+      "docker",
+      "git",
+      "python"
+    ]
+  },
+  "swe_skills_bench": {
+    "paired": true,
+    "priority": 1,
+    "repo": "https://github.com/GeniusHTX/SWE-Skills-Bench",
+    "requires": [
+      "docker",
+      "git",
+      "python"
+    ]
+  },
+  "terminal_bench": {
+    "harness": "harbor",
+    "paired": true,
+    "priority": 4,
+    "requires": [
+      "docker",
+      "harbor"
+    ]
+  }
+}

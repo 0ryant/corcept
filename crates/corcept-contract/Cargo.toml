@@ -1,0 +1,19 @@
+[package]
+name = "corcept-contract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "JSON Schema contract validation for CORCEPT wire formats."
+publish = false
+
+[dependencies]
+serde_json.workspace = true
+jsonschema = "0.26"
+anyhow.workspace = true
+
+[dev-dependencies]
+corcept-types = { path = "../corcept-types" }
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }

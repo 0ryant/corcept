@@ -1,0 +1,15 @@
+/target/
+/dist/
+/results/
+/.DS_Store
+*.tmp
+*.log
+.corcept/cache/
+.corcept/ledger/*.lock
+.env
+.env.*
+!.env.example
+_compare/
+evals/corcept-eval-suite-v2/.venv/
+evals/corcept-eval-suite-v2/**/__pycache__/
+evals/corcept-eval-suite-v2/**/.pytest_cache/

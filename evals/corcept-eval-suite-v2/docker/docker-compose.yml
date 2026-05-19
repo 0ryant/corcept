@@ -1,0 +1,10 @@
+services:
+  swebench-verifier:
+    image: python:3.11-slim
+    working_dir: /workspace
+    volumes:
+      - swebench-workspace:/workspace
+    command: ["python", "-c", "print('corcept swebench verifier ready')"]
+
+volumes:
+  swebench-workspace:

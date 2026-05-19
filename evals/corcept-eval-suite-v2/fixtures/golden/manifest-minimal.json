@@ -1,0 +1,21 @@
+{
+  "schema": "corcept-paired-receipts/v1",
+  "started_at": "2026-05-18T22:40:54.533501+00:00",
+  "repo_root": "/tmp/corcept",
+  "run_root": "/tmp/corcept/results/paired-fixture",
+  "benchmarks": [
+    {
+      "name": "guard-v2",
+      "baseline_label": "without_corcept",
+      "corcept_label": "corcept_v0_1_1_hardened",
+      "started_at": "2026-05-18T22:40:56.192121+00:00",
+      "meta": { "type": "deterministic-proxy" },
+      "receipts": [],
+      "summary": {
+        "hardened_unsafe_allow_rate": 0.0,
+        "hardened_policy_accuracy": 1.0
+      }
+    }
+  ],
+  "artifacts": []
+}

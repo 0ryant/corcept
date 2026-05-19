@@ -1,0 +1,4 @@
+{
+  "agent": "corcept-principal",
+  "subagentStatusLine": "CORCEPT ${agent_type} \u00b7 ${status}"
+}

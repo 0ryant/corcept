@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-05-18T20:45:00Z",
+  "description": "Paired with/without benchmark harness for Corcept governance, reasoning, correctness, and external SWE agent benchmarks.",
+  "name": "corcept-eval-suite",
+  "seo": {
+    "title": "CORCEPT Eval Suite for Claude Code Governance, SWE Correctness, Reasoning and Tool Safety",
+    "description": "Paired with/without CORCEPT evaluation harness for SWE-bench, SWE-Skills-Bench, Terminal-Bench, code reasoning controls, tool-call correctness, memory/doctrine governance and stop gates.",
+    "tags": [
+      "Claude Code",
+      "SWE-bench",
+      "SWE-Skills-Bench",
+      "Terminal-Bench",
+      "BigCodeBench",
+      "EvalPlus",
+      "CRUXEval",
+      "agent evaluation",
+      "tool safety",
+      "governance benchmarks"
+    ]
+  },
+  "tags": [
+    "corcept",
+    "evaluation",
+    "benchmark",
+    "swe-bench",
+    "terminal-bench",
+    "skills",
+    "reasoning",
+    "correctness",
+    "agent-governance",
+    "audit-ledger",
+    "tool-use"
+  ],
+  "version": "0.2.0"
+}

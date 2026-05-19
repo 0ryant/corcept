@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-boundary-execution-receipt-v1.schema.json",
+  "title": "CORCEPT boundary execution receipt v1",
+  "description": "Stub envelope for Cortex/pai-axiom admission boundary (ADR-0023). Schema-only; no runtime dependency.",
+  "type": "object",
+  "required": [
+    "schema",
+    "receipt_id",
+    "correlation_id",
+    "producer",
+    "outcome",
+    "evidence_class"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "corcept.boundary.execution_receipt.v1" },
+    "receipt_id": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "producer": { "type": "string", "minLength": 1 },
+    "outcome": {
+      "type": "string",
+      "enum": ["candidate", "accepted", "quarantine", "rejected"]
+    },
+    "evidence_class": {
+      "type": "string",
+      "enum": ["observed", "inferred", "claimed", "simulated"]
+    },
+    "ledger_event_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "quarantine_reason": { "type": "string" }
+  }
+}

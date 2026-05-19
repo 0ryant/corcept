@@ -1,0 +1,1 @@
+{"session_id":"s1","transcript_path":"/tmp/t.jsonl","cwd":"/tmp/project","permission_mode":"default","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"cargo test"},"tool_response":{"exit_code":0},"tool_use_id":"t4"}

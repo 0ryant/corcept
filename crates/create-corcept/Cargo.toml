@@ -1,0 +1,28 @@
+[package]
+name = "create-corcept"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Dedicated project installer binary for Corcept."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "create-corcept - Corcept Runtime crate"
+seo_description = "Dedicated project installer binary for Corcept."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["create-corcept", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+corcept-runtime = { path = "../corcept-runtime" }
+
+[dev-dependencies]

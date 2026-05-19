@@ -1,0 +1,59 @@
+{
+  "summary": {
+    "tasks": 3,
+    "noop_passed": 0,
+    "oracle_passed": 3,
+    "oracle_expected_pass_rate": 1.0,
+    "noop_expected_fail_rate": 1.0
+  },
+  "rows": [
+    {
+      "task_id": "mini_001_slugify_unicode",
+      "mode": "noop",
+      "exit_code": 1,
+      "passed": false,
+      "duration_s": 0.18448710441589355,
+      "output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n_______________________ test_slugify_normalizes_accents ________________________\n\n    def test_slugify_normalizes_accents():\n>       assert slugify('Caf\u00e9 d\u00e9j\u00e0 vu!') == 'cafe-deja-vu'\nE       AssertionError: assert 'caf-d-j-vu' == 'cafe-deja-vu'\nE         \nE         - cafe-deja-vu\nE         ?    -  ^ -\nE         + caf-d-j-vu\nE         ?      ^\n\ntest_slugify.py:4: AssertionError\n________________________ test_slugify_empty_is_untitled ________________________\n\n    def test_slugify_empty_is_untitled():\n>       assert slugify('!!!') == 'untitled'\nE       AssertionError: assert '' == 'untitled'\nE         \nE         - untitled\n\ntest_slugify.py:7: AssertionError\n=========================== short test summary info ============================\nFAILED test_slugify.py::test_slugify_normalizes_accents - AssertionError: ass...\nFAILED test_slugify.py::test_slugify_empty_is_untitled - AssertionError: asse...\n2 failed in 0.01s\n"
+    },
+    {
+      "task_id": "mini_001_slugify_unicode",
+      "mode": "oracle",
+      "exit_code": 0,
+      "passed": true,
+      "duration_s": 0.15656685829162598,
+      "output": "..                                                                       [100%]\n2 passed in 0.01s\n"
+    },
+    {
+      "task_id": "mini_002_rate_limiter_boundary",
+      "mode": "noop",
+      "exit_code": 1,
+      "passed": false,
+      "duration_s": 0.15780305862426758,
+      "output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n__________________ test_nth_request_allowed_and_next_blocked ___________________\n\n    def test_nth_request_allowed_and_next_blocked():\n        rl = RateLimiter(limit=3, window_seconds=10)\n        assert rl.allow('u', 100) is True\n        assert rl.allow('u', 101) is True\n>       assert rl.allow('u', 102) is True\nE       AssertionError: assert False is True\nE        +  where False = allow('u', 102)\nE        +    where allow = <rate_limiter.RateLimiter object at 0x107241010>.allow\n\ntest_rate_limiter.py:7: AssertionError\n____________________________ test_old_events_expire ____________________________\n\n    def test_old_events_expire():\n        rl = RateLimiter(limit=2, window_seconds=10)\n        assert rl.allow('u', 0) is True\n>       assert rl.allow('u', 1) is True\nE       AssertionError: assert False is True\nE        +  where False = allow('u', 1)\nE        +    where allow = <rate_limiter.RateLimiter object at 0x106f83610>.allow\n\ntest_rate_limiter.py:13: AssertionError\n=========================== short test summary info ============================\nFAILED test_rate_limiter.py::test_nth_request_allowed_and_next_blocked - Asse...\nFAILED test_rate_limiter.py::test_old_events_expire - AssertionError: assert ...\n2 failed in 0.01s\n"
+    },
+    {
+      "task_id": "mini_002_rate_limiter_boundary",
+      "mode": "oracle",
+      "exit_code": 0,
+      "passed": true,
+      "duration_s": 0.17636704444885254,
+      "output": "..                                                                       [100%]\n2 passed in 0.01s\n"
+    },
+    {
+      "task_id": "mini_003_redact_nested",
+      "mode": "noop",
+      "exit_code": 1,
+      "passed": false,
+      "duration_s": 0.1500697135925293,
+      "output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n____________________ test_nested_redaction_and_no_mutation _____________________\n\n    def test_nested_redaction_and_no_mutation():\n        original = {'user': {'token': 'abc', 'name': 'ryan'}, 'items': [{'password': 'x'}]}\n        out = redact(original)\n>       assert out['user']['token'] == '<redacted>'\nE       AssertionError: assert 'abc' == '<redacted>'\nE         \nE         - <redacted>\nE         + abc\n\ntest_redact.py:6: AssertionError\n__________________________ test_case_insensitive_key ___________________________\n\n    def test_case_insensitive_key():\n>       assert redact({'API_KEY': 'abc'})['API_KEY'] == '<redacted>'\nE       AssertionError: assert 'abc' == '<redacted>'\nE         \nE         - <redacted>\nE         + abc\n\ntest_redact.py:11: AssertionError\n=========================== short test summary info ============================\nFAILED test_redact.py::test_nested_redaction_and_no_mutation - AssertionError...\nFAILED test_redact.py::test_case_insensitive_key - AssertionError: assert 'ab...\n2 failed in 0.01s\n"
+    },
+    {
+      "task_id": "mini_003_redact_nested",
+      "mode": "oracle",
+      "exit_code": 0,
+      "passed": true,
+      "duration_s": 0.14061999320983887,
+      "output": "..                                                                       [100%]\n2 passed in 0.01s\n"
+    }
+  ]
+}

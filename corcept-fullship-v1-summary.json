@@ -1,0 +1,21 @@
+{
+  "artifact": "corcept-fullship-v1.zip",
+  "sha256": "c9a2eebda611f49f97d015ef7644e3777a240b41eff86153fcafc74c2e2214a1",
+  "created_at": "2026-05-18T21:40:00Z",
+  "root_dir": "corcept",
+  "file_count": 296,
+  "crate_count": 8,
+  "agent_count": 9,
+  "skill_count": 16,
+  "adr_count": 17,
+  "subtask_count": 26,
+  "local_eval_rerun": "passed via python -m corcept_eval run-local",
+  "cargo_available_in_sandbox": false,
+  "json_error_count": 0,
+  "json_errors": [],
+  "nested_zip_issue_count": 0,
+  "nested_zip_issues_sample": [],
+  "old_brand_marker_count": 0,
+  "old_brand_marker_sample": [],
+  "zip_testzip_bad_file": null
+}

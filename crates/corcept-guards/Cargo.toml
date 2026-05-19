@@ -1,0 +1,33 @@
+[package]
+name = "corcept-guards"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Deterministic guard evaluation for bash, filesystem, secrets, and stop gates."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "corcept-guards - Corcept Runtime crate"
+seo_description = "Deterministic guard evaluation for bash, filesystem, secrets, and stop gates."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["corcept-guards", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+corcept-types = { path = "../corcept-types" }
+corcept-ledger = { path = "../corcept-ledger" }
+
+[dev-dependencies]
+tempfile.workspace = true
+serde_yaml.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+corcept-types = { path = "../corcept-types" }

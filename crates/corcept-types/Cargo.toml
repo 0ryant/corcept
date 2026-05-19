@@ -1,0 +1,28 @@
+[package]
+name = "corcept-types"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Shared config, hook, event, memory, and doctrine types for Corcept."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "corcept-types - Corcept Runtime crate"
+seo_description = "Shared config, hook, event, memory, and doctrine types for Corcept."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["corcept-types", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+proptest.workspace = true

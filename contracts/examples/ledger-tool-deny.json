@@ -1,0 +1,17 @@
+{
+  "schema": "corcept.ledger_event.v1",
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "ts": "2026-05-18T12:00:00.000Z",
+  "session_id": "s1",
+  "actor": "corcept-runtime",
+  "event_type": "corcept.event.tool_decided.v1",
+  "authority_level": "L3_execute_local",
+  "tool": "Bash",
+  "target": "rm -rf /",
+  "decision": "deny",
+  "decision_reason": "Destructive command blocked by policy",
+  "evidence_refs": [],
+  "prev_hash": null,
+  "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "metadata": {}
+}

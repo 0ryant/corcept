@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-paired-receipts-v1.schema.json",
+  "title": "CORCEPT paired eval manifest v1",
+  "type": "object",
+  "required": ["schema", "started_at", "repo_root", "run_root", "benchmarks"],
+  "properties": {
+    "schema": { "const": "corcept-paired-receipts/v1" },
+    "started_at": { "type": "string" },
+    "finished_at": { "type": "string" },
+    "repo_root": { "type": "string" },
+    "run_root": { "type": "string" },
+    "environment": { "type": "object" },
+    "benchmarks": { "type": "array" },
+    "artifacts": { "type": "array" },
+    "summary": { "type": "object" }
+  },
+  "additionalProperties": true
+}

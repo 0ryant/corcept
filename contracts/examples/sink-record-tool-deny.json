@@ -1,0 +1,12 @@
+{
+  "schema": "corcept.sink_record.v1",
+  "correlation_id": "sess-tool-deny-001",
+  "event_type": "corcept.event.tool_requested.v1",
+  "ts": "2026-05-18T22:25:26.000Z",
+  "outcome": "deny",
+  "hook_event": "PreToolUse",
+  "duration_ms": 2,
+  "metadata": {
+    "transition_id": "pretool_decided"
+  }
+}

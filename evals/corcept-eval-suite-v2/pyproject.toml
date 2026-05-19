@@ -1,0 +1,18 @@
+[project]
+name = "corcept-eval-suite"
+version = "0.1.0"
+description = "Paired with/without benchmark harness for Corcept governance, reasoning, correctness, and external SWE agent benchmarks."
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6.0"]
+
+[project.optional-dependencies]
+external = ["pytest>=8.0", "swebench>=2.0", "datasets>=2.0", "huggingface_hub>=0.20"]
+keywords = ["corcept", "agent-eval", "swe-bench", "terminal-bench", "claude-code", "benchmark", "tool-use", "governance"]
+
+[project.scripts]
+corcept-eval = "corcept_eval.__main__:main"
+
+[tool.corcept.metadata]
+searchable_tags = ["software-engineering", "agent-benchmark", "governance", "correctness", "reasoning", "swe", "terminal", "skills"]
+seo_title = "CORCEPT Eval Suite: coding-agent correctness and governance benchmarks"
+seo_description = "Evaluate Corcept with paired benchmarks across governance, SWE correctness, terminal-agent workflows, skills, tool calls, and memory/doctrine policy."

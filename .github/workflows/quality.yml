@@ -1,0 +1,67 @@
+name: quality
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  rust:
+    name: rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: test
+        run: cargo test --workspace --all-targets
+        env:
+          PROPTEST_CASES: 32
+
+      - name: contracts
+        if: matrix.os == 'ubuntu-latest'
+        run: bash scripts/validate-contracts.sh
+
+      - name: audit operations registry
+        if: matrix.os == 'ubuntu-latest'
+        run: bash scripts/validate-audit-operations.sh
+
+      - name: eval deterministic (skip agent)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd evals/corcept-eval-suite-v2
+          ./scripts/setup_env.sh
+          ./scripts/python.sh -m corcept_eval run-paired-all \
+            --out ../../results/ci-deterministic \
+            --repo-root ../.. \
+            --plugin-dir ../../plugins/corcept \
+            --skip-agent

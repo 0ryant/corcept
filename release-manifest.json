@@ -1,0 +1,96 @@
+{
+  "name": "corcept-fullship",
+  "version": "0.4.1-corcept",
+  "generated_at": "2026-05-18T21:40:00Z",
+  "description": "Single shippable archive for Corcept: Rust workspace, Claude Code plugin, eval suite, docs, benchmark registry, local results, manifests and checksums.",
+  "contents": {
+    "source_root": "corcept/",
+    "standalone_plugin_zip": "dist/corcept-plugin-v4.zip",
+    "standalone_eval_zip": "dist/corcept-eval-suite-v2.zip",
+    "standalone_local_results_zip": "dist/corcept-local-results-v4.zip",
+    "local_results": "results/local-v4/",
+    "benchmark_registry": "results/benchmark-registry.json",
+    "external_runbook": "results/external-runbook.md",
+    "release_checksums": "checksums.sha256"
+  },
+  "counts": {
+    "files_total": 296,
+    "rust_crates": 8,
+    "plugin_agents": 9,
+    "plugin_skills": 16,
+    "adrs": 17,
+    "subtasks": 26,
+    "eval_registry_benchmarks": 15
+  },
+  "local_eval_summary": {
+    "governance": {
+      "total": 52,
+      "passed": 52,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "stop_gate": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "memory_doctrine": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "accuracy": 1.0
+    },
+    "mini_swe_oracle_noop": {
+      "tasks": 3,
+      "noop_passed": 0,
+      "oracle_passed": 3,
+      "oracle_expected_pass_rate": 1.0,
+      "noop_expected_fail_rate": 1.0
+    }
+  },
+  "validation": {
+    "json_errors": [],
+    "zip_valid": {
+      "corcept-plugin-v4.zip": true,
+      "corcept-eval-suite-v2.zip": true,
+      "corcept-local-results-v4.zip": true
+    },
+    "cargo_available_in_sandbox": false,
+    "docker_available_in_sandbox": false,
+    "claude_code_available_in_sandbox": false,
+    "external_benchmarks_run_in_sandbox": false,
+    "caveat": "External model-agent benchmarks require Docker/Claude Code/model access and are included as adapters/runbooks, not executed in this sandbox."
+  },
+  "seo": {
+    "title": "Corcept \u2014 Claude Code Governance Runtime and Evaluation Suite",
+    "description": "Doctrine-first Claude Code runtime with bounded agents, hooks, memory promotion, audit ledger, benchmark harnesses and shippable plugin scaffold.",
+    "tags": [
+      "Corcept",
+      "Claude Code plugin",
+      "SWE-Skills-Bench",
+      "SWE-bench",
+      "Terminal-Bench",
+      "agent governance",
+      "correctness benchmark",
+      "reasoning benchmark"
+    ]
+  },
+  "artifacts": {
+    "plugin_zip": {
+      "path": "dist/corcept-plugin-v4.zip",
+      "sha256": "c2056713c24c348930f4fe3d664e1a38805c52c528682ba89da8c0dd21b3445c",
+      "size_bytes": 25971
+    },
+    "eval_zip": {
+      "path": "dist/corcept-eval-suite-v2.zip",
+      "sha256": "54766193bb22b538f744affcc960b7f38894b010aab4f1d11e2bcd7e0571304a",
+      "size_bytes": 117205
+    },
+    "results_zip": {
+      "path": "dist/corcept-local-results-v4.zip",
+      "sha256": "f4a52b9b4634d02b1487c080b1cd458a2809fc3d0e0282bf7a1a13dacd273dd9",
+      "size_bytes": 76826
+    }
+  }
+}

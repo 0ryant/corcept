@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-ledger-event-v1.schema.json",
+  "title": "CORCEPT Ledger Event v1",
+  "type": "object",
+  "required": ["schema", "id", "ts", "actor", "event_type", "authority_level"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "corcept.ledger_event.v1" },
+    "id": { "type": "string", "minLength": 1 },
+    "ts": { "type": "string", "format": "date-time" },
+    "session_id": { "type": ["string", "null"] },
+    "actor": { "type": "string" },
+    "event_type": {
+      "type": "string",
+      "pattern": "^corcept\\.event\\.[a-z_]+\\.v1$"
+    },
+    "authority_level": { "type": "string" },
+    "tool": { "type": ["string", "null"] },
+    "target": { "type": ["string", "null"] },
+    "decision": { "type": ["string", "null"] },
+    "decision_reason": { "type": ["string", "null"] },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "prev_hash": { "type": ["string", "null"] },
+    "hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "metadata": { "type": "object" },
+    "signature": { "$ref": "#/$defs/row_signature" }
+  },
+  "$defs": {
+    "row_signature": {
+      "type": "object",
+      "required": ["schema_version", "key_id", "signed_at", "bytes"],
+      "properties": {
+        "schema_version": { "type": "integer", "minimum": 1 },
+        "key_id": { "type": "string" },
+        "signed_at": { "type": "string", "format": "date-time" },
+        "bytes": { "type": "string" }
+      }
+    }
+  }
+}

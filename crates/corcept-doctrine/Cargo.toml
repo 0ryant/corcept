@@ -1,0 +1,27 @@
+[package]
+name = "corcept-doctrine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Doctrine loading, defaults, and validation for Corcept."
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.corcept]
+seo_title = "corcept-doctrine - Corcept Runtime crate"
+seo_description = "Doctrine loading, defaults, and validation for Corcept."
+tags = ["corcept", "rust", "claude-code", "governance", "hooks"]
+search_aliases = ["corcept-doctrine", "CORCEPT", "Claude Code runtime", "agent governance"]
+
+[dependencies]
+anyhow.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
