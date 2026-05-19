@@ -27,11 +27,11 @@ path = "src/main.rs"
 anyhow.workspace = true
 clap.workspace = true
 serde_json.workspace = true
-corcept-runtime = { path = "../corcept-runtime" }
-corcept-memory = { path = "../corcept-memory" }
-corcept-doctrine = { path = "../corcept-doctrine" }
-corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }
-corcept-ledger = { path = "../corcept-ledger" }
+corcept-runtime = { path = "../corcept-runtime", version = "0.5.0" }
+corcept-memory = { path = "../corcept-memory", version = "0.5.0" }
+corcept-doctrine = { path = "../corcept-doctrine", version = "0.5.0" }
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents", version = "0.5.0" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.5.0" }
 
 [dev-dependencies]
 tempfile.workspace = true

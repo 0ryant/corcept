@@ -7,14 +7,15 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Multi-sink dispatch for CORCEPT audit and observability outputs."
-publish = false
+keywords = ["corcept", "claude-code", "hooks", "agent", "governance"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 anyhow.workspace = true
 chrono.workspace = true
-corcept-ledger = { path = "../corcept-ledger" }
-corcept-types = { path = "../corcept-types" }
-corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.5.0" }
+corcept-types = { path = "../corcept-types", version = "0.5.0" }
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents", version = "0.5.0" }
 serde.workspace = true
 serde_json.workspace = true
 
