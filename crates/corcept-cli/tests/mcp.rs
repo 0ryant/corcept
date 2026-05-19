@@ -6,10 +6,9 @@ use std::fs;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 struct TempProject {
-    path: PathBuf,
+    dir: tempfile::TempDir,
 }
 
 impl TempProject {
@@ -18,16 +17,11 @@ impl TempProject {
     }
 
     fn with_init(init: bool) -> Self {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!(
-            "corcept-mcp-test-{}-{}",
-            std::process::id(),
-            unique
-        ));
-        fs::create_dir_all(&path).unwrap();
+        let dir = tempfile::Builder::new()
+            .prefix("corcept-mcp-test-")
+            .tempdir()
+            .unwrap();
+        let path = dir.path().to_path_buf();
         if init {
             init_project(InitOptions {
                 path: path.clone(),
@@ -36,17 +30,11 @@ impl TempProject {
             })
             .unwrap();
         }
-        Self { path }
+        Self { dir }
     }
 
     fn path(&self) -> &Path {
-        &self.path
-    }
-}
-
-impl Drop for TempProject {
-    fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.path);
+        self.dir.path()
     }
 }
 
