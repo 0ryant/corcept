@@ -82,6 +82,34 @@ pub fn read_candidate(root: impl AsRef<Path>, id: &str) -> Result<MemoryCandidat
     Ok(candidate)
 }
 
+pub fn list_candidates(root: impl AsRef<Path>, limit: usize) -> Result<Vec<MemoryCandidate>> {
+    let candidates_dir = candidates_dir(root);
+    if !candidates_dir.exists() {
+        return Ok(Vec::new());
+    }
+    let mut entries = fs::read_dir(&candidates_dir)?.collect::<std::result::Result<Vec<_>, _>>()?;
+    entries.sort_by_key(|entry| entry.path());
+
+    let mut candidates = Vec::new();
+    for entry in entries {
+        let path = entry.path();
+        let is_candidate_file = path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml") || ext.eq_ignore_ascii_case("yml"));
+        if entry.file_type()?.is_file() && is_candidate_file {
+            let raw = fs::read_to_string(entry.path())
+                .with_context(|| format!("reading memory candidate {}", entry.path().display()))?;
+            let candidate = serde_yaml::from_str(&raw)?;
+            candidates.push(candidate);
+            if candidates.len() >= limit {
+                break;
+            }
+        }
+    }
+    Ok(candidates)
+}
+
 pub fn promote_candidate(
     root: impl AsRef<Path>,
     id: &str,
@@ -134,5 +162,25 @@ mod tests {
         write_candidate(dir.path(), &candidate).unwrap();
         let accepted = promote_candidate(dir.path(), &candidate.id, "user").unwrap();
         assert!(accepted.id.starts_with("accepted_mem_"));
+    }
+
+    #[test]
+    fn lists_candidates_in_path_order() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = new_candidate("A", "Claim A", vec!["a".to_string()], "test");
+        let second = new_candidate("B", "Claim B", vec!["b".to_string()], "test");
+        write_candidate(dir.path(), &first).unwrap();
+        write_candidate(dir.path(), &second).unwrap();
+
+        let listed = list_candidates(dir.path(), 10).unwrap();
+        assert_eq!(listed.len(), 2);
+    }
+
+    #[test]
+    fn list_is_read_only_when_memory_dirs_are_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        let listed = list_candidates(dir.path(), 10).unwrap();
+        assert!(listed.is_empty());
+        assert!(!memory_dir(dir.path()).exists());
     }
 }

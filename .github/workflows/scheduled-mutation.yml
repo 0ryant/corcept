@@ -1,0 +1,44 @@
+# Weekly mutation testing — standardise-ecosystem.md (Monday cadence).
+# Non-blocking: surfaces regressions but does not gate downstream.
+name: scheduled-mutation
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-mutation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  mutation:
+    name: Weekly cargo-mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
+        with:
+          toolchain: 1.86.0
+
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --locked
+
+      - name: Run cargo-mutants (ISO-week shard)
+        run: |
+          set -euo pipefail
+          week=$((10#$(date -u +%V)))
+          echo "shard ${week}/53 (week-of-year mod 53)"
+          cargo mutants --shard "${week}/53" -j 2 -t 120 --in-place

@@ -27,9 +27,8 @@ fn repo_root() -> PathBuf {
 
 fn load_scenarios(path: &Path) -> Vec<Scenario> {
     let raw = fs::read_to_string(path).expect("corpus file");
-    raw.split("\n---\n")
-        .filter(|chunk| !chunk.trim().is_empty())
-        .map(|chunk| serde_yaml::from_str(chunk).expect("scenario yaml"))
+    serde_yaml::Deserializer::from_str(&raw)
+        .map(|doc| Scenario::deserialize(doc).expect("scenario yaml"))
         .collect()
 }
 

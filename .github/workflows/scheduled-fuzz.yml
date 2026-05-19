@@ -1,0 +1,20 @@
+# Weekly fuzz — standardise-ecosystem.md (Tuesday cadence).
+# TODO: enable when fuzz targets exist (no fuzz/ directory at repo root yet).
+# Stub keeps the canonical surface present; flip to scheduled once a
+# `cargo fuzz init` is committed.
+name: scheduled-fuzz
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: Weekly fuzz (stub — no targets yet)
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "TODO: enable when fuzz targets exist"
+          echo "Template cadence: cron '0 5 * * 2' (Tuesday 05:00 UTC)."
