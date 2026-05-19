@@ -17,6 +17,18 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+pub mod hooks_v2;
+
+pub use hooks_v2::{
+    handle_after_file_write, handle_after_run, handle_after_subprocess_exit,
+    handle_before_file_write, handle_before_final_answer, handle_before_network_access,
+    handle_before_run, handle_before_subprocess_spawn, handle_on_claim_emitted, handle_on_error,
+    try_dispatch_v2, AfterFileWriteInput, AfterRunInput, AfterSubprocessExitInput,
+    BeforeFileWriteInput, BeforeFinalAnswerInput, BeforeNetworkAccessInput, BeforeRunInput,
+    BeforeSubprocessSpawnInput, HookOutputV2, OnClaimEmittedInput, OnErrorInput, Verdict,
+    V2_COMMANDS,
+};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
     pub path: PathBuf,
@@ -370,6 +382,20 @@ pub fn audit(path: impl AsRef<Path>) -> Result<AuditReport> {
 }
 
 pub fn handle_hook(raw_json: &str, command: &str) -> Result<HookOutput> {
+    // ADR-0006 v2 fast path — if the command is one of the 10 new
+    // canonical hook names, route through the v2 dispatcher. The v2
+    // payload is a typed shape distinct from `HookEnvelope`, so we use
+    // `std::env::current_dir()` (override via CORCEPT_ROOT). The v2
+    // verdict is translated to a legacy `HookOutput` shape for the CLI.
+    if V2_COMMANDS.contains(&command) {
+        let root = std::env::var("CORCEPT_ROOT")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+        if let Some(v2) = try_dispatch_v2(raw_json, command, &root)? {
+            return Ok(map_v2_to_legacy(v2));
+        }
+    }
+
     let input: HookEnvelope = serde_json::from_str(raw_json).context("parsing hook input JSON")?;
     let cwd = input.cwd.clone().unwrap_or(std::env::current_dir()?);
     let config = load_config(&cwd).unwrap_or_default();
@@ -470,6 +496,30 @@ pub fn handle_hook(raw_json: &str, command: &str) -> Result<HookOutput> {
         other => Ok(HookOutput::block(format!(
             "Unknown CORCEPT hook command: {other}"
         ))),
+    }
+}
+
+/// Adapt a v2 hook output to the existing CLI-facing legacy shape so
+/// `corcept hook <v2-name>` works without changing the CLI return type.
+/// Allow/Inspect → record-only HookOutput; Deny → block; Error → block
+/// with the reason. The v2 hook name + verdict are preserved on the
+/// `additionalContext` field for hosts that want to inspect them.
+fn map_v2_to_legacy(v2: HookOutputV2) -> HookOutput {
+    match v2.verdict {
+        Verdict::Deny => HookOutput::block(
+            v2.reason
+                .unwrap_or_else(|| format!("{} denied", v2.hook)),
+        ),
+        Verdict::Error => HookOutput::block(
+            v2.reason
+                .unwrap_or_else(|| format!("{} errored", v2.hook)),
+        ),
+        Verdict::Allow | Verdict::Inspect => {
+            let ctx = v2
+                .additional_context
+                .unwrap_or_else(|| format!("{}: allow", v2.hook));
+            HookOutput::context(v2.hook, ctx)
+        }
     }
 }
 

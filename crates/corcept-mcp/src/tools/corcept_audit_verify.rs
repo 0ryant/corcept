@@ -10,8 +10,6 @@ use mcpact_runtime::{ExecutionPlan, Executor};
 use mcpact_audit::AuditSink;
 use std::collections::BTreeSet;
 
-/// `deny_unknown_fields` is required so that key-rename tamper attempts are
-/// caught at deserialization time rather than silently dropped.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CorceptAuditVerifyArgs {

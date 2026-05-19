@@ -10,17 +10,12 @@ use mcpact_runtime::{ExecutionPlan, Executor};
 use mcpact_audit::AuditSink;
 use std::collections::BTreeSet;
 
-/// `deny_unknown_fields` is required so that key-rename tamper attempts are
-/// caught at deserialization time rather than silently dropped.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CorceptMemoryPromoteArgs {
-    /// Ledger event_id of the candidate memory to promote.
     pub candidate_id: String,
-    /// Evaluate eligibility without writing (Plan authority path).
     #[serde(default)]
     pub dry_run: bool,
-    /// Workspace root containing .corcept/ledger (defaults to current directory).
     #[serde(default)]
     pub path: Option<String>,
 }
@@ -98,11 +93,11 @@ impl McpTool for Tool {
         plan.argv.push("memory".into());
         plan.argv.push("promote".into());
         plan.argv.push("--candidate-id".into());
-        plan.argv.push(args.candidate_id.clone());
+        plan.argv.push(args.candidate_id.to_string());
         if args.dry_run { plan.argv.push("--dry-run".into()); }
         if args.path.is_some() {
-            plan.argv.push("--path".into());
-            plan.argv.push(match args.path { Some(v) => v, None => String::new() });
+        plan.argv.push("--path".into());
+        plan.argv.push(match args.path { Some(v) => v, None => String::new() });
         }
         let redacted = Vec::new();
         plan.redacted_arg_indexes = redacted;

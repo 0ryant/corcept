@@ -32,13 +32,28 @@ mod mcp_multi_client_tests {
             Box::new(crate::tools::corcept_hook_user_prompt_submit::Tool::new()),
             Box::new(crate::tools::corcept_key_generate::Tool::new()),
             Box::new(crate::tools::corcept_memory_promote::Tool::new()),
+            // ADR-0006 13-hook canonical surface (v2) — 10 new tools.
+            Box::new(crate::tools::corcept_hook_before_run::Tool::new()),
+            Box::new(crate::tools::corcept_hook_after_run::Tool::new()),
+            Box::new(crate::tools::corcept_hook_before_subprocess_spawn::Tool::new()),
+            Box::new(crate::tools::corcept_hook_after_subprocess_exit::Tool::new()),
+            Box::new(crate::tools::corcept_hook_before_file_write::Tool::new()),
+            Box::new(crate::tools::corcept_hook_after_file_write::Tool::new()),
+            Box::new(crate::tools::corcept_hook_before_network_access::Tool::new()),
+            Box::new(crate::tools::corcept_hook_before_final_answer::Tool::new()),
+            Box::new(crate::tools::corcept_hook_on_claim_emitted::Tool::new()),
+            Box::new(crate::tools::corcept_hook_on_error::Tool::new()),
         ]
     }
 
     #[test]
     fn test_2_all_tools_have_typed_authority_class() {
         let tools = all_tools();
-        assert_eq!(tools.len(), 10, "expected 10 MCP tools (9 operator spec + memory_promote)");
+        assert_eq!(
+            tools.len(),
+            20,
+            "expected 20 MCP tools (10 v1 + 10 ADR-0006 v2)"
+        );
 
         for tool in &tools {
             let def: ToolDefinition = tool.definition();
@@ -101,7 +116,7 @@ mod mcp_multi_client_tests {
         }
     }
 
-    // Also check all 10 tool specs.
+    // Also check all 20 tool specs (10 v1 + 10 ADR-0006 v2).
     #[test]
     fn test_3_all_specs_high_authority_require_approval() {
         let all_specs: Vec<(&str, &str)> = vec![
@@ -115,6 +130,17 @@ mod mcp_multi_client_tests {
             ("corcept_hook_user_prompt_submit",include_str!("../.mcpact/tools/corcept_hook_user_prompt_submit.json")),
             ("corcept_key_generate",           include_str!("../.mcpact/tools/corcept_key_generate.json")),
             ("corcept_memory_promote",         include_str!("../.mcpact/tools/corcept_memory_promote.json")),
+            // v2 — ADR-0006 13-hook canonical surface.
+            ("corcept_hook_before_run",             include_str!("../.mcpact/tools/corcept_hook_before_run.json")),
+            ("corcept_hook_after_run",              include_str!("../.mcpact/tools/corcept_hook_after_run.json")),
+            ("corcept_hook_before_subprocess_spawn",include_str!("../.mcpact/tools/corcept_hook_before_subprocess_spawn.json")),
+            ("corcept_hook_after_subprocess_exit",  include_str!("../.mcpact/tools/corcept_hook_after_subprocess_exit.json")),
+            ("corcept_hook_before_file_write",      include_str!("../.mcpact/tools/corcept_hook_before_file_write.json")),
+            ("corcept_hook_after_file_write",       include_str!("../.mcpact/tools/corcept_hook_after_file_write.json")),
+            ("corcept_hook_before_network_access",  include_str!("../.mcpact/tools/corcept_hook_before_network_access.json")),
+            ("corcept_hook_before_final_answer",    include_str!("../.mcpact/tools/corcept_hook_before_final_answer.json")),
+            ("corcept_hook_on_claim_emitted",       include_str!("../.mcpact/tools/corcept_hook_on_claim_emitted.json")),
+            ("corcept_hook_on_error",               include_str!("../.mcpact/tools/corcept_hook_on_error.json")),
         ];
 
         for (name, json) in &all_specs {
@@ -137,7 +163,7 @@ mod mcp_multi_client_tests {
 
     #[test]
     fn test_4_no_direct_command_new_in_tool_sources() {
-        // Read every tool source file.
+        // Read every tool source file (10 v1 + 10 ADR-0006 v2).
         let tool_sources = vec![
             include_str!("tools/corcept_audit_verify.rs"),
             include_str!("tools/corcept_doctor.rs"),
@@ -149,6 +175,16 @@ mod mcp_multi_client_tests {
             include_str!("tools/corcept_hook_user_prompt_submit.rs"),
             include_str!("tools/corcept_key_generate.rs"),
             include_str!("tools/corcept_memory_promote.rs"),
+            include_str!("tools/corcept_hook_before_run.rs"),
+            include_str!("tools/corcept_hook_after_run.rs"),
+            include_str!("tools/corcept_hook_before_subprocess_spawn.rs"),
+            include_str!("tools/corcept_hook_after_subprocess_exit.rs"),
+            include_str!("tools/corcept_hook_before_file_write.rs"),
+            include_str!("tools/corcept_hook_after_file_write.rs"),
+            include_str!("tools/corcept_hook_before_network_access.rs"),
+            include_str!("tools/corcept_hook_before_final_answer.rs"),
+            include_str!("tools/corcept_hook_on_claim_emitted.rs"),
+            include_str!("tools/corcept_hook_on_error.rs"),
         ];
 
         for src in &tool_sources {
@@ -196,11 +232,11 @@ mod mcp_multi_client_tests {
     }
 
     // ---------------------------------------------------------------------------
-    // Test 6: registry lists all 10 tools (9 operator spec + memory_promote)
+    // Test 6: registry lists all 20 tools (10 v1 + 10 ADR-0006 v2)
     // ---------------------------------------------------------------------------
 
     #[test]
-    fn test_6_registry_lists_10_tools() {
+    fn test_6_registry_lists_all_tools() {
         let tools = all_tools();
         let names: Vec<String> = tools.iter().map(|t| t.definition().name.clone()).collect();
 
@@ -215,6 +251,17 @@ mod mcp_multi_client_tests {
             "corcept_key_generate",
             "corcept_memory_promote",
             "corcept_doctor",
+            // ADR-0006 v2 — 10 canonical hook names.
+            "corcept_hook_before_run",
+            "corcept_hook_after_run",
+            "corcept_hook_before_subprocess_spawn",
+            "corcept_hook_after_subprocess_exit",
+            "corcept_hook_before_file_write",
+            "corcept_hook_after_file_write",
+            "corcept_hook_before_network_access",
+            "corcept_hook_before_final_answer",
+            "corcept_hook_on_claim_emitted",
+            "corcept_hook_on_error",
         ];
 
         for name in &required {
@@ -225,7 +272,13 @@ mod mcp_multi_client_tests {
             );
         }
 
-        assert_eq!(names.len(), 10, "expected 10 tools in registry; found {}: {:?}", names.len(), names);
+        assert_eq!(
+            names.len(),
+            20,
+            "expected 20 tools in registry; found {}: {:?}",
+            names.len(),
+            names
+        );
     }
 
     // ---------------------------------------------------------------------------
