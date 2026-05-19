@@ -3,7 +3,7 @@ use corcept_runtime::{handle_hook, init_project, InitOptions};
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
 use std::fs;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
@@ -69,11 +69,41 @@ impl McpHarness {
         self.stdin.flush().unwrap();
     }
 
+    fn send_framed(&mut self, message: Value) {
+        let body = serde_json::to_vec(&message).unwrap();
+        write!(self.stdin, "Content-Length: {}\r\n\r\n", body.len()).unwrap();
+        self.stdin.write_all(&body).unwrap();
+        self.stdin.flush().unwrap();
+    }
+
     fn recv(&mut self) -> Value {
         let mut line = String::new();
         let read = self.stdout.read_line(&mut line).unwrap();
         assert!(read > 0, "expected MCP response line");
         serde_json::from_str(line.trim_end()).unwrap()
+    }
+
+    fn recv_framed(&mut self) -> Value {
+        let mut header = String::new();
+        let mut content_length = None;
+        loop {
+            header.clear();
+            let read = self.stdout.read_line(&mut header).unwrap();
+            assert!(read > 0, "expected MCP frame header");
+            if header == "\r\n" || header == "\n" {
+                break;
+            }
+            if let Some(value) = header
+                .trim_end_matches(['\r', '\n'])
+                .strip_prefix("Content-Length: ")
+            {
+                content_length = Some(value.parse::<usize>().unwrap());
+            }
+        }
+        let length = content_length.expect("missing Content-Length header");
+        let mut body = vec![0_u8; length];
+        self.stdout.read_exact(&mut body).unwrap();
+        serde_json::from_slice(&body).unwrap()
     }
 
     fn initialize(&mut self) -> Value {
@@ -260,6 +290,57 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         preview["result"]["structuredContent"]["events"][0]["source"],
         "io.corcept/ledger"
     );
+
+    harness.shutdown();
+}
+
+#[test]
+fn serve_accepts_content_length_frames() {
+    let project = TempProject::new();
+    let mut harness = McpHarness::start(project.path());
+
+    harness.send_framed(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {
+                "name": "corcept-cli-test",
+                "version": "0.1.0"
+            }
+        }
+    }));
+    let initialize = harness.recv_framed();
+    assert_eq!(initialize["result"]["protocolVersion"], "2025-06-18");
+    assert_eq!(initialize["result"]["serverInfo"]["name"], "corcept");
+
+    harness.send_framed(json!({
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized"
+    }));
+    harness.send_framed(json!({
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/list"
+    }));
+    let listed = harness.recv_framed();
+    assert_eq!(listed["result"]["tools"].as_array().unwrap().len(), 5);
+
+    harness.send_framed(json!({
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "tools/call",
+        "params": {
+            "name": "doctor_report",
+            "arguments": {
+                "strict": true
+            }
+        }
+    }));
+    let doctor = harness.recv_framed();
+    assert_eq!(doctor["result"]["structuredContent"]["status"], "pass");
 
     harness.shutdown();
 }

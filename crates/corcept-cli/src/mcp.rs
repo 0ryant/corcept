@@ -12,21 +12,114 @@ const PROTOCOL_VERSION: &str = "2025-06-18";
 pub fn serve(path: PathBuf) -> Result<()> {
     let stdin = io::stdin();
     let stdout = io::stdout();
+    let mut stdin = stdin.lock();
     let mut stdout = stdout.lock();
     let mut server = McpServer::new(path);
 
-    for line in stdin.lock().lines() {
-        let line = line?;
-        if line.trim().is_empty() {
-            continue;
-        }
-
-        if let Some(response) = server.handle_line(&line) {
-            writeln!(stdout, "{}", serde_json::to_string(&response)?)?;
+    while let Some((message, mode)) = read_transport_message(&mut stdin)? {
+        if let Some(response) = server.handle_message(&message) {
+            write_transport_message(&mut stdout, mode, &response)?;
             stdout.flush()?;
         }
     }
 
+    Ok(())
+}
+
+#[derive(Clone, Copy)]
+enum TransportMode {
+    LineDelimited,
+    Framed,
+}
+
+fn read_transport_message(
+    reader: &mut impl BufRead,
+) -> io::Result<Option<(String, TransportMode)>> {
+    loop {
+        let buffer = reader.fill_buf()?;
+        if buffer.is_empty() {
+            return Ok(None);
+        }
+
+        if buffer.starts_with(b"Content-Length:") {
+            return read_framed_message(reader)
+                .map(|message| message.map(|message| (message, TransportMode::Framed)));
+        }
+
+        let mut line = String::new();
+        let bytes_read = reader.read_line(&mut line)?;
+        if bytes_read == 0 {
+            return Ok(None);
+        }
+
+        if line.trim().is_empty() {
+            continue;
+        }
+
+        let message = line.trim_end_matches(['\r', '\n']).to_owned();
+        return Ok(Some((message, TransportMode::LineDelimited)));
+    }
+}
+
+fn read_framed_message(reader: &mut impl BufRead) -> io::Result<Option<String>> {
+    let mut content_length = None;
+
+    loop {
+        let mut header_line = String::new();
+        let bytes_read = reader.read_line(&mut header_line)?;
+        if bytes_read == 0 {
+            if content_length.is_none() {
+                return Ok(None);
+            }
+
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "truncated MCP frame headers",
+            ));
+        }
+
+        if header_line == "\r\n" || header_line == "\n" {
+            break;
+        }
+
+        let header_line = header_line.trim_end_matches(['\r', '\n']);
+        if let Some(value) = header_line.strip_prefix("Content-Length:") {
+            let parsed = value.trim().parse::<usize>().map_err(|error| {
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("invalid Content-Length header: {error}"),
+                )
+            })?;
+            content_length = Some(parsed);
+        }
+    }
+
+    let content_length = content_length.ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "missing Content-Length header in MCP frame",
+        )
+    })?;
+    let mut body = vec![0_u8; content_length];
+    reader.read_exact(&mut body)?;
+    String::from_utf8(body)
+        .map(Some)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
+}
+
+fn write_transport_message(
+    writer: &mut impl Write,
+    mode: TransportMode,
+    response: &Value,
+) -> io::Result<()> {
+    let response = serde_json::to_string(response)?;
+    match mode {
+        TransportMode::LineDelimited => writeln!(writer, "{response}")?,
+        TransportMode::Framed => {
+            write!(writer, "Content-Length: {}\r\n\r\n", response.len())?;
+            writer.write_all(response.as_bytes())?;
+        }
+    }
     Ok(())
 }
 
@@ -48,7 +141,7 @@ impl McpServer {
         }
     }
 
-    fn handle_line(&mut self, line: &str) -> Option<Value> {
+    fn handle_message(&mut self, line: &str) -> Option<Value> {
         let parsed: Value = match serde_json::from_str(line) {
             Ok(value) => value,
             Err(err) => {
