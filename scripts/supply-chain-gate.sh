@@ -70,9 +70,18 @@ else
 fi
 
 # ── Workflow static analysis (zizmor) ──
+# Advisory: persona=auditor still flags template-injection / cache-poisoning on
+# standard release matrices until workflow hardening lands (reports preserved).
 if command -v zizmor >/dev/null 2>&1; then
-  run_or_skip zizmor zizmor --persona auditor .github/workflows \
-    >"$REPORTS/zizmor.txt" 2>&1 || true
+  set +e
+  zizmor --persona auditor .github/workflows >"$REPORTS/zizmor.txt" 2>&1
+  ziz_exit=$?
+  set -e
+  if [[ $ziz_exit -eq 0 ]]; then
+    info "zizmor OK"
+  else
+    info "zizmor findings (advisory, exit=$ziz_exit) — see $REPORTS/zizmor.txt"
+  fi
 else
   info "zizmor not installed — skip"
 fi
