@@ -1,21 +1,9 @@
----
-title: Corcept Runtime
-description: Doctrine-first Claude Code governance runtime with Rust hooks, bounded agents, audit ledger, memory promotion, and plugin packaging.
-seo:
-  title: Corcept Runtime - governed Claude Code hooks, agents, memory, and audit ledger
-  description: A Rust workspace and Claude Code plugin scaffold for safe agentic development: PreToolUse guards, PostToolUse audit, Stop gates, doctrine, memory promotion, and bounded subagents.
-  keywords:
-    - Claude Code plugin
-    - Claude Code hooks
-    - AI coding governance
-    - agent audit ledger
-    - Rust CLI scaffold
-    - doctrine memory runtime
-tags: [claude-code, rust, hooks, agents, plugin, governance, audit-ledger, memory, doctrine, corcept]
-status: v0.5-code-complete
----
-
 # Corcept Runtime
+
+> Doctrine-first Claude Code governance runtime with Rust hooks, bounded
+> agents, audit ledger, memory promotion, and plugin packaging.
+
+**Status:** `v0.5-code-complete`
 
 Corcept is a governed Claude Code runtime: a Rust workspace plus a Claude Code plugin scaffold that turns raw agentic coding into a bounded, auditable, doctrine-backed workflow.
 
@@ -26,6 +14,7 @@ It is intentionally not a giant prompt pack. The system is built around a smalle
 - **Stop gates** that prevent premature completion when tests are stale or evidence is missing.
 - **Doctrine** as explicit authority.
 - **Memory promotion** as evidence-backed continuity, not model vibes.
+- **Opt-in bounded MCP** via `corcept serve`, exposing only read-mostly reports and previews.
 - **Bounded agents** with jurisdiction, model choice, effort, and tool restrictions.
 - **Namespaced Claude Code skills** for structured workflows.
 
@@ -52,6 +41,26 @@ cargo build --release -p corcept-cli
 ```
 
 Released binaries are named `corcept` (see `.github/workflows/release.yml`).
+
+## Opt-in MCP server
+
+`corcept serve` starts a local stdio MCP server bound to one project root:
+
+```bash
+corcept serve --path /path/to/repo
+```
+
+The first-party MCP surface is intentionally narrow:
+
+- `doctor_report`
+- `audit_report`
+- `doctrine_validate`
+- `candidate_memory_list`
+- `cloudevents_preview`
+
+It is not installed by default, it does not expose a shell bridge, and v1 does not permit hook execution, direct ledger mutation, or memory promotion over MCP.
+
+See `docs/MCP_GUIDE.md` for setup, trust boundaries, and smoke steps.
 
 ## v0.5 — doctrine parity (code complete)
 

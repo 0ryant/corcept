@@ -1,3 +1,5 @@
+mod mcp;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use corcept_ledger::{generate_operator_key, show_operator_key, verify_ledger};
@@ -60,6 +62,11 @@ enum Commands {
     Export {
         #[command(subcommand)]
         command: ExportCommands,
+    },
+    /// Opt-in bounded MCP stdio server for read-mostly Corcept inspection.
+    Serve {
+        #[arg(long, default_value = ".")]
+        path: PathBuf,
     },
 }
 
@@ -260,6 +267,9 @@ fn main() -> Result<()> {
                 }
             },
         },
+        Commands::Serve { path } => {
+            mcp::serve(path)?;
+        }
     }
     Ok(())
 }

@@ -1,16 +1,16 @@
 ---
-title: No default MCP
-description: Avoid default MCP installation because connectors expand trust boundaries.
+title: No default MCP install; bounded opt-in serve only
+description: Do not install Corcept as an MCP server by default; ship only a bounded opt-in local stdio entrypoint.
 seo:
-  title: No default MCP - Corcept ADR
-  description: Avoid default MCP installation because connectors expand trust boundaries.
+  title: No default MCP install - Corcept ADR
+  description: Do not install Corcept as an MCP server by default; ship only a bounded opt-in local stdio entrypoint.
   keywords: ['adr', 'mcp', 'security', 'Corcept', 'ADR', 'Claude Code', 'Rust']
 tags: ['adr', 'mcp', 'security']
 status: accepted
 ---
 
 
-# No default MCP
+# No default MCP install; bounded opt-in serve only
 
 ## Status
 
@@ -18,26 +18,46 @@ Accepted.
 
 ## Context
 
-Corcept is intended to be a governed Claude Code runtime, not a broad prompt marketplace. The system must be inspectable, project-local by default, testable, and auditable.
+Corcept is intended to be a governed Claude Code runtime, not a broad prompt marketplace or generic shell bridge. The system must be inspectable, project-local by default, testable, and auditable.
+
+Some operators still need a first-party MCP story for Codex and other MCP-aware clients. That story must preserve Corcept's trust boundaries instead of bypassing them.
 
 ## Decision
 
-Avoid default MCP installation because connectors expand trust boundaries.
+Do not install Corcept as an MCP server by default.
+
+Ship a canonical `corcept serve` stdio entrypoint as an explicit opt-in only. The v1 MCP surface is bounded to read-mostly tools tied to a single project root:
+
+- doctor report
+- audit report
+- doctrine validation
+- candidate memory listing
+- CloudEvents preview
+
+The bounded MCP surface must not expose:
+
+- raw hook execution
+- direct ledger mutation
+- memory promotion
+- broad shell or filesystem bridging
+- automatic default connector installation
 
 ## Consequences
 
 Positive:
 
-- The runtime has a clear trust model.
+- The runtime keeps a clear trust model while still supporting first-party MCP clients.
 - Behavior can be verified with tests and ledger evidence.
+- Operators get one canonical local entrypoint: `corcept serve`.
 - Plugin assets stay small and reviewable.
 - Security-sensitive behavior lives in Rust instead of prompt prose.
 
 Trade-offs:
 
-- The scaffold is more engineering-heavy than a prompt pack.
-- Users must build or install the CLI for hooks to execute.
+- The server is intentionally less flexible than generic MCP shell bridges.
+- Users must build or install the CLI and opt in explicitly.
 - Policy tuning requires schema-aware changes rather than casual prompt edits.
+- Future MCP expansion now requires explicit review against this boundary.
 
 ## Completion
 

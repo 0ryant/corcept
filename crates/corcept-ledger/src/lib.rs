@@ -137,7 +137,14 @@ pub fn append_event(root: impl AsRef<Path>, mut event: LedgerEvent) -> Result<Le
 }
 
 pub fn verify_hash_chain(root: impl AsRef<Path>) -> Result<bool> {
-    let root = root.as_ref();
+    verify_hash_chain_impl(root.as_ref(), true)
+}
+
+pub fn verify_hash_chain_readonly(root: impl AsRef<Path>) -> Result<bool> {
+    verify_hash_chain_impl(root.as_ref(), false)
+}
+
+fn verify_hash_chain_impl(root: &Path, update_sidecar: bool) -> Result<bool> {
     let events = read_events(root)?;
     let mut previous: Option<String> = None;
     for event in &events {
@@ -150,8 +157,10 @@ pub fn verify_hash_chain(root: impl AsRef<Path>) -> Result<bool> {
         }
         previous = event.hash.clone();
     }
-    if let Some(hash) = previous {
+    if update_sidecar {
+        if let Some(hash) = previous {
         fs::write(last_hash_path(root), hash.as_bytes())?;
+        }
     }
     Ok(true)
 }
@@ -300,5 +309,14 @@ mod tests {
         let first = append_event(dir.path(), event("session_started")).unwrap();
         assert_eq!(last_hash(dir.path()).unwrap(), first.hash);
         assert!(last_hash_path(dir.path()).exists());
+    }
+
+    #[test]
+    fn readonly_verify_does_not_create_sidecar() {
+        let dir = tempfile::tempdir().unwrap();
+        append_event(dir.path(), event("session_started")).unwrap();
+        fs::remove_file(last_hash_path(dir.path())).unwrap();
+        assert!(verify_hash_chain_readonly(dir.path()).unwrap());
+        assert!(!last_hash_path(dir.path()).exists());
     }
 }
