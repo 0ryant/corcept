@@ -307,7 +307,7 @@ pub fn evaluate_stop(root: impl AsRef<Path>, stop_hook_active: bool) -> StopVerd
     });
 
     if let Some(change_index) = last_source_change {
-        if last_passing_test.map_or(true, |test_index| test_index < change_index) {
+        if last_passing_test.is_none_or(|test_index| test_index < change_index) {
             return StopVerdict::Block(
                 "Source files changed after the last recorded passing test run.".to_string(),
             );

@@ -36,6 +36,17 @@ status: complete
 - Added external benchmark adapters and local deterministic results.
 
 
+## v0.5.0 — 2026-05-19
+
+Doctrine parity code-complete release (ST-027–ST-051).
+
+- Versioned ledger events, FSM, policy lattice, canonical hash, adversarial corpus.
+- CloudEvents + receipt sinks with XDG data-home layout (`corcept-sink`, `corcept-types/paths`).
+- Ed25519 row signing (`RowSignature`), operator key management, `corcept audit verify --signed`.
+- Contract validation in `corcept doctor --strict`; eval regression CI gate.
+- Governance workflows (gitleaks, cargo-audit, supply-chain gate).
+- Tag-triggered release workflow: multi-platform CLI, plugin zip, SHA256SUMS, optional minisign.
+
 ## v0.4.0-fullship — 2026-05-18
 
 - Added CORCEPT Eval Suite v0.2 with expanded benchmark registry.
