@@ -143,10 +143,79 @@ jobs:
             corcept-plugin-*.zip.sha256
           if-no-files-found: error
 
+  sbom:
+    name: dependency SBOM (SPDX + CycloneDX)
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
+        with:
+          toolchain: 1.86.0
+
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+
+      # standardise-ecosystem.md SBOM requirement: SPDX 2.3 JSON (mandatory) +
+      # CycloneDX 1.5 (target). Cargo-sbom emits SPDX; cargo-cyclonedx emits
+      # CycloneDX. Both invoked once per tag and attested via Sigstore.
+      - name: Install cargo-sbom
+        run: cargo install cargo-sbom --locked --version '^0.9'
+
+      - name: Install cargo-cyclonedx
+        run: cargo install cargo-cyclonedx --locked
+
+      - name: Generate SPDX 2.3 SBOM
+        run: cargo sbom --output-format spdx_json_2_3 > corcept-${{ github.ref_name }}.spdx.json
+
+      - name: Generate CycloneDX 1.5 SBOM
+        run: cargo cyclonedx --format json --spec-version 1.5 --override-filename "corcept-${{ github.ref_name }}"
+
+      - name: Locate CycloneDX output
+        id: cdx
+        run: |
+          set -euo pipefail
+          ROOT_SBOM="corcept-${{ github.ref_name }}.cdx.json"
+          if [ ! -f "$ROOT_SBOM" ]; then
+            ROOT_SBOM=$(find . -maxdepth 3 -name 'corcept-*.cdx.json' | head -1 || true)
+          fi
+          if [ -z "$ROOT_SBOM" ] || [ ! -f "$ROOT_SBOM" ]; then
+            echo "::error::cargo-cyclonedx produced no SBOM"
+            exit 1
+          fi
+          DEST="corcept-${{ github.ref_name }}.cyclonedx.json"
+          cp "$ROOT_SBOM" "$DEST"
+          echo "path=$DEST" >> "$GITHUB_OUTPUT"
+
+      - name: Attest SPDX SBOM
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: corcept-${{ github.ref_name }}.spdx.json
+
+      - name: Attest CycloneDX SBOM
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: ${{ steps.cdx.outputs.path }}
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sbom
+          path: |
+            corcept-${{ github.ref_name }}.spdx.json
+            corcept-${{ github.ref_name }}.cyclonedx.json
+          if-no-files-found: error
+          retention-days: 90
+
   github-release:
     name: GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build, plugin]
+    needs: [build, plugin, sbom]
     runs-on: ubuntu-latest
     permissions:
       contents: write
