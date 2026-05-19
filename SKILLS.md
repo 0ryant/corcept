@@ -222,6 +222,50 @@ receives the sub-agent's final report and decides next steps.
 
 ---
 
+## Skills via MCP (mcpact-generated)
+
+corcept-cli is also exposed as an MCP server compiled by mcpact. The MCP tools mirror the CLI subcommands with typed authority classes and policy gates. Spin up the MCP server with:
+
+```bash
+corcept mcp serve
+```
+
+| Tool | Authority class | Trust ceiling | When |
+|------|-----------------|---------------|------|
+| corcept_doctor | Observe | Reviewed | Health checks before trusting other tools |
+| corcept_hook_session_start | Analyze | Reviewed | Programmatic session-start event ingestion |
+| corcept_hook_pretool_guard | Plan | Reviewed | Driver-driven gate decisions |
+| corcept_hook_posttool_audit | Mutate | Signed | Driver-driven audit row writes |
+| corcept_hook_stop_check | Plan | Reviewed | Completion gating |
+| corcept_audit_verify | Observe | Signed | Hash-chain integrity reads |
+| corcept_export_cloudevents | Observe | Reviewed | Ledger-to-CloudEvents conversion |
+| corcept_key_generate | Credential | Verified | Approval-gated Ed25519 keygen |
+
+The MCP surface is the recommended path for non-Claude-Code agents to drive corcept's governance. Claude Code itself continues to use the hook surface directly.
+
+### Skill: corcept-as-mcp-server-for-agents
+
+**When:** the agent / driver is not Claude Code, but still needs corcept's hook-state and audit chain.
+
+**How (golden invocation):**
+
+```bash
+corcept mcp serve --workdir <path> &
+# then call via MCP transport:
+#   tool: corcept_audit_verify
+#   params: { "ledger_path": "<path>/.corcept/ledger" }
+```
+
+**Expected output:** JSON-RPC 2.0 over stdio; tools follow `corcept_*` naming; authority classes carried in tool annotations.
+
+**Common pitfalls:**
+- Hook-event ingestion via MCP does NOT replace Claude Code hooks; both surfaces are valid and can run in parallel.
+- `corcept_key_generate` requires explicit approval gate; will refuse without it.
+
+**See also:** `docs/MCP_GUIDE.md` (if present, otherwise the generated crate's README).
+
+---
+
 ## How this repo composes with the ecosystem
 
 Corcept supplies the **runtime hook surface**. Its ledger rows feed taudit's
