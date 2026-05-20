@@ -128,3 +128,22 @@ Tag `v0.5.0` (or later `v*.*.*`) triggers `.github/workflows/release.yml`:
 - Quality gate (`make check`)
 - Platform binaries + plugin zip + `SHA256SUMS`
 - Optional minisign when `MINISIGN_SECRET_KEY` is set (see `docs/release-trust.md`)
+
+## License (Gated tier)
+
+This is a gated-tier product of the pai-axiom ecosystem. It is licensed under
+the Business Source License 1.1 (BUSL-1.1), with the following parameters:
+
+- **Change Date:** 2030-05-20 — on this date, this work converts to the
+  Apache License, Version 2.0.
+- **Additional Use Grant:** You may make production use of the Licensed Work,
+  provided such use does not include offering the Licensed Work to third
+  parties on a hosted or embedded basis in order to compete with the
+  Licensor's paid service offerings.
+- **OSS-tier alternatives:** The OSS distribution of corcept's bare verbs is
+  available at https://crates.io/crates/corcept under the standard dual
+  MIT OR Apache-2.0 license (pre-v0.6.0 versions).
+
+See LICENSE for the full BUSL-1.1 text. See
+`ecosystem-catalog/commercial/license-matrix.md` for the ecosystem-wide
+license decision rationale. Pre-v0.6.0 LICENSE preserved at LICENSE.old.
