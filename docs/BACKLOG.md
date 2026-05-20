@@ -35,7 +35,7 @@ Master plan: [`PARITY-TASKS.md`](PARITY-TASKS.md)
 | [ST-043](subtasks/st-043-adversarial-abuse-case-corpus.md) | Adversarial corpus | P5 | [0020](adr/0020-guard-stop-gate-composition.md) | complete |
 | [ST-044](subtasks/st-044-eval-harness-contract-gate.md) | Eval harness CI gate | P5 | [0014](adr/0014-evaluation-stack.md) | complete |
 | [ST-045](subtasks/st-045-property-based-tests.md) | Property-based tests | P5 | [0019](adr/0019-hook-lifecycle-state-machine.md) | complete |
-| [ST-046](subtasks/st-046-cortex-pai-axiom-boundary-stubs.md) | Cortex/AXIOM boundary stubs | P6 | [0023](adr/0023-cortex-pai-axiom-boundary.md) | complete |
+| [ST-046](subtasks/st-046-cortex-boundary-stubs.md) | Cortex boundary stubs | P6 | [0023](adr/0023-cortex-boundary.md) | complete |
 | [ST-047](subtasks/st-047-xdg-path-layout.md) | XDG path layout | P7 | [0024](adr/0024-storage-layout-xdg-paths.md) | complete |
 | [ST-048](subtasks/st-048-ed25519-signed-ledger-rows.md) | Ed25519 signed ledger rows | P7 | [0025](adr/0025-signed-ledger-rows.md) | complete |
 | [ST-049](subtasks/st-049-runtime-logging-vs-audit-ledger.md) | Runtime logging vs ledger | P7 | [0026](adr/0026-log-sink-architecture.md) | complete |
@@ -51,7 +51,7 @@ Master plan: [`PARITY-TASKS.md`](PARITY-TASKS.md)
 | [0020](adr/0020-guard-stop-gate-composition.md) | Guard and stop-gate composition | ST-034 |
 | [0021](adr/0021-canonical-ledger-hashing.md) | Canonical ledger hashing | ST-036 |
 | [0022](adr/0022-cloudevents-audit-boundary.md) | CloudEvents audit boundary | ST-039–041 |
-| [0023](adr/0023-cortex-pai-axiom-boundary.md) | Cortex/pai-axiom boundary | ST-046 |
+| [0023](adr/0023-cortex-boundary.md) | Cortex boundary | ST-046 |
 | [0024](adr/0024-storage-layout-xdg-paths.md) | Storage layout and XDG | ST-047 |
 | [0025](adr/0025-signed-ledger-rows.md) | Signed ledger rows | ST-048 |
 | [0026](adr/0026-log-sink-architecture.md) | Log sink architecture | ST-049, ST-051 |

@@ -131,8 +131,8 @@ Tag `v0.5.0` (or later `v*.*.*`) triggers `.github/workflows/release.yml`:
 
 ## License (Gated tier)
 
-This is a gated-tier product of the pai-axiom ecosystem. It is licensed under
-the Business Source License 1.1 (BUSL-1.1), with the following parameters:
+This is a gated-tier product. It is licensed under the Business Source License
+1.1 (BUSL-1.1), with the following parameters:
 
 - **Change Date:** 2030-05-20 — on this date, this work converts to the
   Apache License, Version 2.0.

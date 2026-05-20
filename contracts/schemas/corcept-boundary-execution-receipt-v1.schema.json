@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.corcept.dev/corcept-boundary-execution-receipt-v1.schema.json",
   "title": "CORCEPT boundary execution receipt v1",
-  "description": "Stub envelope for Cortex/pai-axiom admission boundary (ADR-0023). Schema-only; no runtime dependency.",
+  "description": "Stub envelope for Cortex admission boundary (ADR-0023). Schema-only; no runtime dependency on any specific agent harness.",
   "type": "object",
   "required": [
     "schema",

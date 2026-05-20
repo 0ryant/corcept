@@ -70,7 +70,7 @@ Full plan: [`docs/BACKLOG.md`](docs/BACKLOG.md) · [`docs/PARITY-TASKS.md`](docs
 | ST-043 | Adversarial abuse-case corpus | complete | `tests/adversarial/` |
 | ST-044 | Eval harness contract gate | complete | `eval-regression.yml` |
 | ST-045 | Property-based tests | complete | proptest |
-| ST-046 | Cortex/pai-axiom boundary stubs | complete | ADR-0023 |
+| ST-046 | Cortex boundary stubs | complete | ADR-0023 |
 | ST-047 | XDG path layout | complete | ADR-0024, `paths.rs` |
 | ST-048 | Ed25519 signed ledger rows | complete | ADR-0025 |
 | ST-049 | Runtime logging vs audit ledger | complete | `docs/audit/LOGGING.md`, DebugLogSink |

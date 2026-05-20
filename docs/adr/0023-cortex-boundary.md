@@ -1,4 +1,4 @@
-# ADR-0023: Cortex and pai-axiom boundary stubs
+# ADR-0023: Cortex boundary stubs
 
 Status: accepted  
 Date: 2026-05-18  
@@ -7,11 +7,13 @@ Tags: parity, contracts, backlog
 
 ## Context
 
-Future integration with Cortex memory admission and AXIOM execution receipts needs typed envelopes, not ad-hoc JSON.
+Future integration with Cortex memory admission and agent-harness execution
+receipts needs typed envelopes, not ad-hoc JSON. The boundary is harness-
+agnostic: any agent harness producing receipts can target this schema.
 
 ## Decision
 
-Define schema-only boundary types (`corcept.boundary.execution_receipt.v1`) and fixtures in `contracts/`. No runtime dependency until requested.
+Define schema-only boundary types (`corcept.boundary.execution_receipt.v1`) and fixtures in `contracts/`. No runtime dependency on any specific agent harness until explicitly requested.
 
 ### Outcome values
 

@@ -44,7 +44,7 @@ Any future MCP expansion should preserve that posture unless a new ADR explicitl
 | **P3 — Ledger & events** | Versioned ledger events, hash ADR, wire tests | P4 CloudEvents |
 | **P4 — CloudEvents projection** | CE sink, ecosystem envelope, export CLI | P5 cross-surface |
 | **P5 — Test portfolio** | Fixtures, adversarial corpus, eval regression gate | — |
-| **P6 — Boundaries (optional)** | Cortex / pai-axiom admission envelopes | After P3 |
+| **P6 — Boundaries (optional)** | Cortex admission envelopes (harness-agnostic) | After P3 |
 | **P7 — Storage & signed audit** | XDG paths, log sinks, Ed25519 rows, release signing | After P3 ST-036 |
 
 ---
@@ -461,18 +461,22 @@ SessionStart → TurnActive → PreToolEvaluating → {Allowed|Asked|Denied}
 
 ## P6 — Cross-system boundaries (optional, post-P3)
 
-### ST-046 — Cortex / pai-axiom boundary stubs
+### ST-046 — Cortex boundary stubs
 
-**Goal:** Future integration without inventing wire formats ad hoc.
+**Goal:** Future integration without inventing wire formats ad hoc. The
+boundary is harness-agnostic: any agent harness producing receipts can target
+this schema. References to the operator's developer harness, where they appear
+in upstream Cortex docs, are methodology context (how the operator measures
+the harness) — not a customer claim that consumers must run that harness.
 
 **Tasks:**
 
-1. ADR **0023 — cortex-pai-axiom boundary** (consumer-only stubs if no integration yet).
+1. ADR **0023 — cortex boundary** (consumer-only stubs if no integration yet).
 2. Define `corcept.boundary.execution_receipt.v1` envelope for eval receipts export.
-3. Align with `AxiomCortexAdmission` skill constraints — candidate-only memory, quarantine flags.
-4. No runtime dependency until explicitly requested; schemas + fixtures only.
+3. Align with admission-skill constraints — candidate-only memory, quarantine flags.
+4. No runtime dependency on any specific agent harness until explicitly requested; schemas + fixtures only.
 
-**Refs:** `cortex/docs/adr/0040-cortex-pai-axiom-boundary-contract.md`, pai-axiom admission skills
+**Refs:** Cortex ADR on its admission boundary contract; agent-harness admission skills generically.
 
 ---
 
