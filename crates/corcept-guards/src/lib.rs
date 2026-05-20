@@ -769,6 +769,26 @@ fn detect_dangerous_env_assignment(tokens: &[String]) -> Option<String> {
     None
 }
 
+// -----------------------------------------------------------------------------
+// Fix 3: dangerous-network-tool classification DEFERRED to cellos.
+//
+// Per operator directive 2026-05-20 (per-tool benchmark fix pass): dangerous
+// network tool classification (nc, ncat, socat, wget --post-file, curl
+// --data-binary @, etc.) belongs to the CELLOS network-membrane layer, NOT
+// corcept's process-membrane layer.
+//
+// cellos's empty-allowlist enforcement blocks ALL egress regardless of which
+// command initiated it. corcept-side classification of network tools would be
+// defense-in-depth at best and a source of cross-layer inconsistency at worst.
+//
+// If a future maintainer is tempted to add a `detect_dangerous_network_tool`
+// here, read ADR-0027 first — the omission is intentional, not a gap.
+//
+// See:
+//   - docs/adr/0027-network-class-deferred-to-cellos.md
+//   - council-layers-4-10-decisions.md §D3 (Authority)
+// -----------------------------------------------------------------------------
+
 /// Detect interpreter-wrapper invocations whose inner command bypasses
 /// per-token guards because the first token is the interpreter binary, not
 /// the inner command.
