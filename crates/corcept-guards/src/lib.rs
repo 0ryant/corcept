@@ -632,12 +632,72 @@ fn detect_git_external_or_destructive_side_effect(tokens: &[String]) -> Option<S
     None
 }
 
+/// Detect privilege-escalation invocations, including alt-sudo equivalents
+/// that the original `sudo|doas|su` shortlist missed.
+///
+/// Per-tool benchmark (a16733b550df3f42b, 2026-05-20) found 8 of 15 escalators
+/// bypassing because the original list only matched `sudo / doas / su`. This
+/// detector extends the set to cover PolicyKit (`pkexec`), Linux
+/// (`runuser`, `machinectl shell`), containers (`gosu`), and the alt-sudo
+/// family (`please`, `doit`, `calife`, `op-priv`). Each token is normalized
+/// to its basename without extension so path-prefixed variants
+/// (`/usr/bin/pkexec`, `pkexec.bin`) also match.
 fn detect_privilege_escalation(tokens: &[String]) -> Option<String> {
-    if tokens
-        .iter()
-        .any(|token| matches!(token.as_str(), "sudo" | "doas" | "su"))
-    {
-        return Some("Privilege-escalated shell command requires explicit approval.".to_string());
+    /// Privilege escalators we treat as authority-bearing. Anything that can
+    /// change the effective UID, drop into a root-owned shell, or run a
+    /// command as another user. Each entry MUST be lowercase, no extension.
+    const ESCALATORS: &[&str] = &[
+        "sudo",
+        "doas",
+        "su",
+        // PolicyKit
+        "pkexec",
+        // Linux util-linux + systemd
+        "runuser",
+        "machinectl",
+        // Container userland
+        "gosu",
+        // Alt-sudo / sudo replacements
+        "please",
+        "doit",
+        "calife",
+        "op-priv",
+    ];
+    for token in tokens {
+        let stem = std::path::Path::new(token.as_str())
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .map(str::to_ascii_lowercase)
+            .unwrap_or_default();
+        if ESCALATORS.contains(&stem.as_str()) {
+            // `machinectl` only escalates when the subcommand is `shell`. The
+            // benchmark scenario `machinectl shell root@.host /bin/bash` is
+            // the canonical shape. Other `machinectl` subcommands (status,
+            // list, etc.) are observational and stay below the bar.
+            if stem == "machinectl" {
+                // Find the position of this token and check the next non-flag token.
+                let idx_opt = tokens.iter().position(|t| {
+                    std::path::Path::new(t.as_str())
+                        .file_stem()
+                        .and_then(|s| s.to_str())
+                        .map(str::to_ascii_lowercase)
+                        == Some("machinectl".to_string())
+                });
+                if let Some(idx) = idx_opt {
+                    let next = tokens
+                        .iter()
+                        .skip(idx + 1)
+                        .find(|t| !t.starts_with('-'))
+                        .map(|t| t.as_str());
+                    if next != Some("shell") {
+                        continue;
+                    }
+                }
+            }
+            return Some(format!(
+                "Privilege-escalated shell command `{stem}` requires explicit approval."
+            ));
+        }
     }
     None
 }
@@ -1318,6 +1378,84 @@ mod tests {
                 verdict.reason
             );
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Fix 1: extended privilege-escalator list (per-tool benchmark
+    // a16733b550df3f42b, 2026-05-20). Pre-fix only `sudo|doas|su` matched;
+    // 8 / 15 escalators bypassed. This pins all 11 (sudo, doas, su, pkexec,
+    // runuser, machinectl shell, gosu, please, doit, calife, op-priv) plus
+    // path-prefixed and .bin-suffixed variants to a Deny/Ask verdict.
+    // -----------------------------------------------------------------------
+    #[test]
+    fn test_extended_privilege_escalator_list_blocked() {
+        let cases = [
+            "sudo /bin/bash",
+            "doas /bin/bash",
+            "su -",
+            "pkexec /bin/bash",
+            "runuser -u root -- /bin/bash",
+            "machinectl shell root@.host /bin/bash",
+            "gosu root /bin/bash",
+            "please /bin/bash",
+            "doit /bin/bash",
+            "calife root",
+            "op-priv elevate /bin/bash",
+        ];
+        for command in cases {
+            let verdict = bash(command);
+            assert!(
+                matches!(
+                    verdict.decision,
+                    PermissionDecision::Deny | PermissionDecision::Ask
+                ),
+                "Fix 1 regression: {command:?} MUST be Deny or Ask; got {:?} ({})",
+                verdict.decision,
+                verdict.reason
+            );
+        }
+    }
+
+    #[test]
+    fn test_path_prefixed_privilege_escalators_blocked() {
+        // Fix 1: path-prefixed escalators (`/usr/bin/pkexec`, `pkexec.bin`)
+        // must match the basename and escalate.
+        let cases = [
+            "/usr/bin/pkexec /bin/bash",
+            "/usr/local/bin/sudo apt update",
+            "pkexec.bin elevate",
+        ];
+        for command in cases {
+            let verdict = bash(command);
+            assert!(
+                matches!(
+                    verdict.decision,
+                    PermissionDecision::Deny | PermissionDecision::Ask
+                ),
+                "Fix 1 regression: path-prefixed {command:?} MUST be Deny or Ask; got {:?}",
+                verdict.decision
+            );
+        }
+    }
+
+    #[test]
+    fn test_machinectl_only_blocked_on_shell_subcommand() {
+        // Fix 1: machinectl alone is not an escalator. Only `machinectl shell`
+        // drops into a root shell on the host. Other subcommands stay below
+        // the bar so the operator's `machinectl list` is not over-blocked.
+        assert!(matches!(
+            bash("machinectl shell root@.host /bin/bash").decision,
+            PermissionDecision::Deny | PermissionDecision::Ask
+        ));
+        // `machinectl list` would otherwise be observational. We accept that
+        // the broader corcept policy may still ask for other reasons, but
+        // this detector specifically must not be the trigger.
+        let verdict = bash("machinectl list");
+        assert!(
+            !verdict.reason.to_lowercase().contains("privilege"),
+            "Fix 1 regression: machinectl list must not match privilege-escalation detector; reason: {}",
+            verdict.reason
+        );
     }
 
     #[test]
