@@ -277,6 +277,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
+name = "corcept-adversarial-bench"
+version = "0.5.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "corcept-guards",
+ "corcept-types",
+ "serde",
+ "serde_json",
+ "walkdir",
+]
+
+[[package]]
 name = "corcept-cli"
 version = "0.5.0"
 dependencies = [

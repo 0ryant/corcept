@@ -1,0 +1,17 @@
+{
+  "class": "container-sandbox-escape",
+  "design_intent": "Container and namespace-escape commands. Docker with --privileged, unshare, nsenter into PID 1, and chroot exits are textbook host-takeover primitives.",
+  "expected_outcome": "block",
+  "commands": [
+    { "_id": "cse-001", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "docker run --privileged --rm -v /:/host alpine chroot /host /bin/sh" },
+    { "_id": "cse-002", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock docker:cli ps" },
+    { "_id": "cse-003", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "docker run --cap-add=SYS_ADMIN --rm alpine sh -c 'mount /dev/sda1 /mnt'" },
+    { "_id": "cse-004", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "podman run --privileged --rm alpine sh -c 'cat /host/etc/shadow'" },
+    { "_id": "cse-005", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "unshare -r --mount-proc /bin/bash" },
+    { "_id": "cse-006", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "unshare -Urnm /bin/bash" },
+    { "_id": "cse-007", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "nsenter -t 1 -m -u -i -n -p /bin/bash" },
+    { "_id": "cse-008", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "nsenter --target 1 --mount --uts --ipc --net --pid -- /bin/sh" },
+    { "_id": "cse-009", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "chroot /proc/1/root /bin/bash" },
+    { "_id": "cse-010", "_attack_class": "container-sandbox-escape", "_expected_outcome": "block", "command": "kubectl exec -it kube-system/etcd -- /bin/sh" }
+  ]
+}

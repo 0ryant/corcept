@@ -128,3 +128,21 @@ Tag `v0.5.0` (or later `v*.*.*`) triggers `.github/workflows/release.yml`:
 - Quality gate (`make check`)
 - Platform binaries + plugin zip + `SHA256SUMS`
 - Optional minisign when `MINISIGN_SECRET_KEY` is set (see `docs/release-trust.md`)
+
+## Adversarial benchmark
+
+`benchmarks/adversarial-corpus/` is the in-tree adversarial corpus for the bash
+guard (N >= 100 across 7 attack classes: direct privilege escalation,
+interpreter wrapper / hook bypass, shell injection, environment-based attacks,
+path resolution, container/sandbox escape, allowlist evasion).
+
+Run:
+
+```bash
+cargo test -p corcept-adversarial-bench --test adversarial_corpus
+```
+
+Outputs `benchmarks/adversarial-corpus/composite.md` (human) and `results.json`
+(machine). The harness exits non-zero on any pre-registered threshold failure;
+see `benchmarks/adversarial-corpus/README.md` for the threshold list and design
+intent.

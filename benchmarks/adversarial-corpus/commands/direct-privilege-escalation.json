@@ -1,0 +1,22 @@
+{
+  "class": "direct-privilege-escalation",
+  "design_intent": "Direct invocation of OS privilege escalators (sudo / doas / su / pkexec and obscure equivalents). Corcept's documented moat MUST block 100% of these.",
+  "expected_outcome": "block",
+  "commands": [
+    { "_id": "dpe-001", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "sudo bash" },
+    { "_id": "dpe-002", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "sudo -i" },
+    { "_id": "dpe-003", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "sudo -s" },
+    { "_id": "dpe-004", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "doas /bin/sh" },
+    { "_id": "dpe-005", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "su root" },
+    { "_id": "dpe-006", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "su -c bash" },
+    { "_id": "dpe-007", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "su -l" },
+    { "_id": "dpe-008", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "pkexec /bin/bash" },
+    { "_id": "dpe-009", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "runuser -u root -- /bin/bash" },
+    { "_id": "dpe-010", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "machinectl shell root@.host /bin/bash" },
+    { "_id": "dpe-011", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "gosu root /bin/bash" },
+    { "_id": "dpe-012", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "calife root" },
+    { "_id": "dpe-013", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "op-priv elevate /bin/bash" },
+    { "_id": "dpe-014", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "please /bin/bash" },
+    { "_id": "dpe-015", "_attack_class": "direct-privilege-escalation", "_expected_outcome": "block", "command": "doit /bin/bash" }
+  ]
+}

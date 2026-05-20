@@ -1,0 +1,26 @@
+[package]
+name = "corcept-adversarial-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+publish = false
+description = "Adversarial corpus harness for corcept's bash guard. Measures cohort-wide block rate against the design-intent attack classes (privilege escalation, sandbox escape, hook bypass / interpreter wrapper)."
+
+[dependencies]
+corcept-guards = { path = "../../crates/corcept-guards" }
+corcept-types = { path = "../../crates/corcept-types" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+walkdir = { workspace = true }
+chrono = { workspace = true }
+
+[[test]]
+name = "adversarial_corpus"
+path = "run.rs"
+harness = false

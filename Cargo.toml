@@ -11,7 +11,8 @@ members = [
   "crates/corcept-sink",
   "crates/corcept-sink-cloudevents",
   "crates/create-corcept",
-  "crates/corcept-mcp"
+  "crates/corcept-mcp",
+  "benchmarks/adversarial-corpus"
 ]
 resolver = "2"
 
