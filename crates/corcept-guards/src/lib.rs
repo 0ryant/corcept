@@ -1202,6 +1202,77 @@ mod tests {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Failure-mode test CC-2: interpreter-wrapper bypass class
+    //
+    // Documents and locks in the verdict from
+    // value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+    // (test CC-2, 2026-05-19): bash -c "<inner>" and related interpreter-
+    // wrapper patterns (sh -c, zsh -c, powershell -Command, cmd /c) bypassed
+    // every existing guard. The mitigation is `detect_interpreter_wrapper`
+    // (see lib.rs, public symbol). This test asserts every wrapper variant
+    // produces a Deny verdict.
+    // -----------------------------------------------------------------------
+    #[test]
+    fn test_interpreter_wrapper_class_is_blocked() {
+        // Failure-mode test CC-2 — see value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+        let cases = [
+            (r#"bash -c "ls -la /""#, "bash"),
+            (r#"sh -c "cat /etc/passwd""#, "sh"),
+            (r#"zsh -c "rm -rf /""#, "zsh"),
+            (
+                r#"powershell -Command "Get-ChildItem C:\\Windows\\System32""#,
+                "powershell",
+            ),
+            (
+                r#"cmd /c "del C:\\Windows\\System32\\drivers\\etc\\hosts""#,
+                "cmd",
+            ),
+        ];
+        for (command, expected_interpreter) in cases {
+            let verdict = bash(command);
+            assert_eq!(
+                verdict.decision,
+                PermissionDecision::Deny,
+                "CC-2 regression: {command:?} (interpreter={expected_interpreter}) MUST be denied; got {:?} ({})",
+                verdict.decision,
+                verdict.reason
+            );
+            assert!(
+                verdict.reason.to_lowercase().contains("interpreter")
+                    || verdict.reason.to_lowercase().contains("wrapper"),
+                "CC-2 regression: deny reason for {command:?} should mention interpreter/wrapper class; got: {}",
+                verdict.reason
+            );
+        }
+    }
+
+    #[test]
+    fn test_interpreter_wrapper_does_not_overmatch_safe_commands() {
+        // Failure-mode test CC-2 — guard against over-matching. The interpreter-
+        // wrapper detector must NOT block:
+        //   - non-wrapper invocations of the same binary (e.g. `bash script.sh`)
+        //   - safe non-shell commands that happen to contain `-c` as an option
+        //     for a non-interpreter program (e.g. `cargo -c`)
+        // Both of these would be over-matches and degrade UX.
+        //
+        // `bash script.sh` is a wrapper around a script file rather than a -c
+        // string, so the existing implementation classifies it as an
+        // interpreter wrapper too (defensive). That is acceptable. What we
+        // do NOT accept is matching `cargo build` because `cargo` is not in
+        // the interpreter list.
+        assert_eq!(
+            bash("cargo build").decision,
+            PermissionDecision::Allow,
+            "CC-2: must not block cargo build (cargo is not an interpreter)"
+        );
+        assert_eq!(
+            bash("python3 script.py").decision,
+            PermissionDecision::Allow,
+            "CC-2: must not block python script invocation (no -c)"
+        );
+    }
+
     #[test]
     fn stop_gate_allows_after_passing_test_with_versioned_events() {
         use corcept_ledger::{append_event, ensure_ledger};
