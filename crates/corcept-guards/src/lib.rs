@@ -633,6 +633,70 @@ fn detect_privilege_escalation(tokens: &[String]) -> Option<String> {
     None
 }
 
+/// Detect interpreter-wrapper invocations whose inner command bypasses
+/// per-token guards because the first token is the interpreter binary, not
+/// the inner command.
+///
+/// Failure-mode test CC-2 surfaced that
+/// `bash -c "<benign-looking inner command>"` passed every guard because the
+/// first token was `bash`, not `sudo/doas/su`, and the protected-paths guard
+/// did not descend into the `-c` argument. This detector treats any
+/// interpreter-wrapper invocation as untrustworthy regardless of inner intent.
+///
+/// Returns `Some(reason)` when the argv matches the
+/// `<interpreter> <c-flag> <arg>` shape, and `None` otherwise.
+///
+/// Detected interpreters: bash, sh, zsh, fish, dash, ksh, powershell, pwsh,
+/// cmd. Detected c-flags: `-c`, `-Command`, `/c`.
+fn detect_interpreter_wrapper(tokens: &[String]) -> Option<String> {
+    if tokens.is_empty() {
+        return None;
+    }
+    const INTERPRETERS: &[&str] = &[
+        "bash",
+        "sh",
+        "zsh",
+        "fish",
+        "dash",
+        "ksh",
+        "powershell",
+        "pwsh",
+        "cmd",
+    ];
+    // file_stem strips both directory and extension (e.g. "/bin/bash" -> "bash",
+    // "C:/Windows/System32/cmd.exe" -> "cmd"). We then lower-case for case-
+    // insensitive matching on Windows.
+    let first_stem = Path::new(&tokens[0])
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .map(str::to_ascii_lowercase)
+        .unwrap_or_default();
+    if !INTERPRETERS.contains(&first_stem.as_str()) {
+        return None;
+    }
+    // The interpreter binary alone (e.g. `bash` to drop into an interactive
+    // shell) is not a wrapper invocation. Require an argument.
+    if tokens.len() < 2 {
+        return None;
+    }
+    // The c-flag is what makes this a wrapper. Match `-c` (POSIX shells),
+    // `-Command` (powershell), and `/c` (cmd).
+    let second = tokens[1].as_str();
+    let is_c_flag = matches!(second, "-c" | "-Command" | "/c" | "/C")
+        // PowerShell historically accepts case-insensitive switches.
+        || (first_stem == "powershell" || first_stem == "pwsh")
+            && second.eq_ignore_ascii_case("-command");
+    if !is_c_flag {
+        return None;
+    }
+    Some(format!(
+        "Interpreter-wrapper invocation `{} {}` is denied: \
+         shell-mediated indirection bypasses per-token guards. \
+         Re-issue the inner command directly without an interpreter wrapper.",
+        first_stem, second
+    ))
+}
+
 fn detect_package_or_dependency_change(tokens: &[String]) -> Option<String> {
     for idx in command_indices_any(tokens, &["npm", "pnpm", "yarn", "bun"]) {
         let args = command_args(tokens, idx);
