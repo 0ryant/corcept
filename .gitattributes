@@ -6,3 +6,8 @@
 *.json text eol=lf
 *.sh text eol=lf
 *.ps1 text eol=crlf
+
+# Vendored hash-locked primer corpora must NEVER be normalised; the SHA-256
+# fingerprint is over the verbatim LF-only bytes. See
+# `crates/corcept-runtime/src/hooks/before_run/primer_loader.rs`.
+crates/corcept-runtime/vendored/** binary
