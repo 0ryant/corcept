@@ -107,6 +107,15 @@ pub fn evaluate_bash(tool_input: Option<&Value>, config: &CorceptConfig) -> Guar
 
     // Built-in classifiers run before user-configured wildcard patterns so broad defaults cannot
     // accidentally hard-deny operations that should be approval-gated, such as force-push.
+
+    // CC-2: interpreter-wrapper class. Run before all per-token guards because
+    // `bash -c "<inner>"` would otherwise hide the inner intent from those
+    // detectors. See value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+    // (test CC-2, 2026-05-19).
+    if let Some(reason) = detect_interpreter_wrapper(&tokens) {
+        return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
+    }
+
     if let Some(reason) = detect_protected_path_reference(&tokens, config) {
         return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
     }
@@ -631,6 +640,70 @@ fn detect_privilege_escalation(tokens: &[String]) -> Option<String> {
         return Some("Privilege-escalated shell command requires explicit approval.".to_string());
     }
     None
+}
+
+/// Detect interpreter-wrapper invocations whose inner command bypasses
+/// per-token guards because the first token is the interpreter binary, not
+/// the inner command.
+///
+/// Failure-mode test CC-2 surfaced that
+/// `bash -c "<benign-looking inner command>"` passed every guard because the
+/// first token was `bash`, not `sudo/doas/su`, and the protected-paths guard
+/// did not descend into the `-c` argument. This detector treats any
+/// interpreter-wrapper invocation as untrustworthy regardless of inner intent.
+///
+/// Returns `Some(reason)` when the argv matches the
+/// `<interpreter> <c-flag> <arg>` shape, and `None` otherwise.
+///
+/// Detected interpreters: bash, sh, zsh, fish, dash, ksh, powershell, pwsh,
+/// cmd. Detected c-flags: `-c`, `-Command`, `/c`.
+fn detect_interpreter_wrapper(tokens: &[String]) -> Option<String> {
+    if tokens.is_empty() {
+        return None;
+    }
+    const INTERPRETERS: &[&str] = &[
+        "bash",
+        "sh",
+        "zsh",
+        "fish",
+        "dash",
+        "ksh",
+        "powershell",
+        "pwsh",
+        "cmd",
+    ];
+    // file_stem strips both directory and extension (e.g. "/bin/bash" -> "bash",
+    // "C:/Windows/System32/cmd.exe" -> "cmd"). We then lower-case for case-
+    // insensitive matching on Windows.
+    let first_stem = Path::new(&tokens[0])
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .map(str::to_ascii_lowercase)
+        .unwrap_or_default();
+    if !INTERPRETERS.contains(&first_stem.as_str()) {
+        return None;
+    }
+    // The interpreter binary alone (e.g. `bash` to drop into an interactive
+    // shell) is not a wrapper invocation. Require an argument.
+    if tokens.len() < 2 {
+        return None;
+    }
+    // The c-flag is what makes this a wrapper. Match `-c` (POSIX shells),
+    // `-Command` (powershell), and `/c` (cmd).
+    let second = tokens[1].as_str();
+    let is_c_flag = matches!(second, "-c" | "-Command" | "/c" | "/C")
+        // PowerShell historically accepts case-insensitive switches.
+        || (first_stem == "powershell" || first_stem == "pwsh")
+            && second.eq_ignore_ascii_case("-command");
+    if !is_c_flag {
+        return None;
+    }
+    Some(format!(
+        "Interpreter-wrapper invocation `{} {}` is denied: \
+         shell-mediated indirection bypasses per-token guards. \
+         Re-issue the inner command directly without an interpreter wrapper.",
+        first_stem, second
+    ))
 }
 
 fn detect_package_or_dependency_change(tokens: &[String]) -> Option<String> {
@@ -1200,6 +1273,77 @@ mod tests {
             StopVerdict::Block(_) => {}
             other => panic!("expected block, got {other:?}"),
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Failure-mode test CC-2: interpreter-wrapper bypass class
+    //
+    // Documents and locks in the verdict from
+    // value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+    // (test CC-2, 2026-05-19): bash -c "<inner>" and related interpreter-
+    // wrapper patterns (sh -c, zsh -c, powershell -Command, cmd /c) bypassed
+    // every existing guard. The mitigation is `detect_interpreter_wrapper`
+    // (see lib.rs, public symbol). This test asserts every wrapper variant
+    // produces a Deny verdict.
+    // -----------------------------------------------------------------------
+    #[test]
+    fn test_interpreter_wrapper_class_is_blocked() {
+        // Failure-mode test CC-2 — see value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+        let cases = [
+            (r#"bash -c "ls -la /""#, "bash"),
+            (r#"sh -c "cat /etc/passwd""#, "sh"),
+            (r#"zsh -c "rm -rf /""#, "zsh"),
+            (
+                r#"powershell -Command "Get-ChildItem C:\\Windows\\System32""#,
+                "powershell",
+            ),
+            (
+                r#"cmd /c "del C:\\Windows\\System32\\drivers\\etc\\hosts""#,
+                "cmd",
+            ),
+        ];
+        for (command, expected_interpreter) in cases {
+            let verdict = bash(command);
+            assert_eq!(
+                verdict.decision,
+                PermissionDecision::Deny,
+                "CC-2 regression: {command:?} (interpreter={expected_interpreter}) MUST be denied; got {:?} ({})",
+                verdict.decision,
+                verdict.reason
+            );
+            assert!(
+                verdict.reason.to_lowercase().contains("interpreter")
+                    || verdict.reason.to_lowercase().contains("wrapper"),
+                "CC-2 regression: deny reason for {command:?} should mention interpreter/wrapper class; got: {}",
+                verdict.reason
+            );
+        }
+    }
+
+    #[test]
+    fn test_interpreter_wrapper_does_not_overmatch_safe_commands() {
+        // Failure-mode test CC-2 — guard against over-matching. The interpreter-
+        // wrapper detector must NOT block:
+        //   - non-wrapper invocations of the same binary (e.g. `bash script.sh`)
+        //   - safe non-shell commands that happen to contain `-c` as an option
+        //     for a non-interpreter program (e.g. `cargo -c`)
+        // Both of these would be over-matches and degrade UX.
+        //
+        // `bash script.sh` is a wrapper around a script file rather than a -c
+        // string, so the existing implementation classifies it as an
+        // interpreter wrapper too (defensive). That is acceptable. What we
+        // do NOT accept is matching `cargo build` because `cargo` is not in
+        // the interpreter list.
+        assert_eq!(
+            bash("cargo build").decision,
+            PermissionDecision::Allow,
+            "CC-2: must not block cargo build (cargo is not an interpreter)"
+        );
+        assert_eq!(
+            bash("python3 script.py").decision,
+            PermissionDecision::Allow,
+            "CC-2: must not block python script invocation (no -c)"
+        );
     }
 
     #[test]
