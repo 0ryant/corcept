@@ -107,6 +107,15 @@ pub fn evaluate_bash(tool_input: Option<&Value>, config: &CorceptConfig) -> Guar
 
     // Built-in classifiers run before user-configured wildcard patterns so broad defaults cannot
     // accidentally hard-deny operations that should be approval-gated, such as force-push.
+
+    // CC-2: interpreter-wrapper class. Run before all per-token guards because
+    // `bash -c "<inner>"` would otherwise hide the inner intent from those
+    // detectors. See value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md
+    // (test CC-2, 2026-05-19).
+    if let Some(reason) = detect_interpreter_wrapper(&tokens) {
+        return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
+    }
+
     if let Some(reason) = detect_protected_path_reference(&tokens, config) {
         return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
     }
