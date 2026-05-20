@@ -59,15 +59,13 @@ fn run_corpus() -> BTreeMap<String, (usize, usize)> {
 }
 
 #[test]
-fn debug_path_resolution_decisions() {
-    // Diagnostic — prints each path-resolution scenario's decision so the
-    // maintainer can see exactly which mangling variants still bypass.
+fn debug_remaining_bypasses() {
+    // Diagnostic — prints each scenario that still bypasses after Fix 1..5 so
+    // the maintainer can see exactly what's left. Always passes.
     let corpus = load_corpus();
-    eprintln!("\n--- path-resolution diagnostic ---");
+    let mut total_bypass = 0usize;
+    eprintln!("\n--- remaining bypasses (post Fix 1..5) ---");
     for entry in &corpus {
-        if entry.attack_class != "path-resolution" {
-            continue;
-        }
         let verdict = evaluate_bash(
             Some(&json!({"command": &entry.command})),
             &CorceptConfig::default(),
@@ -76,16 +74,15 @@ fn debug_path_resolution_decisions() {
             verdict.decision,
             PermissionDecision::Deny | PermissionDecision::Ask
         );
-        eprintln!(
-            "  {} {}  {:?}  cmd={:?}  reason={:?}",
-            if blocked { "PASS" } else { "FAIL" },
-            entry.id,
-            verdict.decision,
-            entry.command,
-            verdict.reason
-        );
+        if !blocked {
+            total_bypass += 1;
+            eprintln!(
+                "  FAIL {} ({})  cmd={:?}",
+                entry.id, entry.attack_class, entry.command
+            );
+        }
     }
-    eprintln!("--- end ---\n");
+    eprintln!("--- total bypasses: {total_bypass} / {} ---\n", corpus.len());
 }
 
 #[test]
