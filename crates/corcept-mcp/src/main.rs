@@ -24,6 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await;
 
     let mut registry = ToolRegistry::new();
+    // v1 tools (10).
     registry.register(tools::corcept_audit_verify::Tool::new());
     registry.register(tools::corcept_doctor::Tool::new());
     registry.register(tools::corcept_export_cloudevents::Tool::new());
@@ -34,6 +35,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     registry.register(tools::corcept_hook_user_prompt_submit::Tool::new());
     registry.register(tools::corcept_key_generate::Tool::new());
     registry.register(tools::corcept_memory_promote::Tool::new());
+    // ADR-0006 13-hook canonical surface (v2) — 10 new tools.
+    registry.register(tools::corcept_hook_before_run::Tool::new());
+    registry.register(tools::corcept_hook_after_run::Tool::new());
+    registry.register(tools::corcept_hook_before_subprocess_spawn::Tool::new());
+    registry.register(tools::corcept_hook_after_subprocess_exit::Tool::new());
+    registry.register(tools::corcept_hook_before_file_write::Tool::new());
+    registry.register(tools::corcept_hook_after_file_write::Tool::new());
+    registry.register(tools::corcept_hook_before_network_access::Tool::new());
+    registry.register(tools::corcept_hook_before_final_answer::Tool::new());
+    registry.register(tools::corcept_hook_on_claim_emitted::Tool::new());
+    registry.register(tools::corcept_hook_on_error::Tool::new());
     mcpact_mcp::serve_stdio(registry).await?;
     Ok(())
 }

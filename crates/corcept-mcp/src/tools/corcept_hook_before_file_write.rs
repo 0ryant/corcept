@@ -1,4 +1,4 @@
-//! Generated tool `corcept_export_cloudevents`.
+//! Generated tool `corcept_hook_before_file_write`.
 
 use crate::server_config;
 use async_trait::async_trait;
@@ -12,10 +12,8 @@ use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct CorceptExportCloudeventsArgs {
-    #[serde(default)]
-    pub ledger: Option<String>,
-    pub out: String,
+pub struct CorceptHookBeforeFileWriteArgs {
+
 }
 
 #[derive(Debug, Clone, Default)]
@@ -28,11 +26,11 @@ impl Tool {
 #[async_trait]
 impl McpTool for Tool {
     fn definition(&self) -> ToolDefinition {
-        let schema = schemars::schema_for!(CorceptExportCloudeventsArgs);
+        let schema = schemars::schema_for!(CorceptHookBeforeFileWriteArgs);
         ToolDefinition {
-            name: "corcept_export_cloudevents".into(),
-            title: Some("Corcept Export CloudEvents".into()),
-            description: "Project the hash-chained ledger lines to CloudEvents JSONL (derived, non-authority). Authority: Observe (the source ledger is read-only; the output file is a derived artefact, not authority). Trust ceiling: Reviewed.".into(),
+            name: "corcept_hook_before_file_write".into(),
+            title: Some("Corcept Hook: BeforeFileWrite".into()),
+            description: "ADR-0006 BeforeFileWrite hook — fires before a write touches disk. Authority: Observe. Trust ceiling: Reviewed.".into(),
             input_schema: serde_json::to_value(&schema).unwrap_or_else(|_| json!({"type":"object"})),
             output_schema: None,
             annotations: Some(mcpact_mcp::ToolDefinition::mcpact_annotations(mcpact_core::AuthorityClass::Observe, server_config::TRUST)),
@@ -40,12 +38,12 @@ impl McpTool for Tool {
     }
 
     async fn call(&self, arguments: serde_json::Value) -> ToolCallResult {
-        let args: CorceptExportCloudeventsArgs = match serde_json::from_value(arguments) {
+        let args: CorceptHookBeforeFileWriteArgs = match serde_json::from_value(arguments) {
             Ok(args) => args,
             Err(err) => return ToolCallResult::error(format!("invalid arguments: {err}")),
         };
 
-        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(concat!("../../.mcpact/tools/corcept_export_cloudevents.json"))) {
+        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(concat!("../../.mcpact/tools/corcept_hook_before_file_write.json"))) {
             Ok(spec) => spec,
             Err(err) => return ToolCallResult::error(format!("tool spec load failed: {err}")),
         };
@@ -66,7 +64,7 @@ impl McpTool for Tool {
             Ok(decision) => {
                 let reason = decision.reason.clone();
                 let event = mcpact_audit::EvidenceEvent::tool_denied(
-                    "corcept_export_cloudevents",
+                    "corcept_hook_before_file_write",
                     mcpact_core::AuthorityClass::Observe,
                     &reason,
                 );
@@ -76,7 +74,7 @@ impl McpTool for Tool {
             }
             Err(err) => {
                 let event = mcpact_audit::EvidenceEvent::tool_denied(
-                    "corcept_export_cloudevents",
+                    "corcept_hook_before_file_write",
                     mcpact_core::AuthorityClass::Observe,
                     err.to_string(),
                 );
@@ -88,19 +86,13 @@ impl McpTool for Tool {
 
         let mut plan = ExecutionPlan::new(server_config::binary_path().to_string_lossy().to_string());
         plan.argv = Vec::new();
-        plan.argv.push("export".into());
-        plan.argv.push("cloudevents".into());
-        if args.ledger.is_some() {
-        plan.argv.push("--ledger".into());
-        plan.argv.push(match args.ledger { Some(v) => v, None => String::new() });
-        }
-        plan.argv.push("--out".into());
-        plan.argv.push(args.out.to_string());
+        plan.argv.push("hook".into());
+        plan.argv.push("before-file-write".into());
         let redacted = Vec::new();
         plan.redacted_arg_indexes = redacted;
         plan.env.inherit = false;
 
-        plan.timeout = std::time::Duration::from_secs(120);
+        plan.timeout = std::time::Duration::from_secs(30);
         plan.max_output_bytes = 524288;
         plan.output_mode = mcpact_runtime::OutputMode::Json;
         plan.authority = mcpact_core::AuthorityClass::Observe;
@@ -108,7 +100,7 @@ impl McpTool for Tool {
         let plan_for_audit = plan.clone();
         match Executor::default().execute(plan).await {
             Ok(result) => {
-                let event = mcpact_audit::EvidenceEvent::tool_executed("corcept_export_cloudevents", &plan_for_audit, &result);
+                let event = mcpact_audit::EvidenceEvent::tool_executed("corcept_hook_before_file_write", &plan_for_audit, &result);
                 let sink = server_config::audit_sink();
                 let _ = sink.emit(&event).await;
                 if let Some(value) = result.structured {
@@ -121,7 +113,7 @@ impl McpTool for Tool {
             }
             Err(err) => {
                 let event = mcpact_audit::EvidenceEvent::tool_failed(
-                    "corcept_export_cloudevents",
+                    "corcept_hook_before_file_write",
                     &plan_for_audit,
                     err.to_string(),
                 );
