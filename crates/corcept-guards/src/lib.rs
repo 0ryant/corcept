@@ -116,6 +116,14 @@ pub fn evaluate_bash(tool_input: Option<&Value>, config: &CorceptConfig) -> Guar
         return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
     }
 
+    // Fix 2: dangerous environment-variable assignment class. Run before the
+    // per-token guards so env-prefixed attacks (e.g. `LD_PRELOAD=/tmp/evil.so
+    // ls`) cannot hide intent inside the assignment. See the per-tool
+    // benchmark (a16733b550df3f42b, 2026-05-20).
+    if let Some(reason) = detect_dangerous_env_assignment(&tokens) {
+        return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
+    }
+
     if let Some(reason) = detect_protected_path_reference(&tokens, config) {
         return GuardVerdict::deny(reason, AuthorityLevel::L3ExecuteLocal);
     }
@@ -696,6 +704,65 @@ fn detect_privilege_escalation(tokens: &[String]) -> Option<String> {
             }
             return Some(format!(
                 "Privilege-escalated shell command `{stem}` requires explicit approval."
+            ));
+        }
+    }
+    None
+}
+
+/// Detect dangerous environment-variable assignments that the `looks_like_assignment`
+/// helper would otherwise strip as harmless.
+///
+/// Per-tool benchmark (a16733b550df3f42b, 2026-05-20) found 14 of 15 env-class
+/// attacks bypassed because the assignment-prefix was treated as a benign
+/// wrapper and the trailing command was classified in isolation. The bypass
+/// pattern is `<DANGEROUS_VAR>=<value> <inner-command>` where the assignment
+/// itself is the attack surface (dynamic-linker injection, PATH hijack,
+/// interpreter init hook).
+///
+/// Returns `Some(reason)` when any token is an assignment whose LHS is in the
+/// dangerous-env-var set. The assignment is denied regardless of the trailing
+/// command because the env-var itself is the load-bearing primitive.
+fn detect_dangerous_env_assignment(tokens: &[String]) -> Option<String> {
+    /// Environment variables whose assignment alone is a known privilege /
+    /// integrity primitive. Each entry is lowercase to match `shell_tokens`.
+    const DANGEROUS_ENV_VARS: &[&str] = &[
+        // Linux dynamic linker
+        "ld_preload",
+        "ld_library_path",
+        // macOS dynamic linker
+        "dyld_insert_libraries",
+        "dyld_library_path",
+        "dyld_force_flat_namespace",
+        // PATH hijack (caught when the assignment is present at all; the
+        // value-side check would over-fit specific tmp paths)
+        "path",
+        // POSIX shell init hooks
+        "bash_env",
+        "env",
+        "prompt_command",
+        // Language-runtime init hooks
+        "pythonstartup",
+        "node_options",
+        "rubyopt",
+        "java_tool_options",
+        // Internal-field separator: hostile values reshape argv splitting
+        "ifs",
+    ];
+    for token in tokens {
+        let Some((lhs, _rhs)) = token.split_once('=') else {
+            continue;
+        };
+        if lhs.is_empty() || !lhs.chars().all(|c| c == '_' || c.is_ascii_alphanumeric()) {
+            continue;
+        }
+        let lhs_lower = lhs.to_ascii_lowercase();
+        if DANGEROUS_ENV_VARS.contains(&lhs_lower.as_str()) {
+            return Some(format!(
+                "Dangerous environment-variable assignment `{lhs}=…` is denied: \
+                 {lhs} controls dynamic-linker / interpreter init / argv parsing, \
+                 and its assignment in a command prefix is a known privilege \
+                 primitive. Re-issue the inner command without the prefix."
             ));
         }
     }
@@ -1456,6 +1523,71 @@ mod tests {
             "Fix 1 regression: machinectl list must not match privilege-escalation detector; reason: {}",
             verdict.reason
         );
+    }
+
+    // -----------------------------------------------------------------------
+    // Fix 2: env-prefix dangerous-LHS classifier (per-tool benchmark
+    // a16733b550df3f42b, 2026-05-20). Pre-fix `LD_PRELOAD=/tmp/evil.so ls`
+    // and 13 other env-prefixed attacks bypassed because the assignment was
+    // stripped before classification. This pins the dangerous-env-var set
+    // (LD_*, DYLD_*, PATH, BASH_ENV, ENV, PROMPT_COMMAND, language runtime
+    // init hooks, IFS) to a Deny verdict.
+    // -----------------------------------------------------------------------
+    #[test]
+    fn test_env_prefix_with_dangerous_lhs_classified() {
+        let cases = [
+            "LD_PRELOAD=/tmp/evil.so ls",
+            "LD_PRELOAD=/tmp/evil.so cargo test",
+            "LD_LIBRARY_PATH=/tmp/evil ls",
+            "LD_LIBRARY_PATH=/tmp/evil:$LD_LIBRARY_PATH cargo build",
+            "DYLD_INSERT_LIBRARIES=/tmp/evil.dylib ls",
+            "DYLD_FORCE_FLAT_NAMESPACE=1 DYLD_INSERT_LIBRARIES=/tmp/evil.dylib /bin/ls",
+            "PATH=/tmp/evil:$PATH ls",
+            "PATH=/tmp/evil git status",
+            "BASH_ENV=/tmp/evil bash -c true",
+            "ENV=/tmp/evil sh -c true",
+            "PYTHONSTARTUP=/tmp/evil.py python",
+            "NODE_OPTIONS='--require /tmp/evil.js' node -e ''",
+            "RUBYOPT=-r/tmp/evil.rb ruby -e ''",
+            "JAVA_TOOL_OPTIONS=-javaagent:/tmp/evil.jar java -version",
+            "IFS=$'\\n' env",
+        ];
+        for command in cases {
+            let verdict = bash(command);
+            assert!(
+                matches!(
+                    verdict.decision,
+                    PermissionDecision::Deny | PermissionDecision::Ask
+                ),
+                "Fix 2 regression: {command:?} MUST be Deny or Ask; got {:?} ({})",
+                verdict.decision,
+                verdict.reason
+            );
+        }
+    }
+
+    #[test]
+    fn test_env_prefix_does_not_overmatch_benign_assignments() {
+        // Fix 2: benign assignments (DEBUG=1, NODE_ENV=production, RUST_LOG)
+        // must not over-match. Only the load-bearing dangerous-env-var set
+        // triggers the classifier.
+        let cases = [
+            "DEBUG=1 cargo test",
+            "NODE_ENV=production npm start",
+            "RUST_LOG=debug cargo run",
+            "FOO=bar make build",
+        ];
+        for command in cases {
+            let verdict = bash(command);
+            // These commands may still Ask for package-manager reasons (npm,
+            // cargo). What we must NOT do is fire the dangerous-env-var
+            // detector. Check reason text to be specific.
+            assert!(
+                !verdict.reason.contains("Dangerous environment-variable assignment"),
+                "Fix 2 regression: benign env prefix {command:?} should NOT trigger the dangerous-env detector; got reason: {}",
+                verdict.reason
+            );
+        }
     }
 
     #[test]
