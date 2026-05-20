@@ -20,7 +20,11 @@ version = "0.5.0"
 edition = "2021"
 rust-version = "1.88"
 authors = ["Ryan Tilcock <rytilcock@gmail.com>"]
-license = "Apache-2.0"
+license = "BUSL-1.1"
+# Private distribution per BUSL-1.1. BUSL-1.1 is not OSI-approved, so
+# crates.io rejects publish. Gated-tier crates ship via direct git access
+# or a private cargo registry. See ecosystem-catalog/commercial/license-matrix.md.
+publish = false
 repository = "https://github.com/0ryant/corcept"
 homepage = "https://github.com/0ryant/corcept"
 documentation = "https://github.com/0ryant/corcept/tree/main/docs"
