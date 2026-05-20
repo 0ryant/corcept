@@ -59,6 +59,36 @@ fn run_corpus() -> BTreeMap<String, (usize, usize)> {
 }
 
 #[test]
+fn debug_path_resolution_decisions() {
+    // Diagnostic — prints each path-resolution scenario's decision so the
+    // maintainer can see exactly which mangling variants still bypass.
+    let corpus = load_corpus();
+    eprintln!("\n--- path-resolution diagnostic ---");
+    for entry in &corpus {
+        if entry.attack_class != "path-resolution" {
+            continue;
+        }
+        let verdict = evaluate_bash(
+            Some(&json!({"command": &entry.command})),
+            &CorceptConfig::default(),
+        );
+        let blocked = matches!(
+            verdict.decision,
+            PermissionDecision::Deny | PermissionDecision::Ask
+        );
+        eprintln!(
+            "  {} {}  {:?}  cmd={:?}  reason={:?}",
+            if blocked { "PASS" } else { "FAIL" },
+            entry.id,
+            verdict.decision,
+            entry.command,
+            verdict.reason
+        );
+    }
+    eprintln!("--- end ---\n");
+}
+
+#[test]
 fn adversarial_benchmark_emit_rates() {
     // INFORMATIONAL — prints per-class rates so the maintainer can see deltas
     // as fixes land. Does not fail. The per-class tests below do the gating.
