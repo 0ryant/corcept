@@ -1,4 +1,4 @@
-# ST-046: Cortex pai-axiom boundary stubs
+# ST-046: Cortex boundary stubs
 
 Status: pending  
 Lane: P6  
