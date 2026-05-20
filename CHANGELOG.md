@@ -12,6 +12,17 @@ status: complete
 
 # Changelog
 
+## Unreleased
+
+- Added `detect_interpreter_wrapper` to close failure-mode CC-2: shell-mediated
+  indirection patterns (`bash -c`, `sh -c`, `zsh -c`, `powershell -Command`,
+  `cmd /c`) now produce a Deny verdict regardless of inner intent. Wired at
+  the head of `evaluate_bash` so it runs before all per-token guards.
+  Adversarial corpus expanded with 5 wrapper scenarios. New tests:
+  `tests::test_interpreter_wrapper_class_is_blocked` and
+  `tests::test_interpreter_wrapper_does_not_overmatch_safe_commands`.
+  Reference: value-sheet/18-cross-product-test/v2/results/per-tool-failure-mode-tests-results/composite.md.
+
 ## 0.1.1 - hardened-scaffold
 
 - Hardened Bash guard classification for adversarial command variants.
