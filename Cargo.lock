@@ -278,7 +278,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "corcept-cli"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "clap",
@@ -293,7 +293,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-contract"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "corcept-sink-cloudevents",
@@ -304,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-doctrine"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "tempfile",
@@ -313,7 +313,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-guards"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "corcept-ledger",
@@ -326,7 +326,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-ledger"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "base64",
@@ -345,7 +345,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-mcp"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "async-trait",
  "mcpact-audit",
@@ -364,7 +364,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-memory"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "chrono",
@@ -377,7 +377,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-runtime"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "chrono",
@@ -396,7 +396,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-sink"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "chrono",
@@ -410,7 +410,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-sink-cloudevents"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "corcept-ledger",
@@ -426,7 +426,7 @@ dependencies = [
 
 [[package]]
 name = "corcept-types"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "proptest",
  "serde",
@@ -451,7 +451,7 @@ dependencies = [
 
 [[package]]
 name = "create-corcept"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "anyhow",
  "clap",
@@ -1122,7 +1122,7 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
 name = "mcpact-audit"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1138,7 +1138,7 @@ dependencies = [
 
 [[package]]
 name = "mcpact-core"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "schemars",
  "serde",
@@ -1148,7 +1148,7 @@ dependencies = [
 
 [[package]]
 name = "mcpact-manifest"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "base64",
  "camino",
@@ -1165,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "mcpact-mcp"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "async-trait",
  "mcpact-core",
@@ -1179,7 +1179,7 @@ dependencies = [
 
 [[package]]
 name = "mcpact-policy"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "camino",
  "mcpact-core",
@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "mcpact-runtime"
-version = "0.1.0"
+version = "0.2.0-pre"
 dependencies = [
  "chrono",
  "mcpact-core",

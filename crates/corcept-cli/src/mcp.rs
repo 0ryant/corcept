@@ -238,7 +238,11 @@ impl McpServer {
                         return Ok(Some(json!({
                             "jsonrpc": "2.0",
                             "id": id.unwrap_or(Value::Null),
-                            "result": tool_error("invalid_arguments", "arguments must be an object")
+                            "result": tool_error(
+                                "invalid_arguments",
+                                "arguments must be an object",
+                                Some(&self.root),
+                            )
                         })));
                     }
                     None => None,
@@ -248,12 +252,12 @@ impl McpServer {
                     ToolCallOutcome::Success(result) => Ok(Some(json!({
                         "jsonrpc": "2.0",
                         "id": id.unwrap_or(Value::Null),
-                        "result": tool_success(result)
+                        "result": tool_success(self.with_served_root(result))
                     }))),
                     ToolCallOutcome::InvalidArguments(message) => Ok(Some(json!({
                         "jsonrpc": "2.0",
                         "id": id.unwrap_or(Value::Null),
-                        "result": tool_error("invalid_arguments", &message)
+                        "result": tool_error("invalid_arguments", &message, Some(&self.root))
                     }))),
                 }
             }
@@ -354,6 +358,10 @@ impl McpServer {
             _ => Err(anyhow!("Unknown tool: {name}")),
         }
     }
+
+    fn with_served_root(&self, structured_content: Value) -> Value {
+        add_served_root(structured_content, &self.root)
+    }
 }
 
 fn parse_bool(
@@ -404,7 +412,16 @@ fn tool_success(structured_content: Value) -> Value {
     })
 }
 
-fn tool_error(code: &str, message: &str) -> Value {
+fn tool_error(code: &str, message: &str, served_root: Option<&Path>) -> Value {
+    let mut structured_content = json!({
+        "error": {
+            "code": code,
+            "message": message
+        }
+    });
+    if let Some(served_root) = served_root {
+        structured_content = add_served_root(structured_content, served_root);
+    }
     json!({
         "content": [
             {
@@ -412,14 +429,25 @@ fn tool_error(code: &str, message: &str) -> Value {
                 "text": message
             }
         ],
-        "structuredContent": {
-            "error": {
-                "code": code,
-                "message": message
-            }
-        },
+        "structuredContent": structured_content,
         "isError": true
     })
+}
+
+fn add_served_root(structured_content: Value, root: &Path) -> Value {
+    match structured_content {
+        Value::Object(mut object) => {
+            object.insert(
+                "served_root".to_string(),
+                Value::String(root.display().to_string()),
+            );
+            Value::Object(object)
+        }
+        value => json!({
+            "served_root": root.display().to_string(),
+            "result": value,
+        }),
+    }
 }
 
 fn tool_definitions() -> Vec<Value> {

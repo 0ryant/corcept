@@ -23,12 +23,12 @@ search_aliases = ["corcept-guards", "CORCEPT", "Claude Code runtime", "agent gov
 [dependencies]
 anyhow.workspace = true
 serde_json.workspace = true
-corcept-types = { path = "../corcept-types", version = "0.5.0" }
-corcept-ledger = { path = "../corcept-ledger", version = "0.5.0" }
+corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 
 [dev-dependencies]
 tempfile.workspace = true
 serde_yaml.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-corcept-types = { path = "../corcept-types", version = "0.5.0" }
+corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
