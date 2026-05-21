@@ -173,6 +173,7 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
     }
 
     let mut harness = McpHarness::start(project.path());
+    let served_root = project.path().display().to_string();
 
     let initialize = harness.initialize();
     assert_eq!(initialize["result"]["protocolVersion"], "2025-06-18");
@@ -217,6 +218,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         }
     }));
     let doctor = harness.recv();
+    assert_eq!(
+        doctor["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(doctor["result"]["structuredContent"]["status"], "pass");
     assert!(
         !sidecar.exists(),
@@ -232,6 +237,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         }
     }));
     let audit = harness.recv();
+    assert_eq!(
+        audit["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(audit["result"]["structuredContent"]["status"], "pass");
     assert!(
         audit["result"]["structuredContent"]["event_count"]
@@ -253,6 +262,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         }
     }));
     let doctrine = harness.recv();
+    assert_eq!(
+        doctrine["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(doctrine["result"]["structuredContent"]["status"], "pass");
 
     harness.send(json!({
@@ -267,6 +280,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         }
     }));
     let candidates = harness.recv();
+    assert_eq!(
+        candidates["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(candidates["result"]["structuredContent"]["count"], 1);
     assert_eq!(
         candidates["result"]["structuredContent"]["candidates"][0]["title"],
@@ -285,6 +302,10 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
         }
     }));
     let preview = harness.recv();
+    assert_eq!(
+        preview["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(preview["result"]["structuredContent"]["preview_count"], 1);
     assert_eq!(
         preview["result"]["structuredContent"]["events"][0]["source"],
@@ -298,6 +319,7 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
 fn serve_accepts_content_length_frames() {
     let project = TempProject::new();
     let mut harness = McpHarness::start(project.path());
+    let served_root = project.path().display().to_string();
 
     harness.send_framed(json!({
         "jsonrpc": "2.0",
@@ -340,6 +362,10 @@ fn serve_accepts_content_length_frames() {
         }
     }));
     let doctor = harness.recv_framed();
+    assert_eq!(
+        doctor["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(doctor["result"]["structuredContent"]["status"], "pass");
 
     harness.shutdown();
@@ -378,6 +404,7 @@ fn serve_candidate_memory_list_does_not_create_memory_dirs() {
 fn serve_returns_typed_invalid_argument_error() {
     let project = TempProject::new();
     let mut harness = McpHarness::start(project.path());
+    let served_root = project.path().display().to_string();
 
     let _ = harness.initialize();
 
@@ -394,6 +421,10 @@ fn serve_returns_typed_invalid_argument_error() {
     }));
     let response = harness.recv();
     assert_eq!(response["result"]["isError"], true);
+    assert_eq!(
+        response["result"]["structuredContent"]["served_root"],
+        served_root
+    );
     assert_eq!(
         response["result"]["structuredContent"]["error"]["code"],
         "invalid_arguments"
