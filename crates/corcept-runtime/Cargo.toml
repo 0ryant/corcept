@@ -36,3 +36,4 @@ corcept-contract = { path = "../corcept-contract", version = "0.6.0-pre" }
 
 [dev-dependencies]
 tempfile.workspace = true
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents", version = "0.6.0-pre" }

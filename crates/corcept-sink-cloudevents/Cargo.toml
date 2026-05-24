@@ -21,7 +21,6 @@ corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 [dev-dependencies]
 tempfile.workspace = true
 jsonschema = "0.26"
-corcept-runtime = { path = "../corcept-runtime", version = "0.6.0-pre" }
 corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
 corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 serde_json.workspace = true
