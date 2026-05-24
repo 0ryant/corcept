@@ -31,7 +31,7 @@ serde_json.workspace = true
 corcept-runtime = { path = "../corcept-runtime", version = "0.6.0-pre" }
 corcept-memory = { path = "../corcept-memory", version = "0.6.0-pre" }
 corcept-doctrine = { path = "../corcept-doctrine", version = "0.6.0-pre" }
-corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents", version = "0.6.0-pre" }
 corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 
 [dev-dependencies]
