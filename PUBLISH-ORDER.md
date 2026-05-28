@@ -1,10 +1,13 @@
 # corcept publish order
 
-Operator-facing sequence for publishing the corcept workspace to crates.io.
+Operator-facing sequence for publishing or privately packaging the corcept
+workspace.
 
-All publishable crates are version `0.5.0`. Path dependencies in publishable
-members now carry matching `version = "0.5.0"` (see commit `add version
-fields to corcept-internal path deps`).
+The current workspace is version `0.6.0-pre` under BUSL-1.1. Internal path
+dependencies in publishable members carry matching `version = "0.6.0-pre"`.
+Crates.io publication still requires the operator to decide whether the BUSL
+line should be privately distributed, relicensed, or published to a registry
+that accepts the gated-tier license.
 
 ## Topological order (leaves first)
 
@@ -22,13 +25,14 @@ fields to corcept-internal path deps`).
    `corcept-sink-cloudevents` (`publish = false`).
 8. `create-corcept` — depends on `corcept-runtime`. Eligible once 6 ships.
 9. `corcept-mcp` — depends on `mcpact-*` crates from a sibling workspace.
-   **BLOCKED** — those deps use absolute Windows paths and the mcpact
-   workspace itself isn't on crates.io yet. Separate PR scope.
+   Source builds use sibling-relative path dependencies with
+   `version = "0.2.0-pre.1"`. Registry publication remains **BLOCKED** until
+   those `mcpact-*` crates are available from the target registry.
 
 ## Per-crate dry-run command
 
-After each publish, wait for the crate to appear on the index (usually
-seconds, sometimes minutes), then dry-run the next one:
+If publishing to a registry, wait for each crate to appear on the index
+(usually seconds, sometimes minutes), then dry-run the next one:
 
 ```
 cargo publish --dry-run -p corcept-types
@@ -58,8 +62,8 @@ all resolve from a registry source (crates.io), not from a path-only sibling.
 
 **Operator choices:**
 - (a) Remove `publish = false` from those three crates and let them publish
-  to crates.io as `0.5.0`. Cleanest; assumes they were marked private only
-  as a precaution.
+  to the target registry as `0.6.0-pre`. Cleanest; assumes they were marked
+  private only as a precaution.
 - (b) Inline the sink/contract code into `corcept-runtime` / `corcept-cli`
   to drop the dependency. Heavier refactor; preserves the "internal only"
   posture for sinks.
@@ -70,18 +74,17 @@ all resolve from a registry source (crates.io), not from a path-only sibling.
 
 `crates/corcept-mcp/Cargo.toml` references `mcpact-core`, `mcpact-runtime`,
 `mcpact-audit`, `mcpact-policy`, `mcpact-mcp`, `mcpact-manifest` via
-absolute Windows paths (`C:/Users/0ryant/prj/mcpact/...`). Even if `version`
-fields are added, those paths are not portable. `corcept-mcp` cannot
-publish until:
+sibling-relative path dependencies. That keeps local source builds portable
+across machines, but `corcept-mcp` cannot publish until:
 - (i) The `mcpact-*` crates land on crates.io (see the mcpact
   publish-readiness PR `claude/publish-readiness-mcpact-2026-05-20`).
 - (ii) `corcept-mcp/Cargo.toml` switches its `mcpact-*` entries to plain
-  `version = "0.1.0"` (no `path`), or `{ path = "../../mcpact/crates/...",
-  version = "0.1.0" }` if vendoring is preferred during local development.
+  `version = "0.2.0-pre.1"` (no `path`) for registry publication.
 
 ## Notes
 
-- LICENSE audit: workspace `license = "Apache-2.0"` matches the
-  Apache-2.0 LICENSE file at repo root. No fix required.
-- Cargo.lock untouched by this PR — only `.toml` metadata edits.
+- LICENSE audit: workspace `license = "BUSL-1.1"` matches the current gated
+  tier; pre-v0.6.0 license text is preserved as `LICENSE.old`.
+- Cargo.lock changes in this branch reflect the sibling `mcpact-*`
+  `0.2.0-pre.1` resolution.
 - No new dependencies were added.

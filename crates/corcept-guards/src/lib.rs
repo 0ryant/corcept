@@ -794,9 +794,7 @@ fn detect_sandbox_escape(tokens: &[String]) -> Option<String> {
     // chroot has legitimate uses (build sandboxes), but the canonical escape
     // pattern is `chroot /proc/1/root` or `chroot /host`. Flag when the
     // target is a known host-namespace path.
-    let chroot_idx = tokens
-        .iter()
-        .position(|t| normalize_argv0(t) == "chroot");
+    let chroot_idx = tokens.iter().position(|t| normalize_argv0(t) == "chroot");
     if let Some(idx) = chroot_idx {
         // First non-flag arg is the target.
         let target = tokens
@@ -836,9 +834,9 @@ fn detect_sandbox_escape(tokens: &[String]) -> Option<String> {
     });
     if let Some((i, stem)) = docker_or_podman {
         let args: Vec<&str> = tokens.iter().skip(i + 1).map(|t| t.as_str()).collect();
-        let has_privileged = args.iter().any(|a| {
-            *a == "--privileged" || a.starts_with("--cap-add=") || *a == "--cap-add"
-        });
+        let has_privileged = args
+            .iter()
+            .any(|a| *a == "--privileged" || a.starts_with("--cap-add=") || *a == "--cap-add");
         let subcmd = args.iter().find(|a| !a.starts_with('-')).copied();
         if has_privileged && matches!(subcmd, Some("run") | Some("exec")) {
             return Some(format!(

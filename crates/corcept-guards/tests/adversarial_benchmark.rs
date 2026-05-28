@@ -82,7 +82,10 @@ fn debug_remaining_bypasses() {
             );
         }
     }
-    eprintln!("--- total bypasses: {total_bypass} / {} ---\n", corpus.len());
+    eprintln!(
+        "--- total bypasses: {total_bypass} / {} ---\n",
+        corpus.len()
+    );
 }
 
 #[test]
