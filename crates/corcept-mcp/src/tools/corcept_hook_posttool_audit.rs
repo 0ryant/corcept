@@ -11,7 +11,12 @@ use serde_json::json;
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CorceptHookPosttoolAuditArgs {}
+pub struct CorceptHookPosttoolAuditArgs {
+    /// Claude Code hook event JSON (the payload the CLI would otherwise read
+    /// from stdin). When omitted, the CLI falls back to reading stdin.
+    #[serde(default)]
+    pub hook_input: Option<String>,
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Tool;
@@ -29,7 +34,7 @@ impl McpTool for Tool {
         ToolDefinition {
             name: "corcept_hook_posttool_audit".into(),
             title: Some("Corcept Hook: PostToolUse Audit".into()),
-            description: "Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Hook input JSON arrives on stdin; ledger writes are confined to .corcept/ledger/.".into(),
+            description: "Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Pass the hook event JSON in the hook_input argument; ledger writes are confined to .corcept/ledger/.".into(),
             input_schema: serde_json::to_value(&schema).unwrap_or_else(|_| json!({"type":"object"})),
             output_schema: None,
             annotations: Some(mcpact_mcp::ToolDefinition::mcpact_annotations(mcpact_core::AuthorityClass::Mutate, server_config::TRUST)),
@@ -92,6 +97,10 @@ impl McpTool for Tool {
         plan.argv = Vec::new();
         plan.argv.push("hook".into());
         plan.argv.push("posttool-audit".into());
+        if let Some(hook_input) = args.hook_input {
+            plan.argv.push("--input".into());
+            plan.argv.push(hook_input);
+        }
         let redacted = Vec::new();
         plan.redacted_arg_indexes = redacted;
         plan.env.inherit = false;

@@ -11,7 +11,12 @@ use serde_json::json;
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CorceptHookStopCheckArgs {}
+pub struct CorceptHookStopCheckArgs {
+    /// Claude Code hook event JSON (the payload the CLI would otherwise read
+    /// from stdin). When omitted, the CLI falls back to reading stdin.
+    #[serde(default)]
+    pub hook_input: Option<String>,
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Tool;
@@ -29,7 +34,7 @@ impl McpTool for Tool {
         ToolDefinition {
             name: "corcept_hook_stop_check".into(),
             title: Some("Corcept Hook: Stop Check".into()),
-            description: "Evaluate completion-gating (stale tests / missing evidence) on a Claude Code Stop event. Authority: Plan. Trust ceiling: Reviewed. Hook input JSON arrives on stdin.".into(),
+            description: "Evaluate completion-gating (stale tests / missing evidence) on a Claude Code Stop event. Authority: Plan. Trust ceiling: Reviewed. Pass the hook event JSON in the hook_input argument.".into(),
             input_schema: serde_json::to_value(&schema).unwrap_or_else(|_| json!({"type":"object"})),
             output_schema: None,
             annotations: Some(mcpact_mcp::ToolDefinition::mcpact_annotations(mcpact_core::AuthorityClass::Plan, server_config::TRUST)),
@@ -92,6 +97,10 @@ impl McpTool for Tool {
         plan.argv = Vec::new();
         plan.argv.push("hook".into());
         plan.argv.push("stop-check".into());
+        if let Some(hook_input) = args.hook_input {
+            plan.argv.push("--input".into());
+            plan.argv.push(hook_input);
+        }
         let redacted = Vec::new();
         plan.redacted_arg_indexes = redacted;
         plan.env.inherit = false;
