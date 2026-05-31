@@ -11,7 +11,16 @@ status: complete
 
 # Corcept MCP guide
 
-`corcept serve` is the canonical first-party MCP entrypoint for Corcept.
+> **Deprecation notice.** `corcept serve` (this hand-rolled, read-only surface)
+> is **deprecated** and superseded by the McPact-generated **`corcept-mcp`**
+> adapter, which is now the canonical first-party MCP entrypoint. `corcept-mcp`
+> exposes the full governed tool surface (hooks, audit verify, key generation)
+> with policy, trust-ceiling, and audit-sink enforcement. Both surfaces now
+> negotiate the **same** MCP protocol revision (`2025-11-25`) during the
+> deprecation window; prefer `corcept-mcp`. `corcept serve` will be removed in a
+> future release.
+
+`corcept serve` is the legacy opt-in MCP entrypoint for Corcept.
 
 It is intentionally opt-in:
 
@@ -42,7 +51,7 @@ or after installing the binary:
 corcept serve --path /path/to/repo
 ```
 
-The server uses newline-delimited JSON-RPC 2.0 over stdio, matching the MCP stdio transport for protocol version `2025-06-18`.
+The server uses newline-delimited JSON-RPC 2.0 over stdio, matching the MCP stdio transport for protocol version `2025-11-25` (converged with the canonical `corcept-mcp` adapter). The `initialize` handshake negotiates: a client proposing an older revision such as `2025-06-18` receives `2025-11-25` in the response and decides whether to proceed.
 
 ## Expected lifecycle
 
@@ -54,7 +63,7 @@ The server uses newline-delimited JSON-RPC 2.0 over stdio, matching the MCP stdi
 ## Example initialize request
 
 ```json
-{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"local-smoke","version":"0.1.0"}}}
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"local-smoke","version":"0.1.0"}}}
 ```
 
 ## Trust boundaries
