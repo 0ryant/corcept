@@ -7,7 +7,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "CloudEvents 1.0 projection for CORCEPT ledger audit events."
-publish = true
+publish = false  # Protective guard: never publish (BUSL-1.1 private distribution)
 
 [dependencies]
 anyhow.workspace = true
