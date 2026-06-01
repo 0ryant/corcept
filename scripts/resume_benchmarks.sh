@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export ROOT
 OUT="$ROOT/results/full-benchmark"
 EVAL="$ROOT/evals/corcept-eval-suite-v2"
 PYTHON="$EVAL/scripts/python.sh"
@@ -20,8 +21,9 @@ from pathlib import Path
 from corcept_eval.mini_swe import TASKS, make_task_repo, run_pytest
 from corcept_eval.pair import run_agent_command
 
-root = Path("/Users/rytilcock/prj/corcept/results/full-benchmark/paired-mini-swe")
-plugin = "/Users/rytilcock/prj/corcept/plugins/corcept"
+repo_root = Path(os.environ["ROOT"])
+root = repo_root / "results/full-benchmark/paired-mini-swe"
+plugin = str(repo_root / "plugins/corcept")
 task = next(t for t in TASKS if t["id"] == "mini_003_redact_nested")
 cmd = 'claude --plugin-dir "$CORCEPT_PLUGIN_DIR" --print "$CORCEPT_TASK_PROMPT"'
 repo = make_task_repo(task, root / "repos" / "corcept-retry")

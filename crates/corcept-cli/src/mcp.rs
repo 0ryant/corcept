@@ -7,9 +7,41 @@ use serde_json::{json, Map, Value};
 use std::io::{self, BufRead, Write};
 use std::path::{Path, PathBuf};
 
-const PROTOCOL_VERSION: &str = "2025-06-18";
+/// Canonical MCP protocol version. Kept in lock-step with the McPact-generated
+/// `corcept-mcp` server (`mcpact_mcp::MCP_PROTOCOL_VERSION`) so both Corcept MCP
+/// surfaces negotiate the same revision during the `corcept serve` deprecation
+/// window (ADR convergence: the McPact-generated surface is canonical).
+const PROTOCOL_VERSION: &str = "2025-11-25";
+
+/// Every protocol revision this hand-rolled server can speak, newest first.
+/// Mirrors `mcpact_mcp::SUPPORTED_PROTOCOL_VERSIONS`. The first entry MUST equal
+/// [`PROTOCOL_VERSION`] (enforced by a unit test).
+const SUPPORTED_PROTOCOL_VERSIONS: &[&str] = &["2025-11-25"];
+
+/// Negotiate the protocol version for an `initialize` response, matching the
+/// McPact server's semantics: echo the client's requested revision when we
+/// support it, otherwise fall back to our latest. Never errors.
+fn negotiate_protocol_version(requested: Option<&str>) -> &'static str {
+    match requested {
+        Some(version) => SUPPORTED_PROTOCOL_VERSIONS
+            .iter()
+            .copied()
+            .find(|supported| *supported == version)
+            .unwrap_or(PROTOCOL_VERSION),
+        None => PROTOCOL_VERSION,
+    }
+}
+
+/// One-line deprecation banner emitted to stderr at startup. The hand-rolled
+/// `corcept serve` surface is superseded by the McPact-generated `corcept-mcp`
+/// adapter (full policy/trust/audit enforcement, identical negotiated protocol).
+const DEPRECATION_NOTICE: &str = "corcept serve: DEPRECATED. This hand-rolled \
+read-only MCP surface is superseded by the McPact-generated `corcept-mcp` server \
+(policy/trust/audit enforced, identical negotiated protocol). Prefer `corcept-mcp`; \
+`corcept serve` will be removed in a future release.";
 
 pub fn serve(path: PathBuf) -> Result<()> {
+    eprintln!("{DEPRECATION_NOTICE}");
     let stdin = io::stdin();
     let stdout = io::stdout();
     let mut stdin = stdin.lock();
@@ -194,11 +226,14 @@ impl McpServer {
         match method {
             "initialize" => {
                 self.initialized = true;
+                let requested = params
+                    .and_then(|params| params.get("protocolVersion"))
+                    .and_then(Value::as_str);
                 Ok(Some(json!({
                     "jsonrpc": "2.0",
                     "id": id.unwrap_or(Value::Null),
                     "result": {
-                        "protocolVersion": PROTOCOL_VERSION,
+                        "protocolVersion": negotiate_protocol_version(requested),
                         "capabilities": {
                             "tools": {
                                 "listChanged": false
@@ -208,7 +243,7 @@ impl McpServer {
                             "name": "corcept",
                             "version": env!("CARGO_PKG_VERSION")
                         },
-                        "instructions": "Opt-in bounded MCP server exposing read-mostly Corcept reports and previews."
+                        "instructions": "DEPRECATED opt-in bounded MCP server exposing read-mostly Corcept reports and previews. Superseded by the McPact-generated `corcept-mcp` adapter; prefer that surface."
                     }
                 })))
             }
@@ -542,4 +577,37 @@ fn project_ledger_path(root: &Path) -> String {
         .join("events.jsonl")
         .display()
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{negotiate_protocol_version, PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSIONS};
+
+    #[test]
+    fn protocol_version_is_newest_supported() {
+        assert_eq!(
+            SUPPORTED_PROTOCOL_VERSIONS.first().copied(),
+            Some(PROTOCOL_VERSION),
+            "PROTOCOL_VERSION must be the newest (first) supported revision"
+        );
+    }
+
+    #[test]
+    fn converged_on_mcpact_protocol_revision() {
+        // The hand-rolled `corcept serve` surface must speak the same revision
+        // as the canonical McPact-generated `corcept-mcp` adapter.
+        assert_eq!(PROTOCOL_VERSION, "2025-11-25");
+    }
+
+    #[test]
+    fn negotiation_echoes_supported_and_falls_back() {
+        for supported in SUPPORTED_PROTOCOL_VERSIONS {
+            assert_eq!(negotiate_protocol_version(Some(supported)), *supported);
+        }
+        assert_eq!(
+            negotiate_protocol_version(Some("2025-06-18")),
+            PROTOCOL_VERSION
+        );
+        assert_eq!(negotiate_protocol_version(None), PROTOCOL_VERSION);
+    }
 }

@@ -82,7 +82,10 @@ fn debug_remaining_bypasses() {
             );
         }
     }
-    eprintln!("--- total bypasses: {total_bypass} / {} ---\n", corpus.len());
+    eprintln!(
+        "--- total bypasses: {total_bypass} / {} ---\n",
+        corpus.len()
+    );
 }
 
 #[test]
@@ -193,7 +196,7 @@ fn test_overall_block_rate() {
     let counts = run_corpus();
     let mut blocked = 0usize;
     let mut total = 0usize;
-    for (_, (b, t)) in &counts {
+    for (b, t) in counts.values() {
         blocked += b;
         total += t;
     }

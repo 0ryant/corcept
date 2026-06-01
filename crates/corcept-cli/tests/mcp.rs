@@ -112,7 +112,7 @@ impl McpHarness {
             "id": 1,
             "method": "initialize",
             "params": {
-                "protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-11-25",
                 "capabilities": {},
                 "clientInfo": {
                     "name": "corcept-cli-test",
@@ -176,7 +176,7 @@ fn serve_initializes_lists_tools_and_handles_bounded_calls() {
     let served_root = project.path().display().to_string();
 
     let initialize = harness.initialize();
-    assert_eq!(initialize["result"]["protocolVersion"], "2025-06-18");
+    assert_eq!(initialize["result"]["protocolVersion"], "2025-11-25");
     assert_eq!(initialize["result"]["serverInfo"]["name"], "corcept");
     assert!(initialize["result"]["capabilities"]["tools"].is_object());
 
@@ -326,7 +326,7 @@ fn serve_accepts_content_length_frames() {
         "id": 1,
         "method": "initialize",
         "params": {
-            "protocolVersion": "2025-06-18",
+            "protocolVersion": "2025-11-25",
             "capabilities": {},
             "clientInfo": {
                 "name": "corcept-cli-test",
@@ -335,7 +335,7 @@ fn serve_accepts_content_length_frames() {
         }
     }));
     let initialize = harness.recv_framed();
-    assert_eq!(initialize["result"]["protocolVersion"], "2025-06-18");
+    assert_eq!(initialize["result"]["protocolVersion"], "2025-11-25");
     assert_eq!(initialize["result"]["serverInfo"]["name"], "corcept");
 
     harness.send_framed(json!({
@@ -368,6 +368,34 @@ fn serve_accepts_content_length_frames() {
     );
     assert_eq!(doctor["result"]["structuredContent"]["status"], "pass");
 
+    harness.shutdown();
+}
+
+#[test]
+fn serve_negotiates_legacy_protocol_to_converged_revision() {
+    // A client proposing the legacy `2025-06-18` revision (which this surface no
+    // longer speaks) must receive the converged `2025-11-25` revision, matching
+    // the McPact-generated `corcept-mcp` adapter's negotiation behavior.
+    let project = TempProject::new();
+    let mut harness = McpHarness::start(project.path());
+
+    harness.send(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": { "name": "corcept-cli-test", "version": "0.1.0" }
+        }
+    }));
+    let initialize = harness.recv();
+    assert_eq!(initialize["result"]["protocolVersion"], "2025-11-25");
+
+    harness.send(json!({
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized"
+    }));
     harness.shutdown();
 }
 

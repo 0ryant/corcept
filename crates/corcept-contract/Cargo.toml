@@ -7,7 +7,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "JSON Schema contract validation for CORCEPT wire formats."
-publish = false
+publish = true
 
 [dependencies]
 serde_json.workspace = true
@@ -15,5 +15,5 @@ jsonschema = "0.26"
 anyhow.workspace = true
 
 [dev-dependencies]
-corcept-types = { path = "../corcept-types" }
-corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents" }
+corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
+corcept-sink-cloudevents = { path = "../corcept-sink-cloudevents", version = "0.6.0-pre" }

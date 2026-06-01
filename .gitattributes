@@ -6,3 +6,8 @@
 *.json text eol=lf
 *.sh text eol=lf
 *.ps1 text eol=crlf
+# McPact lockfiles are hashed and compared byte-for-byte at server startup
+# (server_config::verify_pack_integrity); pin LF so the embedded copy matches
+# the on-disk copy on every platform.
+*.lock text eol=lf
+.mcpact/mcpact.lock text eol=lf

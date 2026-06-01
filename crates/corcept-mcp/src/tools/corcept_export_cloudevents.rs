@@ -2,12 +2,12 @@
 
 use crate::server_config;
 use async_trait::async_trait;
+use mcpact_audit::AuditSink;
+use mcpact_mcp::{McpTool, ToolCallResult, ToolDefinition};
+use mcpact_runtime::{ExecutionPlan, Executor};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use mcpact_mcp::{McpTool, ToolCallResult, ToolDefinition};
-use mcpact_runtime::{ExecutionPlan, Executor};
-use mcpact_audit::AuditSink;
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -21,7 +21,9 @@ pub struct CorceptExportCloudeventsArgs {
 pub struct Tool;
 
 impl Tool {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 
 #[async_trait]
@@ -44,13 +46,17 @@ impl McpTool for Tool {
             Err(err) => return ToolCallResult::error(format!("invalid arguments: {err}")),
         };
 
-        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(concat!("../../.mcpact/tools/corcept_export_cloudevents.json"))) {
+        let tool_spec: mcpact_manifest::ToolSpec = match serde_json::from_str(include_str!(
+            concat!("../../.mcpact/tools/corcept_export_cloudevents.json")
+        )) {
             Ok(spec) => spec,
             Err(err) => return ToolCallResult::error(format!("tool spec load failed: {err}")),
         };
         let args_json = match serde_json::to_value(&args) {
             Ok(value) => value,
-            Err(err) => return ToolCallResult::error(format!("argument serialization failed: {err}")),
+            Err(err) => {
+                return ToolCallResult::error(format!("argument serialization failed: {err}"))
+            }
         };
         let workspace = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
         let ctx = mcpact_policy::PolicyContext {
@@ -85,13 +91,14 @@ impl McpTool for Tool {
             }
         }
 
-        let mut plan = ExecutionPlan::new(server_config::binary_path().to_string_lossy().to_string());
+        let mut plan =
+            ExecutionPlan::new(server_config::binary_path().to_string_lossy().to_string());
         plan.argv = Vec::new();
         plan.argv.push("export".into());
         plan.argv.push("cloudevents".into());
-        if args.ledger.is_some() {
-        plan.argv.push("--ledger".into());
-        plan.argv.push(match args.ledger { Some(v) => v, None => String::new() });
+        if let Some(ledger) = args.ledger {
+            plan.argv.push("--ledger".into());
+            plan.argv.push(ledger);
         }
         plan.argv.push("--out".into());
         plan.argv.push(args.out.to_string());
@@ -105,9 +112,13 @@ impl McpTool for Tool {
         plan.authority = mcpact_core::AuthorityClass::Observe;
 
         let plan_for_audit = plan.clone();
-        match Executor::default().execute(plan).await {
+        match Executor.execute(plan).await {
             Ok(result) => {
-                let event = mcpact_audit::EvidenceEvent::tool_executed("corcept_export_cloudevents", &plan_for_audit, &result);
+                let event = mcpact_audit::EvidenceEvent::tool_executed(
+                    "corcept_export_cloudevents",
+                    &plan_for_audit,
+                    &result,
+                );
                 let sink = server_config::audit_sink();
                 let _ = sink.emit(&event).await;
                 if let Some(value) = result.structured {
