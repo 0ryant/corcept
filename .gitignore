@@ -3,6 +3,7 @@
 /target-*/
 /dist/
 /results/
+/supply-chain-reports/
 .claude/
 /.DS_Store
 *.tmp

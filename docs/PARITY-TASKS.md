@@ -14,6 +14,10 @@ Align CORCEPT with **engineering-doctrine** ([event-contracts](https://github.co
 
 `corcept serve` now exists as an opt-in bounded local MCP server. It is intentionally read-mostly and limited to doctor, audit, doctrine validation, candidate-memory listing, and CloudEvents preview. It is not a default install path, not a shell bridge, and not an alternate authority surface.
 
+This surface is now deprecated in favor of the McPact-generated `corcept-mcp`
+adapter, which is the canonical first-party MCP entrypoint. The opt-in and
+no-default-install boundary still applies.
+
 Any future MCP expansion should preserve that posture unless a new ADR explicitly widens the trust boundary.
 
 **Current gaps (observed):**

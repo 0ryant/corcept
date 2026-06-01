@@ -4,12 +4,15 @@ mod server_config;
 mod tools;
 
 use mcpact_mcp::ToolRegistry;
+use std::process::Stdio;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     server_config::init("corcept")?;
     let _ = std::process::Command::new(server_config::binary_path())
         .args(["--version".to_string()])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .status();
 
     let mut registry = ToolRegistry::new();
