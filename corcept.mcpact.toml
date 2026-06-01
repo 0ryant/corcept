@@ -2,7 +2,7 @@ schema_version = "mcpact.manifest.v1"
 
 [package]
 name = "corcept-mcp"
-version = "0.5.0"
+version = "0.6.0-pre"
 description = "MCP adapter for corcept — Claude Code hook governance + append-only audit ledger surface"
 # Package-level trust ceiling. Per-tool ceilings are annotated in each tool's
 # description (Reviewed / Signed / Verified) and enforced via the policy
@@ -66,17 +66,24 @@ allow = []
 
 # -----------------------------------------------------------------------------
 # Hook surface — programmatic ingress for non-Claude-Code drivers.
-# Each hook tool wraps `corcept hook <event>` which reads its hook-input JSON
-# from stdin in the underlying CLI. When invoked over MCP, drivers must supply
-# the hook JSON via the MCP host's stdin-bridging facility (or run the
-# corcept-cli directly for piped-payload workflows).
+# Each hook tool wraps `corcept hook <event>`. The underlying CLI accepts its
+# hook-input JSON either as the `--input <json>` flag (used by this MCP surface,
+# since the McPact executor runs children with a null stdin) or, when the flag
+# is omitted, from stdin (the Claude-Code piped-payload path). MCP callers pass
+# the payload via the `hook_input` argument below.
 # -----------------------------------------------------------------------------
 
 [[tools]]
 name = "corcept_hook_session_start"
 title = "Corcept Hook: SessionStart"
-description = "Process a Claude Code SessionStart hook event. Authority: Analyze. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+description = "Process a Claude Code SessionStart hook event. Authority: Analyze. Trust ceiling: Reviewed. Pass the hook event JSON in the hook_input argument."
 command = ["hook", "session-start"]
+
+[tools.args.hook_input]
+type = "string"
+required = false
+description = "Claude Code hook event JSON (the payload the CLI would otherwise read from stdin). When omitted, the CLI falls back to reading stdin."
+flag = "--input"
 
 [tools.output]
 mode = "json"
@@ -100,8 +107,14 @@ allow = []
 [[tools]]
 name = "corcept_hook_user_prompt_submit"
 title = "Corcept Hook: UserPromptSubmit"
-description = "Process a Claude Code UserPromptSubmit hook event. Authority: Analyze. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+description = "Process a Claude Code UserPromptSubmit hook event. Authority: Analyze. Trust ceiling: Reviewed. Pass the hook event JSON in the hook_input argument."
 command = ["hook", "user-prompt-submit"]
+
+[tools.args.hook_input]
+type = "string"
+required = false
+description = "Claude Code hook event JSON (the payload the CLI would otherwise read from stdin). When omitted, the CLI falls back to reading stdin."
+flag = "--input"
 
 [tools.output]
 mode = "json"
@@ -125,8 +138,14 @@ allow = []
 [[tools]]
 name = "corcept_hook_pretool_guard"
 title = "Corcept Hook: PreToolUse Guard"
-description = "Evaluate the PreToolUse guard against a candidate tool call. Authority: Plan (returns a gate decision without itself mutating the ledger; the matched posttool-audit row attests the actual decision downstream). Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+description = "Evaluate the PreToolUse guard against a candidate tool call. Authority: Plan (returns a gate decision without itself mutating the ledger; the matched posttool-audit row attests the actual decision downstream). Trust ceiling: Reviewed. Pass the hook event JSON in the hook_input argument."
 command = ["hook", "pretool-guard"]
+
+[tools.args.hook_input]
+type = "string"
+required = false
+description = "Claude Code hook event JSON (the payload the CLI would otherwise read from stdin). When omitted, the CLI falls back to reading stdin."
+flag = "--input"
 
 [tools.output]
 mode = "json"
@@ -150,8 +169,14 @@ allow = []
 [[tools]]
 name = "corcept_hook_posttool_audit"
 title = "Corcept Hook: PostToolUse Audit"
-description = "Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Hook input JSON arrives on stdin; ledger writes are confined to .corcept/ledger/."
+description = "Append a corcept.event.tool_use.v1 row to the hash-chained ledger after a tool call. Authority: Mutate. Trust ceiling: Signed. Pass the hook event JSON in the hook_input argument; ledger writes are confined to .corcept/ledger/."
 command = ["hook", "posttool-audit"]
+
+[tools.args.hook_input]
+type = "string"
+required = false
+description = "Claude Code hook event JSON (the payload the CLI would otherwise read from stdin). When omitted, the CLI falls back to reading stdin."
+flag = "--input"
 
 [tools.output]
 mode = "json"
@@ -175,8 +200,14 @@ allow = ["CORCEPT_LEDGER_PATH"]
 [[tools]]
 name = "corcept_hook_stop_check"
 title = "Corcept Hook: Stop Check"
-description = "Evaluate completion-gating (stale tests / missing evidence) on a Claude Code Stop event. Authority: Plan. Trust ceiling: Reviewed. Hook input JSON arrives on stdin."
+description = "Evaluate completion-gating (stale tests / missing evidence) on a Claude Code Stop event. Authority: Plan. Trust ceiling: Reviewed. Pass the hook event JSON in the hook_input argument."
 command = ["hook", "stop-check"]
+
+[tools.args.hook_input]
+type = "string"
+required = false
+description = "Claude Code hook event JSON (the payload the CLI would otherwise read from stdin). When omitted, the CLI falls back to reading stdin."
+flag = "--input"
 
 [tools.output]
 mode = "json"

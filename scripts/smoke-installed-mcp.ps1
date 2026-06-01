@@ -1,6 +1,8 @@
 param(
     [string]$CorceptCommand = "corcept",
-    [string]$ProtocolVersion = "2025-06-18"
+    # Converged MCP revision shared by `corcept serve` and the canonical
+    # `corcept-mcp` adapter. The server echoes this exact value when supported.
+    [string]$ProtocolVersion = "2025-11-25"
 )
 
 $ErrorActionPreference = "Stop"

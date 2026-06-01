@@ -50,6 +50,11 @@ enum Commands {
     },
     Hook {
         event: String,
+        /// Hook event JSON payload. When omitted, the payload is read from stdin.
+        /// MCP adapters (corcept-mcp) pass the payload here because the McPact
+        /// executor runs child processes with a null stdin.
+        #[arg(long)]
+        input: Option<String>,
     },
     Memory {
         #[command(subcommand)]
@@ -196,9 +201,15 @@ fn main() -> Result<()> {
                 println!("{}", serde_json::to_string_pretty(&show_operator_key()?)?);
             }
         },
-        Commands::Hook { event } => {
-            let mut input = String::new();
-            std::io::stdin().read_to_string(&mut input)?;
+        Commands::Hook { event, input } => {
+            let input = match input {
+                Some(input) => input,
+                None => {
+                    let mut buffer = String::new();
+                    std::io::stdin().read_to_string(&mut buffer)?;
+                    buffer
+                }
+            };
             let output = handle_hook(&input, &event)?;
             println!("{}", serde_json::to_string(&output)?);
         }

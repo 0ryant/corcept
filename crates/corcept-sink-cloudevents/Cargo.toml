@@ -7,7 +7,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "CloudEvents 1.0 projection for CORCEPT ledger audit events."
-publish = false
+publish = true
 
 [dependencies]
 anyhow.workspace = true
@@ -15,13 +15,12 @@ serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 hex.workspace = true
-corcept-types = { path = "../corcept-types" }
-corcept-ledger = { path = "../corcept-ledger" }
+corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 
 [dev-dependencies]
 tempfile.workspace = true
 jsonschema = "0.26"
-corcept-runtime = { path = "../corcept-runtime" }
-corcept-types = { path = "../corcept-types" }
-corcept-ledger = { path = "../corcept-ledger" }
+corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
 serde_json.workspace = true
