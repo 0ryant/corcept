@@ -72,13 +72,13 @@ sha256 = "995c04cf814fcd6eb84234635a38b214a97220c99ce4d5346bc074f3c4c9a35a"
 
 [[generated_files]]
 path = "Cargo.toml"
-bytes = 1042
-sha256 = "cc6a55fb714c90a3b964811bbebb978f7aee5a506e68922079ee56671b86c2f3"
+bytes = 679
+sha256 = "608347991a782341da6d54c716b789500a3bf572d061bcd87224e3ea719a2e68"
 
 [[generated_files]]
 path = "README.md"
-bytes = 3801
-sha256 = "3467fdbaa01aa5351922c32b5aec6609ee8ac1824386eb887eaed5850d045e2c"
+bytes = 3919
+sha256 = "ae2d26fdcecfca859000fa24d6057e19c00b509cee60d1f0e487d249a4cf247f"
 
 [[generated_files]]
 path = "src/main.rs"
