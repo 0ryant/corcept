@@ -74,7 +74,28 @@ pub fn write_candidate(root: impl AsRef<Path>, candidate: &MemoryCandidate) -> R
     Ok(path)
 }
 
+/// Validate a memory candidate id used as a filesystem component. Rejects path
+/// separators, `..`, and anything outside a safe identifier charset so a
+/// user-supplied id (e.g. `corcept memory promote --id <id>`) cannot escape the
+/// candidates directory.
+pub fn validate_candidate_id(id: &str) -> Result<()> {
+    if id.is_empty() {
+        bail!("memory candidate id is required");
+    }
+    if id.len() > 128 {
+        bail!("memory candidate id is too long");
+    }
+    if !id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-'))
+    {
+        bail!("invalid memory candidate id `{id}`: only [A-Za-z0-9_-] are allowed");
+    }
+    Ok(())
+}
+
 pub fn read_candidate(root: impl AsRef<Path>, id: &str) -> Result<MemoryCandidate> {
+    validate_candidate_id(id)?;
     let path = candidates_dir(root).join(format!("{id}.yaml"));
     let raw = fs::read_to_string(&path)
         .with_context(|| format!("reading memory candidate {}", path.display()))?;
@@ -174,6 +195,33 @@ mod tests {
 
         let listed = list_candidates(dir.path(), 10).unwrap();
         assert_eq!(listed.len(), 2);
+    }
+
+    #[test]
+    fn rejects_path_traversal_candidate_id() {
+        let dir = tempfile::tempdir().unwrap();
+        for bad in [
+            "../../../../etc/passwd",
+            "../accepted/x",
+            "a/b",
+            "a\\b",
+            "..",
+            "with space",
+        ] {
+            assert!(
+                read_candidate(dir.path(), bad).is_err(),
+                "id `{bad}` should be rejected"
+            );
+            assert!(
+                validate_candidate_id(bad).is_err(),
+                "id `{bad}` should be rejected by validator"
+            );
+            assert!(
+                promote_candidate(dir.path(), bad, "user").is_err(),
+                "promote with id `{bad}` should be rejected"
+            );
+        }
+        assert!(validate_candidate_id("mem_abc123").is_ok());
     }
 
     #[test]

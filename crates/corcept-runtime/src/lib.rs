@@ -4,7 +4,7 @@ use corcept_doctrine::{default_documents, validate as validate_doctrine};
 use corcept_guards::{
     evaluate_pre_tool, evaluate_stop, extract_command, extract_path, StopVerdict,
 };
-use corcept_ledger::{ensure_ledger, read_events, verify_hash_chain_readonly};
+use corcept_ledger::{ensure_ledger, read_events, signing_enabled, verify_hash_chain_readonly};
 use corcept_memory::ensure_dirs as ensure_memory_dirs;
 use corcept_sink::{build_ledger_event, SinkDispatcher, SinkRecord};
 use corcept_types::{
@@ -16,6 +16,9 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+mod redact;
+pub use redact::{scrub_secrets, scrub_value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
@@ -285,6 +288,17 @@ pub fn doctor_with_options(path: impl AsRef<Path>, options: DoctorOptions) -> Re
         "Ledger hash chain verifies",
     );
 
+    let signed = signing_enabled();
+    checks.push(CheckResult {
+        name: "ledger_tamper_evidence".to_string(),
+        status: if signed { "pass" } else { "warn" }.to_string(),
+        detail: if signed {
+            "Ledger rows are Ed25519-signed (cryptographically tamper-evident)".to_string()
+        } else {
+            "Ledger is UNSIGNED: the keyless hash chain detects accidental corruption but is NOT tamper-evident against an attacker who can rewrite events.jsonl. Set CORCEPT_TRUSTED_HISTORY=1 (with an operator key) for tamper-evidence.".to_string()
+        },
+    });
+
     if options.strict {
         let schema_ok = validate_ledger_schema(root);
         push_check(
@@ -317,7 +331,15 @@ pub fn doctor_with_options(path: impl AsRef<Path>, options: DoctorOptions) -> Re
         }
     }
 
-    let all_pass = checks.iter().all(|check| check.status == "pass");
+    // The ledger_tamper_evidence check is advisory: an unsigned ledger is the
+    // documented default, so it is surfaced as its own `warn` check (visible to
+    // operators) but does not by itself downgrade the overall doctor status.
+    const ADVISORY_CHECKS: &[&str] = &["ledger_tamper_evidence"];
+    let is_substantive = |check: &CheckResult| !ADVISORY_CHECKS.contains(&check.name.as_str());
+    let all_pass = checks
+        .iter()
+        .filter(|check| is_substantive(check))
+        .all(|check| check.status == "pass");
     let status = if all_pass {
         "pass"
     } else if options.strict {
@@ -502,9 +524,11 @@ fn append_hook_event(
         kind,
         authority_level,
         input.tool_name.clone(),
-        target,
+        // `target` frequently echoes the raw Bash command, and `reason` can quote
+        // it; scrub inline secrets before they reach the durable ledger / sinks.
+        target.as_deref().map(scrub_secrets),
         decision.map(ToOwned::to_owned),
-        reason.map(ToOwned::to_owned),
+        reason.map(scrub_secrets),
         metadata,
     );
     let correlation = input
@@ -519,28 +543,10 @@ fn append_hook_event(
 }
 
 fn sanitize_value(value: &Value) -> Value {
-    match value {
-        Value::Object(map) => {
-            let sanitized = map
-                .iter()
-                .map(|(key, value)| {
-                    let lower = key.to_ascii_lowercase();
-                    if lower.contains("token")
-                        || lower.contains("secret")
-                        || lower.contains("password")
-                        || lower.contains("key")
-                    {
-                        (key.clone(), Value::String("[REDACTED]".to_string()))
-                    } else {
-                        (key.clone(), sanitize_value(value))
-                    }
-                })
-                .collect();
-            Value::Object(sanitized)
-        }
-        Value::Array(values) => Value::Array(values.iter().map(sanitize_value).collect()),
-        other => other.clone(),
-    }
+    // Redacts sensitive-keyed values AND scrubs secret patterns out of every
+    // string value (e.g. inline secrets in a Bash `command`), so the durable
+    // ledger never persists a secret verbatim. See `redact::scrub_value`.
+    scrub_value(value)
 }
 
 fn classify_prompt_context(prompt: &str) -> String {

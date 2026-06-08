@@ -68,6 +68,15 @@ See `docs/MCP_GUIDE.md` for setup, trust boundaries, and smoke steps.
 - Hook FSM transition IDs, policy lattice, hardened hash chain
 - CloudEvents export, multi-sink dispatch (ledger authority + best-effort ops sinks)
 - XDG operator paths, Ed25519 signed ledger rows (`corcept audit verify --signed`)
+
+> Tamper-evidence note: by default the ledger is **unsigned**. The keyless hash
+> chain detects accidental corruption but is **not** tamper-evident against an
+> adversary who can rewrite `events.jsonl` and recompute the chain. For
+> cryptographic tamper-evidence, enable signing (`CORCEPT_TRUSTED_HISTORY=1`
+> with an operator key) and verify with `corcept audit verify --signed`.
+> `corcept doctor` surfaces a `ledger_tamper_evidence` warning while unsigned.
+> By default the verifier also rejects rows that only match the legacy
+> pre-ADR-0021 hash format; set `CORCEPT_ALLOW_LEGACY_HASH=1` only for migration.
 - CI: `quality.yml`, `governance.yml`, `eval-regression.yml`, tag-triggered `release.yml`
 
 ```bash

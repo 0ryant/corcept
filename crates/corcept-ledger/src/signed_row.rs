@@ -22,6 +22,9 @@ pub enum VerifyFailureReason {
     UnknownAttestationSchemaVersion,
     HashMismatch,
     HashChainBreak,
+    /// Row verifies only under the legacy un-domain-separated hash scheme.
+    /// The ADR-0021 hardening is not in effect for this row (downgrade).
+    LegacyHashFormat,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -38,6 +41,11 @@ pub struct VerifyReport {
     pub signed_mode: bool,
     pub rows_scanned: usize,
     pub failures: Vec<VerifyFailure>,
+    /// Non-fatal downgrade notices (e.g. a row that only matches the legacy
+    /// un-domain-separated hash scheme while the operator has opted into
+    /// accepting legacy hashes). Surfaced so the downgrade is never silent.
+    #[serde(default)]
+    pub warnings: Vec<VerifyFailure>,
 }
 
 impl VerifyReport {

@@ -396,7 +396,20 @@ fn command_matches(pattern: &str, command: &str) -> bool {
 fn shell_tokens(command: &str) -> Vec<String> {
     let mut spaced = String::with_capacity(command.len() + 16);
     let mut quote: Option<char> = None;
-    for c in command.chars() {
+    // Iterate with lookahead so the multi-char boundary operators `&&` and `||`
+    // are emitted as single tokens. Without this they decompose into two `&` /
+    // `|` tokens, which makes the `&&`/`||` arms of `is_command_boundary`
+    // unreachable. Emitting them explicitly keeps chained-command boundary
+    // detection robust against future tokenizer edits.
+    //
+    // NOTE: this is an intent *classifier*, not a real shell parser. It does not
+    // model full quoting/escaping/variable-expansion, so determined obfuscation
+    // can still evade per-token detectors. That is acceptable because corcept
+    // classifies intent and defers actual enforcement to cellos.
+    let chars: Vec<char> = command.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        let c = chars[i];
         match (quote, c) {
             (Some(q), ch) if ch == q => {
                 quote = None;
@@ -407,6 +420,14 @@ fn shell_tokens(command: &str) -> Vec<String> {
                 quote = Some(c);
                 spaced.push(c);
             }
+            (None, '&') if chars.get(i + 1) == Some(&'&') => {
+                spaced.push_str(" && ");
+                i += 1;
+            }
+            (None, '|') if chars.get(i + 1) == Some(&'|') => {
+                spaced.push_str(" || ");
+                i += 1;
+            }
             (None, '|' | ';' | '&' | '<' | '>' | '(' | ')') => {
                 spaced.push(' ');
                 spaced.push(c);
@@ -414,6 +435,7 @@ fn shell_tokens(command: &str) -> Vec<String> {
             }
             (None, ch) => spaced.push(ch),
         }
+        i += 1;
     }
 
     spaced
@@ -434,8 +456,7 @@ fn clean_token(token: &str) -> String {
 fn detect_protected_path_reference(tokens: &[String], config: &CorceptConfig) -> Option<String> {
     for token in tokens.iter().map(|token| strip_redirection(token)) {
         if token == "|"
-            || token == ";"
-            || token == "&"
+            || is_command_boundary(&token)
             || token.starts_with('-')
             || token.contains('=')
         {

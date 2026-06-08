@@ -44,11 +44,54 @@ pub fn hash_event_legacy(event: &LedgerEvent) -> Result<String> {
     Ok(format!("sha256:{}", hex::encode(hasher.finalize())))
 }
 
-pub fn verify_event_hash(event: &LedgerEvent) -> Result<bool> {
+/// True when the operator has explicitly opted into accepting the legacy,
+/// un-domain-separated hash format (`CORCEPT_ALLOW_LEGACY_HASH=1|true`).
+///
+/// The legacy format predates ADR-0021 and is NOT domain-separated or
+/// canonicalized. Accepting it silently defeats the ADR-0021 hardening, so it
+/// must be opt-in and off by default.
+pub fn allow_legacy_hash() -> bool {
+    std::env::var("CORCEPT_ALLOW_LEGACY_HASH")
+        .ok()
+        .is_some_and(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+}
+
+/// Result of matching a stored hash against the known schemes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HashMatch {
+    /// Matches the ADR-0021 hardened (domain-separated, canonicalized) scheme.
+    Hardened,
+    /// Matches only the legacy un-hardened scheme (downgrade — surfaces a warning).
+    Legacy,
+    /// Matches neither scheme (tampered or missing).
+    None,
+}
+
+/// Classify how the stored hash matches, independent of whether the legacy
+/// scheme is accepted. Callers decide whether `Legacy` counts as valid.
+pub fn classify_event_hash(event: &LedgerEvent) -> Result<HashMatch> {
     let Some(stored) = event.hash.as_deref() else {
-        return Ok(false);
+        return Ok(HashMatch::None);
     };
-    Ok(stored == hash_event_hardened(event)? || stored == hash_event_legacy(event)?)
+    if stored == hash_event_hardened(event)? {
+        return Ok(HashMatch::Hardened);
+    }
+    if stored == hash_event_legacy(event)? {
+        return Ok(HashMatch::Legacy);
+    }
+    Ok(HashMatch::None)
+}
+
+/// Verify a row's stored hash. The legacy un-domain-separated format is only
+/// accepted when the operator opts in via `CORCEPT_ALLOW_LEGACY_HASH`; by
+/// default only the ADR-0021 hardened scheme is accepted so that the
+/// hardening is enforced rather than advisory.
+pub fn verify_event_hash(event: &LedgerEvent) -> Result<bool> {
+    Ok(match classify_event_hash(event)? {
+        HashMatch::Hardened => true,
+        HashMatch::Legacy => allow_legacy_hash(),
+        HashMatch::None => false,
+    })
 }
 
 #[cfg(test)]
@@ -104,11 +147,27 @@ mod tests {
     }
 
     #[test]
-    fn legacy_hash_still_verifies() {
+    fn legacy_hash_rejected_by_default() {
+        // Legacy (un-domain-separated) rows must NOT verify unless the
+        // operator explicitly opts in. classify_event_hash still reports the
+        // downgrade so operators can be warned.
         let event = sample_event();
         let hash = hash_event_legacy(&event).unwrap();
         let mut stored = event.clone();
         stored.hash = Some(hash);
+        assert_eq!(classify_event_hash(&stored).unwrap(), HashMatch::Legacy);
+        // Without the opt-in env var, the default policy rejects legacy.
+        assert!(!allow_legacy_hash());
+        assert!(!verify_event_hash(&stored).unwrap());
+    }
+
+    #[test]
+    fn hardened_hash_classifies_as_hardened() {
+        let event = sample_event();
+        let hash = hash_event_hardened(&event).unwrap();
+        let mut stored = event.clone();
+        stored.hash = Some(hash);
+        assert_eq!(classify_event_hash(&stored).unwrap(), HashMatch::Hardened);
         assert!(verify_event_hash(&stored).unwrap());
     }
 }

@@ -10,7 +10,10 @@ mod canonical;
 mod keys;
 mod signed_row;
 
-pub use canonical::{hash_event_hardened, hash_event_legacy, verify_event_hash, HASH_DOMAIN};
+pub use canonical::{
+    allow_legacy_hash, classify_event_hash, hash_event_hardened, hash_event_legacy,
+    verify_event_hash, HashMatch, HASH_DOMAIN,
+};
 pub use keys::{generate_operator_key, load_active_signing_key, show_operator_key, KeyInfo};
 pub use signed_row::{
     sign_event, trusted_history_enabled, verify_row_signature, VerifyFailure, VerifyFailureReason,
@@ -136,15 +139,20 @@ pub fn append_event(root: impl AsRef<Path>, mut event: LedgerEvent) -> Result<Le
     Ok(event)
 }
 
+/// Verify the hash chain. This is a read-only integrity check and never
+/// mutates the `last_hash` sidecar. Verification can pass on a chain that an
+/// attacker recomputed, so blessing an untrusted last hash here would launder
+/// tampered state into the trusted sidecar (which `append_event` relies on as
+/// `prev_hash`). The sidecar is only ever advanced by `append_event`.
 pub fn verify_hash_chain(root: impl AsRef<Path>) -> Result<bool> {
-    verify_hash_chain_impl(root.as_ref(), true)
+    verify_hash_chain_impl(root.as_ref())
 }
 
 pub fn verify_hash_chain_readonly(root: impl AsRef<Path>) -> Result<bool> {
-    verify_hash_chain_impl(root.as_ref(), false)
+    verify_hash_chain_impl(root.as_ref())
 }
 
-fn verify_hash_chain_impl(root: &Path, update_sidecar: bool) -> Result<bool> {
+fn verify_hash_chain_impl(root: &Path) -> Result<bool> {
     let events = read_events(root)?;
     let mut previous: Option<String> = None;
     for event in &events {
@@ -157,15 +165,21 @@ fn verify_hash_chain_impl(root: &Path, update_sidecar: bool) -> Result<bool> {
         }
         previous = event.hash.clone();
     }
-    if update_sidecar {
-        if let Some(hash) = previous {
-            fs::write(last_hash_path(root), hash.as_bytes())?;
-        }
-    }
     Ok(true)
 }
 
 fn should_sign_append() -> bool {
+    signing_enabled()
+}
+
+/// Whether the ledger is configured to cryptographically sign appended rows.
+///
+/// When this is false the ledger is appended with a keyless hash only, which is
+/// a tamper-*detection* checksum against accidental corruption — NOT
+/// tamper-*evidence* against an adversary who can rewrite the file and
+/// recompute the chain. Tooling (`doctor`, `audit verify`) surfaces this so the
+/// default unsigned mode is never mistaken for cryptographic integrity.
+pub fn signing_enabled() -> bool {
     trusted_history_enabled()
         || std::env::var("CORCEPT_SIGN_LEDGER")
             .ok()
@@ -181,6 +195,7 @@ pub fn verify_ledger(path: impl AsRef<Path>, require_signed: bool) -> Result<Ver
     };
     let trust_dir = trust_keys_dir().unwrap_or_else(|| path.join(".corcept/keys/trust"));
     let mut failures = Vec::new();
+    let mut warnings = Vec::new();
     let mut previous: Option<String> = None;
     let mut hash_chain_valid = true;
 
@@ -194,14 +209,34 @@ pub fn verify_ledger(path: impl AsRef<Path>, require_signed: bool) -> Result<Ver
                 reason: VerifyFailureReason::HashChainBreak,
             });
         }
-        let expected = hash_event(event)?;
-        if event.hash.as_deref() != Some(expected.as_str()) && !verify_event_hash(event)? {
-            hash_chain_valid = false;
-            failures.push(VerifyFailure {
-                line,
-                event_id: Some(event.id.clone()),
-                reason: VerifyFailureReason::HashMismatch,
-            });
+        match classify_event_hash(event)? {
+            HashMatch::Hardened => {}
+            HashMatch::Legacy => {
+                // Row only matches the legacy un-domain-separated scheme. Always
+                // surface the downgrade. When the operator has NOT opted into
+                // accepting legacy hashes (the default), it is a hard failure;
+                // when opted in, it is recorded as a non-fatal warning so the
+                // downgrade is never silent.
+                let entry = VerifyFailure {
+                    line,
+                    event_id: Some(event.id.clone()),
+                    reason: VerifyFailureReason::LegacyHashFormat,
+                };
+                if allow_legacy_hash() {
+                    warnings.push(entry);
+                } else {
+                    hash_chain_valid = false;
+                    failures.push(entry);
+                }
+            }
+            HashMatch::None => {
+                hash_chain_valid = false;
+                failures.push(VerifyFailure {
+                    line,
+                    event_id: Some(event.id.clone()),
+                    reason: VerifyFailureReason::HashMismatch,
+                });
+            }
         }
         previous = event.hash.clone();
 
@@ -230,6 +265,7 @@ pub fn verify_ledger(path: impl AsRef<Path>, require_signed: bool) -> Result<Ver
         signed_mode: require_signed,
         rows_scanned: events.len(),
         failures,
+        warnings,
     })
 }
 
