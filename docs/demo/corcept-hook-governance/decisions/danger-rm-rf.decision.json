@@ -1,0 +1,1 @@
+{"suppressOutput":true,"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked recursive force deletion of dangerous target `/`."}}

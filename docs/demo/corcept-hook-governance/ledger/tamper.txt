@@ -1,0 +1,8 @@
+Tamper test: an attacker edits one committed ledger row in events.jsonl, flipping
+the `rm -rf /` decision from "deny" to "allow" (reason "approved by attacker"),
+without recomputing the SHA-256 hash chain.
+
+`corcept audit verify` on the tampered ledger returns status=fail,
+hash_chain_valid=false, and pinpoints the altered row (hash_mismatch). The
+append-only chain makes silent rewriting of past decisions detectable.
+See verify-tampered.json.

@@ -1,0 +1,1 @@
+{"suppressOutput":true,"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked remote fetch piped directly to an interpreter."}}

@@ -1,0 +1,13 @@
+{
+  "status": "fail",
+  "hash_chain_valid": false,
+  "signed_mode": false,
+  "rows_scanned": 11,
+  "failures": [
+    {
+      "line": 6,
+      "event_id": "evt_8a9b7da7739f4ce0bb0faaef60b7e16d",
+      "reason": "hash_mismatch"
+    }
+  ]
+}
