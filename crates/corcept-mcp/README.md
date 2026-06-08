@@ -21,15 +21,21 @@ tool invocation, so the `corcept` CLI must be installed and on `PATH`.
 
 ## Standalone install (G-1)
 
-`corcept-mcp` currently depends on the McPact runtime crates by **path**
-(`../../../mcpact/crates/*` in `Cargo.toml`). As a result a bare
-`cargo install corcept-mcp` from a checkout of *only* this repository will not
-resolve those dependencies. Until the McPact crates
+`corcept-mcp` depends on the McPact runtime crates
 (`mcpact-core`, `mcpact-runtime`, `mcpact-audit`, `mcpact-policy`, `mcpact-mcp`,
-`mcpact-manifest`) are published to a registry, build `corcept-mcp` from a
-workspace that has the `mcpact` source tree checked out as a sibling of this
-repository. Publishing the McPact crates to a registry (or vendoring them) is
-the remaining step to satisfy the standalone-portability gate.
+`mcpact-manifest`) from **crates.io**, pinned to `0.2.0-pre.1`. It therefore
+builds from a clean checkout of this repository alone — the `mcpact` source tree
+does **not** need to be present as a sibling directory:
+
+```bash
+cargo build -p corcept-mcp
+```
+
+To develop against a local, unpublished McPact checkout, add a
+`[patch.crates-io]` block to the **workspace-root** `Cargo.toml` (Cargo ignores
+`[patch]` declared in a workspace member). That override is dev-only and must
+never ship in a released artifact — the crates.io deps above are the canonical
+source, which is what the standalone-portability gate (G-1) enforces.
 
 ## Tools
 

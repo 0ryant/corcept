@@ -65,7 +65,7 @@ Full plan: [`docs/BACKLOG.md`](docs/BACKLOG.md) · [`docs/PARITY-TASKS.md`](docs
 | ST-038 | Audit operation registry | complete | `docs/audit/operations.yaml` |
 | ST-039 | CloudEvents boundary ADR | complete | ADR-0022 |
 | ST-040 | CloudEvents sink crate | complete | `corcept-sink-cloudevents` |
-| ST-041 | Cross-surface contract tests | complete | `corcept-sink-cloudevents/tests/` |
+| ST-041 | Cross-surface contract tests | complete | `crates/corcept-runtime/tests/cross_sink_contract.rs` |
 | ST-042 | Testing ADR enforceable matrix | complete | ADR-0012 revision |
 | ST-043 | Adversarial abuse-case corpus | complete | `tests/adversarial/` |
 | ST-044 | Eval harness contract gate | complete | `eval-regression.yml` |

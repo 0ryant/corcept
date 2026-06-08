@@ -26,7 +26,8 @@ Some operators still need a first-party MCP story for Codex and other MCP-aware 
 
 Do not install Corcept as an MCP server by default.
 
-Ship a canonical `corcept serve` stdio entrypoint as an explicit opt-in only. The v1 MCP surface is bounded to read-mostly tools tied to a single project root:
+Ship an explicit opt-in stdio entrypoint only. The original v1 surface was
+`corcept serve`, bounded to read-mostly tools tied to a single project root:
 
 - doctor report
 - audit report
@@ -42,13 +43,19 @@ The bounded MCP surface must not expose:
 - broad shell or filesystem bridging
 - automatic default connector installation
 
+Supersession note, 2026-06-01: `corcept serve` remains available during the
+deprecation window, but the canonical first-party MCP entrypoint is now the
+McPact-generated `corcept-mcp` adapter. The no-default-install boundary still
+applies. Any mutation-capable tool must carry explicit authority, trust-ceiling,
+path-scope, and approval-gate metadata.
+
 ## Consequences
 
 Positive:
 
 - The runtime keeps a clear trust model while still supporting first-party MCP clients.
 - Behavior can be verified with tests and ledger evidence.
-- Operators get one canonical local entrypoint: `corcept serve`.
+- Operators get one explicit local entrypoint without default connector install.
 - Plugin assets stay small and reviewable.
 - Security-sensitive behavior lives in Rust instead of prompt prose.
 

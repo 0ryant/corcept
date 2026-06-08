@@ -75,5 +75,6 @@ The server uses newline-delimited JSON-RPC 2.0 over stdio, matching the MCP stdi
 
 ## Smoke paths
 
-- Installed binary smoke: `scripts/smoke-installed-mcp.ps1`
+- Canonical generated adapter smoke: `scripts/smoke-canonical-mcp.ps1`
+- Legacy installed `corcept serve` smoke: `scripts/smoke-installed-mcp.ps1`
 - Codex hotload runbook: `scripts/smoke-codex-corcept-connector.md`

@@ -140,9 +140,6 @@ This is a gated-tier product. It is licensed under the Business Source License
   provided such use does not include offering the Licensed Work to third
   parties on a hosted or embedded basis in order to compete with the
   Licensor's paid service offerings.
-- **OSS-tier alternatives:** The OSS distribution of corcept's bare verbs is
-  available at https://crates.io/crates/corcept under the standard dual
-  MIT OR Apache-2.0 license (pre-v0.6.0 versions).
 
 See LICENSE for the full BUSL-1.1 text. See
 `ecosystem-catalog/commercial/license-matrix.md` for the ecosystem-wide
