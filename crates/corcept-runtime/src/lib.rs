@@ -17,6 +17,14 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+// ADR-0027 Channel 1: BeforeRun primer-injection hook surface.
+// See `hooks/before_run/primer_injection.rs`. The module compiles into
+// corcept-runtime today even though the canonical 13-hook substrate
+// (ADR-0006) and triggers substrate (ADR-0005) are still in flight; the
+// trait + ctx contract are stable so the substrate can wire to a tested
+// handler when it lands.
+pub mod hooks;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
     pub path: PathBuf,

@@ -25,6 +25,9 @@ serde.workspace = true
 serde_json.workspace = true
 serde_yaml.workspace = true
 chrono.workspace = true
+sha2.workspace = true
+hex.workspace = true
+thiserror.workspace = true
 corcept-types = { path = "../corcept-types" }
 corcept-ledger = { path = "../corcept-ledger" }
 corcept-guards = { path = "../corcept-guards" }

@@ -128,3 +128,33 @@ Tag `v0.5.0` (or later `v*.*.*`) triggers `.github/workflows/release.yml`:
 - Quality gate (`make check`)
 - Platform binaries + plugin zip + `SHA256SUMS`
 - Optional minisign when `MINISIGN_SECRET_KEY` is set (see `docs/release-trust.md`)
+
+## Anti-confabulation primer (gated tier)
+
+This OSS distribution exposes the corcept verbs (5 Claude Code hook types,
+intake/plan-change/review/ship skills, doctrine-first FSM transitions).
+The gated tier — `pai-axiom-disciplined`, which re-bundles corcept with
+its sibling tools — adds the primer that runs *inside* the
+SessionStart hook so every agent session begins with the discipline layer
+loaded:
+
+- **Primer:** `anti-confab-200tok` v1.0.0 (sha256: `c138dd966c82f7bd792684ab3fef0f50d75aa9342468db8b5d265f24f3fb35a8`).
+- **Empirical lift (Sonnet 4.6):** canonical score 78 → **85** (+7 pts);
+  self-canonical Δ +11 → **−1** (12-pt honesty tightening) when the primer
+  is loaded by the corcept SessionStart hook.
+- **Model compatibility:** Opus + Sonnet confirmed; Haiku **inverted** —
+  the router refuses primed Haiku cells. (Haiku-PRIMED measurement still
+  in flight.)
+- **Verbatim primer body:** included in the gated distribution at
+  `primers/anti-confab-200tok.txt`. **This OSS variant of corcept does
+  NOT include the primer** — hooks fire identically, but the SessionStart
+  payload omits the discipline-layer block.
+
+To reproduce the +7 canonical lift on your hardware, the gated bundle
+ships a one-command reproducer (`./scripts/reproduce-primed-vs-unprimed.sh`,
+~20 min wall, ~$3 API spend). The reproducer is in flight as part of
+`pai-axiom-bundle`; until it ships, the receipts in
+`pai-axiom-bundle/receipts/` are the empirical evidence.
+
+See `ecosystem-catalog/commercial/oss-vs-gated.md` in the ecosystem
+catalog for the full tier comparison.
