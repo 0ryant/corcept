@@ -388,10 +388,13 @@ dependencies = [
  "corcept-memory",
  "corcept-sink",
  "corcept-types",
+ "hex",
  "serde",
  "serde_json",
  "serde_yaml",
+ "sha2",
  "tempfile",
+ "thiserror 1.0.69",
 ]
 
 [[package]]

@@ -25,11 +25,14 @@ serde.workspace = true
 serde_json.workspace = true
 serde_yaml.workspace = true
 chrono.workspace = true
-corcept-types = { path = "../corcept-types" }
-corcept-ledger = { path = "../corcept-ledger" }
-corcept-guards = { path = "../corcept-guards" }
-corcept-doctrine = { path = "../corcept-doctrine" }
-corcept-memory = { path = "../corcept-memory" }
+sha2.workspace = true
+hex.workspace = true
+thiserror.workspace = true
+corcept-types = { path = "../corcept-types", version = "0.5.0" }
+corcept-ledger = { path = "../corcept-ledger", version = "0.5.0" }
+corcept-guards = { path = "../corcept-guards", version = "0.5.0" }
+corcept-doctrine = { path = "../corcept-doctrine", version = "0.5.0" }
+corcept-memory = { path = "../corcept-memory", version = "0.5.0" }
 corcept-sink = { path = "../corcept-sink" }
 corcept-contract = { path = "../corcept-contract" }
 
