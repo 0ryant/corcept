@@ -14,8 +14,21 @@ const REDACTED: &str = "[REDACTED]";
 /// Sensitive shell variable name fragments. A `NAME=VALUE` assignment whose
 /// NAME contains one of these (case-insensitive) has its VALUE redacted.
 const SENSITIVE_VAR_FRAGMENTS: &[&str] = &[
-    "token", "secret", "password", "passwd", "pwd", "apikey", "api_key", "access_key",
-    "secret_key", "private_key", "credential", "auth", "session", "cookie", "bearer",
+    "token",
+    "secret",
+    "password",
+    "passwd",
+    "pwd",
+    "apikey",
+    "api_key",
+    "access_key",
+    "secret_key",
+    "private_key",
+    "credential",
+    "auth",
+    "session",
+    "cookie",
+    "bearer",
 ];
 
 /// Scrub secrets out of a free-text string (typically a shell command line or a
