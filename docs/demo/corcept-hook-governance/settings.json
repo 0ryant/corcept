@@ -1,0 +1,11 @@
+{
+  "_comment": "Claude Code wiring: route tool calls through corcept's PreToolUse guard and PostToolUse audit. Copy into .claude/settings.json of a governed project.",
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash|Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|WebFetch|WebSearch", "hooks": [{ "type": "command", "command": "corcept hook pretool-guard" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit", "hooks": [{ "type": "command", "command": "corcept hook posttool-audit" }] }
+    ]
+  }
+}

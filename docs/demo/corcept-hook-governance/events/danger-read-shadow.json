@@ -1,0 +1,1 @@
+{"session_id":"demo","cwd":"__WORKSPACE__","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":{"file_path":"/etc/shadow"},"tool_use_id":"e04"}

@@ -1,0 +1,1 @@
+{"suppressOutput":true,"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Bash command references protected or secret-like path `~/.ssh/authorized_keys`."}}
