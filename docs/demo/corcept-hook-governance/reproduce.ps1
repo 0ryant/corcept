@@ -20,6 +20,27 @@ if (-not (Test-Path $C)) {
   else { Write-Host "Building corcept..." -ForegroundColor Cyan; Push-Location $Root; cargo build -p corcept-cli --release; Pop-Location; $C = Join-Path $Root "target\release\corcept.exe" }
 }
 
+# --- Design-system drift pin: the vendored _assets/site.css must match the
+# algol.cc source exactly (same discipline as the engineering-doctrine primer pin).
+# Pinned sha256 of algol.cc/css/site.css as vendored into _assets/site.css. ---
+$PinnedCssSha = "2728b214e6e59e926dbaac02a3c7fb08f531c3099074d921d2b818bf4d887182"
+$vendored = "$P\_assets\site.css"
+if (-not (Test-Path $vendored)) { throw "Missing vendored design system: $vendored" }
+$haveSha = (Get-FileHash $vendored -Algorithm SHA256).Hash.ToLower()
+if ($haveSha -ne $PinnedCssSha) {
+  throw "site.css drift: _assets/site.css sha256 $haveSha != pinned $PinnedCssSha (re-vendor from algol.cc/css/site.css and update the pin in reproduce.ps1 + index.html)."
+}
+$src = "$Root\..\algol.cc\css\site.css"
+if (Test-Path $src) {
+  $srcSha = (Get-FileHash $src -Algorithm SHA256).Hash.ToLower()
+  if ($srcSha -ne $PinnedCssSha) {
+    throw "site.css drift: algol.cc source sha256 $srcSha != pinned $PinnedCssSha (the live design system moved; re-vendor _assets/site.css and update the pin)."
+  }
+} else {
+  Write-Host "Note: algol.cc source not found at $src; verified vendored copy against pinned sha only." -ForegroundColor Yellow
+}
+Write-Host "Design-system pin OK (site.css sha256 $PinnedCssSha)." -ForegroundColor Green
+
 New-Item -ItemType Directory -Force -Path "$P\decisions","$P\ledger" | Out-Null
 Get-ChildItem "$P\decisions\*","$P\ledger\*" -ErrorAction SilentlyContinue | Remove-Item -Force
 

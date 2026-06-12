@@ -126,8 +126,10 @@ be Ed25519-signed per row: `corcept audit verify --signed`.)
 ```
 corcept-hook-governance/
 ├── README.md                     ← this walkthrough
-├── reproduce.ps1                 ← regenerates decisions/ + ledger/
+├── index.html                    ← algol.cc-design-system rendering (content-parity with this README)
+├── reproduce.ps1                 ← regenerates decisions/ + ledger/ (+ site.css drift check)
 ├── settings.json                 ← Claude Code wiring (pretool-guard / posttool-audit)
+├── _assets/site.css              ← pinned vendored copy of algol.cc/css/site.css
 ├── events/                       ← 10 synthetic PreToolUse hook events
 │   ├── danger-*.json (5)         ← rm -rf, curl|bash, chmod 777, read shadow, ssh authkeys
 │   ├── ask-*.json (2)            ← git force-push, sudo rm
