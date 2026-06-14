@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>corcept — Claude Code Hook Governance (evidence pack) · Algol</title>
+  <meta name="description" content="A reproducible evidence pack for a governed Claude Code session: 10 synthetic PreToolUse hook events → allow / ask / deny decisions → a hash-chained, tamper-evident audit ledger. All synthetic; nothing is executed." />
+  <meta name="theme-color" content="#0c0c0c" />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Mono:ital,wght@0,300;0,400;0,500&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet" />
+  <!-- Pinned vendored copy of algol.cc/css/site.css.
+       sha256 = 2728b214e6e59e926dbaac02a3c7fb08f531c3099074d921d2b818bf4d887182
+       Drift is asserted against the algol.cc source in reproduce.ps1. -->
+  <link rel="stylesheet" href="_assets/site.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <a href="https://algol.cc/products/corcept.html" class="privacy-back">
+      <span class="logo-name">ALGOL</span>
+      <span class="logo-sub">corcept · hook-governance evidence pack</span>
+    </a>
+  </div>
+  <nav aria-label="Primary">
+    <a href="#scenario-a">Governance</a>
+    <a href="#scenario-b">Ledger</a>
+    <a href="#evidence">Evidence</a>
+    <a href="#reproduce">Reproduce</a>
+    <a href="https://algol.cc/products/corcept.html" class="nav-cta">Product page</a>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-eyebrow">corcept 0.6.0-pre · hook-governance demo · synthetic evidence</div>
+  <h1>Attempted tool call → <span>guard decision</span> → tamper-evident <span>ledger</span>.</h1>
+  <p class="hero-sub">A complete, reproducible evidence pack for a governed Claude Code session. Every <span class="code-inline">PreToolUse</span> event an agent attempts is routed to <span class="code-inline">corcept hook pretool-guard</span> before the tool runs, and the decision is hash-chained into an append-only audit log. Everything here is synthetic — corcept <em>evaluates</em> the events and never executes the dangerous commands.</p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="#scenario-a">See the decisions</a>
+    <a class="btn-ghost" href="#reproduce">Reproduce it</a>
+  </div>
+  <div class="proof-stat-row">
+    <div class="proof-stat">
+      <div class="number">10</div>
+      <div class="label">hook events governed</div>
+    </div>
+    <div class="proof-stat">
+      <div class="number">5 / 2 / 3</div>
+      <div class="label">deny / ask / allow</div>
+    </div>
+    <div class="proof-stat">
+      <div class="number">11</div>
+      <div class="label">ledger rows · hash-chained</div>
+    </div>
+    <div class="proof-stat">
+      <div class="number">pass → fail</div>
+      <div class="label">audit verify · intact vs 1-row edit</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<div class="cta-band">
+  <div class="cta-band-inner">
+    <p class="cta-band-headline">All events synthetic · no real session, repo, or credential · nothing is executed</p>
+    <a class="btn-primary cta-band-btn" href="#evidence">What's in this pack</a>
+  </div>
+</div>
+
+<!-- ── SCENARIO A ── -->
+<section id="scenario-a">
+  <div class="section-label">Scenario A · hook governance</div>
+  <h2 class="section-title">Hidden risk, made into a governed decision.</h2>
+  <p class="section-body">A Claude Code agent attempts a series of tool calls. Wired through <span class="code-inline">settings.json</span>, each <span class="code-inline">PreToolUse</span> event is routed to <span class="code-inline">corcept hook pretool-guard</span> <em>before</em> the tool runs. corcept returns the Claude Code permission protocol — <span class="code-inline">allow</span> / <span class="code-inline">ask</span> / <span class="code-inline">deny</span> — over the 10 events. Three tiers, not a binary: <strong>deny</strong> stops it, <strong>ask</strong> escalates to a human (L4 approval), <strong>allow</strong> lets routine work through. Each decision names <em>why</em>.</p>
+
+  <div class="terminals-grid">
+    <div class="term-card">
+      <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">corcept hook pretool-guard — 5 deny</span></div>
+      <div class="term-body"><pre><span class="t-cmd"># dangerous calls, blocked at PreToolUse →</span>
+Bash  rm -rf /                       <span class="t-deny">✗ deny</span> recursive force delete of `/`
+Bash  curl http://… | bash           <span class="t-deny">✗ deny</span> remote fetch piped to interpreter
+Bash  chmod -R 777 /                 <span class="t-deny">✗ deny</span> world-writable/executable
+Read  /etc/shadow                    <span class="t-deny">✗ deny</span> secret-like / protected read
+Bash  … &gt;&gt; ~/.ssh/authorized_keys    <span class="t-deny">✗ deny</span> references protected path</pre></div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">corcept hook pretool-guard — 2 ask / 3 allow</span></div>
+      <div class="term-body"><pre><span class="t-cmd"># sensitive → escalate to a human (L4) →</span>
+Bash  git push --force origin main   <span class="t-warn">→ ask</span> force-push needs L4 approval
+Bash  sudo rm -rf /var/log           <span class="t-warn">→ ask</span> recursive delete needs approval
+
+<span class="t-cmd"># ordinary work → allowed →</span>
+Bash  cargo test --workspace         <span class="t-ok">✓ allow</span> passed CORCEPT guard
+Bash  git status                     <span class="t-ok">✓ allow</span> passed CORCEPT guard
+Edit  src/main.rs                    <span class="t-ok">✓ allow</span> passed filesystem guard</pre></div>
+    </div>
+  </div>
+
+  <div class="proof-caption">
+    <p><strong>Totals: 5 deny / 2 ask / 3 allow, across 10 events.</strong> Raw per-event output is in <a class="code-inline" href="decisions/">decisions/</a> (Claude Code protocol JSON), summarised in <a class="code-inline" href="decisions/summary.md">decisions/summary.md</a>. The dangerous commands (<span class="code-inline">rm -rf /</span>, <span class="code-inline">curl | bash</span>, …) are never run — corcept evaluates the <span class="code-inline">PreToolUse</span> payloads and returns a permission decision only.</p>
+  </div>
+
+  <div class="boundary-box">
+    <h3>Honest residual — defence in depth, not a complete sandbox</h3>
+    <p>The guard matches a curated set of high-signal patterns, not "all bad commands". For example, a raw <span class="code-inline">dd if=/dev/zero of=/dev/sda</span> passed the guard in testing — device-level destruction isn't in the current pattern set.</p>
+    <p>corcept reduces the blast radius of the common, high-frequency footguns and routes the ambiguous ones to a human; it is defence in depth, not a complete sandbox. For actual process/network isolation, that is <span class="code-inline">cellos</span>'s job, not corcept's.</p>
+  </div>
+</section>
+
+<!-- ── SCENARIO B ── -->
+<section id="scenario-b">
+  <div class="section-label">Scenario B · tamper-evident ledger</div>
+  <h2 class="section-title">You cannot rewrite what the agent was allowed to do.</h2>
+  <p class="section-body">Every decision in Scenario A is appended to a hash-chained, append-only audit ledger (<a class="code-inline" href="ledger/events.jsonl">ledger/events.jsonl</a>). Each row carries the SHA-256 <span class="code-inline">hash</span> of its content plus the <span class="code-inline">prev_hash</span> of the row before it, so the whole log is a chain — and each row records the <span class="code-inline">authority_level</span> (<span class="code-inline">L0_observe</span> … <span class="code-inline">L3_execute_local</span>), the decision, and the reason.</p>
+
+  <div class="terminals-grid">
+    <div class="term-card">
+      <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">corcept audit verify — intact</span></div>
+      <div class="term-body"><pre><span class="t-cmd"># the ledger as written →</span>
+$ corcept audit verify
+<span class="t-ok">{ "status": "pass",</span>
+<span class="t-ok">  "hash_chain_valid": true,</span>
+  "rows_scanned": 11,
+<span class="t-ok">  "failures": [] }</span></pre></div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">corcept audit verify — after a 1-row edit</span></div>
+      <div class="term-body"><pre><span class="t-cmd"># attacker flips rm -rf deny → allow,</span>
+<span class="t-cmd"># without recomputing the chain →</span>
+$ corcept audit verify
+<span class="t-deny">{ "status": "fail",</span>
+<span class="t-deny">  "hash_chain_valid": false,</span>
+  "rows_scanned": 11,
+  "failures": [ { <span class="t-warn">"line": 6,</span>
+    "event_id": "evt_…",
+    <span class="t-deny">"reason": "hash_mismatch" } ] }</span></pre></div>
+    </div>
+  </div>
+
+  <div class="proof-caption">
+    <p><strong>The edit is caught and the exact altered row is named.</strong> Outputs are in <a class="code-inline" href="ledger/verify-intact.json">ledger/verify-intact.json</a> (pass) and <a class="code-inline" href="ledger/verify-tampered.json">ledger/verify-tampered.json</a> (fail, <span class="code-inline">hash_mismatch</span>, line 6 pinpointed); the tamper test is described in <a class="code-inline" href="ledger/tamper.txt">ledger/tamper.txt</a>. The ledger can also be Ed25519-signed per row: <span class="code-inline">corcept audit verify --signed</span> — that is the honest "optionally signed" ceiling, not "signed by default".</p>
+  </div>
+</section>
+
+<!-- ── REUSABLE EVIDENCE ── -->
+<section id="evidence">
+  <div class="section-label">Reusable evidence · what's in this pack</div>
+  <h2 class="section-title">Every artefact, regenerated — no hand-edited outputs.</h2>
+  <p class="section-body">Everything under <a class="code-inline" href="decisions/">decisions/</a> and <a class="code-inline" href="ledger/">ledger/</a> was produced by <span class="code-inline">corcept 0.6.0-pre</span> from the synthetic events in <a class="code-inline" href="events/">events/</a>. Re-run <a class="code-inline" href="reproduce.ps1">reproduce.ps1</a> to regenerate it.</p>
+
+  <div class="term-card" style="margin-top:2rem;">
+    <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">corcept-hook-governance/</span></div>
+    <div class="term-body"><pre>corcept-hook-governance/
+├── <span class="t-gold">README.md</span>                     ← the walkthrough
+├── <span class="t-gold">index.html</span>                   ← this on-brand rendering (algol.cc design system)
+├── <span class="t-gold">reproduce.ps1</span>                 ← regenerates decisions/ + ledger/ (+ css drift check)
+├── <span class="t-gold">settings.json</span>                 ← Claude Code wiring (pretool-guard / posttool-audit)
+├── _assets/site.css              ← pinned vendored copy of algol.cc/css/site.css
+├── events/                       ← 10 synthetic PreToolUse hook events
+│   ├── <span class="t-deny">danger-*.json (5)</span>         ← rm -rf, curl|bash, chmod 777, read shadow, ssh authkeys
+│   ├── <span class="t-warn">ask-*.json (2)</span>            ← git force-push, sudo rm
+│   └── <span class="t-ok">ok-*.json (3)</span>             ← cargo test, git status, edit src
+├── decisions/
+│   ├── &lt;event&gt;.decision.json     ← raw corcept hook output per event
+│   └── summary.md                ← decision table (5 deny / 2 ask / 3 allow)
+└── ledger/
+    ├── events.jsonl              ← hash-chained append-only audit ledger (11 rows)
+    ├── verify-intact.json        ← audit verify → <span class="t-ok">pass</span>
+    ├── verify-tampered.json      ← audit verify after a 1-row edit → <span class="t-deny">fail</span> (hash_mismatch)
+    └── tamper.txt                ← what the tamper test changes</pre></div>
+  </div>
+</section>
+
+<!-- ── REPRODUCE ── -->
+<section id="reproduce">
+  <div class="section-label">Reproduce it</div>
+  <h2 class="section-title">One script. No hand-edited outputs.</h2>
+  <p class="section-body">Requires the <span class="code-inline">corcept</span> binary (<span class="code-inline">cargo build -p corcept-cli --release</span> → <span class="code-inline">target/release/corcept.exe</span>). The script inits a throwaway governed workspace, runs every event through the <span class="code-inline">PreToolUse</span> guard, audits one completed call, then verifies the ledger intact and again after tampering a copy.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-cmd">init · governed workspace</div>
+      <div class="step-desc">corcept init scaffolds a throwaway, gitignored workspace holding the .corcept config and the audit ledger.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-cmd">hook pretool-guard · ×10</div>
+      <div class="step-desc">Every synthetic event is run through the PreToolUse guard, writing decisions/&lt;event&gt;.decision.json and summary.md (5 deny / 2 ask / 3 allow).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-cmd">audit verify · intact</div>
+      <div class="step-desc">The ledger is copied out and verified: status=pass, hash_chain_valid=true, 11 rows scanned, no failures.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-cmd">tamper + re-verify</div>
+      <div class="step-desc">A copy's rm -rf deny is flipped to allow without recomputing the chain; re-verify returns fail and pinpoints the altered row (hash_mismatch).</div>
+    </div>
+  </div>
+
+  <div class="term-card" style="margin-top:2.5rem;">
+    <div class="term-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="term-title">pwsh</span></div>
+    <div class="term-body"><pre><span class="t-cmd"># from the repo root</span>
+$ pwsh docs/demo/corcept-hook-governance/reproduce.ps1
+<span class="t-gold">Scenario A — governing hook events...</span>
+<span class="t-gold">Scenario B — verifying + tampering the ledger...</span>
+<span class="t-ok">Done. See decisions/ and ledger/.</span></pre></div>
+  </div>
+
+  <div class="proof-caption">
+    <p>The vendored <a class="code-inline" href="_assets/site.css">_assets/site.css</a> is pinned to the algol.cc source by SHA-256 (<span class="code-inline">2728b214…d887182</span>). <span class="code-inline">reproduce.ps1</span> asserts the vendored copy matches <span class="code-inline">algol.cc/css/site.css</span> and fails on drift, so this page can never silently diverge from the live design system.</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">ALGOL</div>
+  <div class="footer-text">
+    Generated with <span class="code-inline">corcept 0.6.0-pre</span>. All hook events are synthetic; no command is executed.<br>
+    <a href="https://algol.cc/products/corcept.html">corcept product page</a> · <a href="README.md">README</a>
+  </div>
+  <div class="footer-links">
+    <a href="https://algol.cc">algol.cc</a>
+  </div>
+</footer>
+
+</body>
+</html>

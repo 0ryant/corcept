@@ -1,0 +1,1 @@
+{"session_id":"demo","cwd":"__WORKSPACE__","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"cargo test --workspace"},"tool_use_id":"e08"}

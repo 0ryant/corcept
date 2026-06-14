@@ -1,0 +1,1 @@
+{"suppressOutput":true,"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"Recursive force deletion requires explicit approval: rm /var/log"}}
