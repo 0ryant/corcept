@@ -1,6 +1,6 @@
 [package]
 name = "corcept-mcp"
-version = "0.6.0-pre"
+version = "0.6.0-pre.1"
 edition = "2021"
 license = "BUSL-1.1"
 publish = false  # Private distribution per BUSL-1.1

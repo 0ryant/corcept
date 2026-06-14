@@ -1,3 +1,4 @@
+use corcept_ledger::generate_operator_key;
 use corcept_memory::{new_candidate, write_candidate};
 use corcept_runtime::{handle_hook, init_project, InitOptions};
 use serde_json::{json, Value};
@@ -6,6 +7,7 @@ use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 struct TempProject {
     dir: tempfile::TempDir,
@@ -46,13 +48,24 @@ struct McpHarness {
 
 impl McpHarness {
     fn start(root: &Path) -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_corcept"))
+        Self::start_with_env(root, &[])
+    }
+
+    /// Start `corcept serve` with extra environment variables applied only to the
+    /// spawned subprocess (not the test process). Used by the signed-ledger path so
+    /// the server resolves the same key trust store the test seeded into, without
+    /// mutating process-global env that parallel tests would race on.
+    fn start_with_env(root: &Path, env: &[(&str, &str)]) -> Self {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_corcept"));
+        command
             .args(["serve", "--path", &root.to_string_lossy()])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .unwrap();
+            .stderr(Stdio::piped());
+        for (key, value) in env {
+            command.env(key, value);
+        }
+        let mut child = command.spawn().unwrap();
 
         let stdin = child.stdin.take().unwrap();
         let stdout = BufReader::new(child.stdout.take().unwrap());
@@ -162,17 +175,61 @@ fn last_hash_path(root: &Path) -> PathBuf {
     root.join(".corcept").join("ledger").join("last_hash")
 }
 
+/// Serializes the brief window in which the signed-ledger test mutates process-global
+/// signing env (`CORCEPT_DATA_HOME` / `CORCEPT_TRUSTED_HISTORY`) to generate a key and
+/// sign the seed rows. Held only across in-process key-gen + seeding; the env is removed
+/// before the lock is released, and the serve subprocess receives the env explicitly via
+/// `start_with_env`, so the rest of the test (and other parallel tests) never observe it.
+fn signing_env_lock() -> MutexGuard<'static, ()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+/// Seed a SIGNED audit-bearing ledger and return the env the serve subprocess must
+/// receive so its strict `doctor` verifies the signatures against the same trust store.
+/// `data_home` must outlive the returned env strings and the harness.
+fn seed_signed_ledger(root: &Path, data_home: &Path) -> Vec<(String, String)> {
+    let data_home_str = data_home.to_string_lossy().into_owned();
+    {
+        // Hold the lock across key-gen + seeding, then drop the in-process env so no
+        // parallel test inherits a signing posture it has no key for.
+        let _guard = signing_env_lock();
+        std::env::set_var("CORCEPT_DATA_HOME", &data_home_str);
+        std::env::set_var("CORCEPT_TRUSTED_HISTORY", "1");
+        // Fresh trust store per test run; `force` so a reused data_home rotates cleanly.
+        generate_operator_key(true).unwrap();
+        seed_ledger(root);
+        std::env::remove_var("CORCEPT_TRUSTED_HISTORY");
+        std::env::remove_var("CORCEPT_DATA_HOME");
+    }
+    vec![
+        ("CORCEPT_DATA_HOME".to_string(), data_home_str),
+        ("CORCEPT_TRUSTED_HISTORY".to_string(), "1".to_string()),
+    ]
+}
+
 #[test]
 fn serve_initializes_lists_tools_and_handles_bounded_calls() {
     let project = TempProject::new();
     seed_candidate(project.path());
-    seed_ledger(project.path());
+    // This test exercises `doctor_report { strict: true }` and asserts status == "pass".
+    // Strict doctor now fails closed on an UNSIGNED audit-bearing ledger (an unsigned
+    // hash chain is not tamper-evident). Seed a genuinely SIGNED ledger so the pass is
+    // earned via the real Ed25519 verification path, not by weakening the check.
+    let data_home = tempfile::tempdir().unwrap();
+    let serve_env = seed_signed_ledger(project.path(), data_home.path());
+    let serve_env_refs: Vec<(&str, &str)> = serve_env
+        .iter()
+        .map(|(k, v)| (k.as_str(), v.as_str()))
+        .collect();
     let sidecar = last_hash_path(project.path());
     if sidecar.exists() {
         fs::remove_file(&sidecar).unwrap();
     }
 
-    let mut harness = McpHarness::start(project.path());
+    let mut harness = McpHarness::start_with_env(project.path(), &serve_env_refs);
     let served_root = project.path().display().to_string();
 
     let initialize = harness.initialize();
