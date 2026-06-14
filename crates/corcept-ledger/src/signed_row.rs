@@ -40,6 +40,18 @@ pub struct VerifyReport {
     pub hash_chain_valid: bool,
     pub signed_mode: bool,
     pub rows_scanned: usize,
+    /// Explicit, top-level tamper verdict. `true` iff the chain failed
+    /// integrity (status == "fail"). A consumer must never re-derive this by
+    /// hand-hashing rows: the chain is domain-separated under a private prefix
+    /// (see `HASH_DOMAIN` / `SIGN_DOMAIN`), so a naive SHA-256 over the row
+    /// bytes will not reproduce the committed digest and will false-flag a
+    /// clean ledger. Read this field verbatim.
+    #[serde(default)]
+    pub tamper_detected: bool,
+    /// 1-based line numbers (matching `failures[].line`) of every row that
+    /// failed integrity. Empty on a clean ledger.
+    #[serde(default)]
+    pub tampered_lines: Vec<usize>,
     pub failures: Vec<VerifyFailure>,
     /// Non-fatal downgrade notices (e.g. a row that only matches the legacy
     /// un-domain-separated hash scheme while the operator has opted into

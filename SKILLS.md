@@ -19,6 +19,7 @@ the other repos supply the memory, context, and authority that hooks consume.
 - [install-hooks-first](#skill-install-hooks-first) — bootstrap hooks into a target repo before any governed session
 - [pretool-deny-pattern](#skill-pretool-deny-pattern) — configure PreToolUse to deny destructive operations
 - [posttool-audit-emission](#skill-posttool-audit-emission) — every tool call generates a `corcept.event.tool_use.v1` ledger row
+- [verify-ledger-integrity](#skill-verify-ledger-integrity) — the ONE supported way to decide if the ledger is tampered (never hash it yourself)
 - [stop-check-with-evidence](#skill-stop-check-with-evidence) — Stop hook blocks premature completion when tests are stale
 - [bounded-subagent-launch](#skill-bounded-subagent-launch) — sub-agents launch with jurisdiction / model / effort / tool restrictions
 
@@ -149,6 +150,67 @@ append time). `audit verify` returns success iff the chain is intact.
 **See also:** `docs/adr/0006-event-ledger-hash-chain.md`,
 `docs/adr/0018-versioned-ledger-event-types.md`,
 `schemas/corcept.event.tool_use.v1.json`.
+
+---
+
+## Skill: verify-ledger-integrity
+
+**When:** You need to answer "is this ledger tampered?" — before trusting any
+ledger-derived fact, after copying a `.corcept/ledger/` between machines, or as
+a CI gate. This is a verdict you MUST NOT reconstruct by hand.
+
+**This is the ONLY supported way to determine ledger integrity. Do NOT compute
+SHA-256 over the rows yourself.** The hash chain is domain-separated under a
+**private prefix** (`HASH_DOMAIN` in `crates/corcept-ledger/src/canonical.rs`;
+signatures additionally use `SIGN_DOMAIN`), so a naive `sha256(row_bytes)` will
+**never** reproduce the committed digest and will **false-flag a clean ledger**.
+Run the tool and report its verdict **verbatim**.
+
+**How (golden invocation):**
+
+```bash
+# CLI — fail-closed: exits non-zero when tampering is detected.
+corcept audit --path /path/to/repo verify           # hash-chain integrity
+corcept audit --path /path/to/repo verify --signed  # + Ed25519 on every row
+```
+
+```text
+# MCP — tool: corcept_audit_verify
+#   params: { "path": "/path/to/repo", "signed": false }
+```
+
+Note the CLI argument order: `--path` is a flag on the `audit` PARENT command,
+so it must come **before** the `verify` subcommand
+(`audit --path X verify`, NOT `audit verify --path X`). The MCP wrapper emits
+this order for you.
+
+**Expected output:** A structured `VerifyReport`. Read these top-level fields —
+do not re-derive them:
+
+- `tamper_detected: bool` — the verdict. `false` = intact, `true` = tampered.
+- `tampered_lines: [usize]` — 1-based row numbers that failed (empty when clean).
+- `status: "pass" | "fail"`, `hash_chain_valid`, `rows_scanned`, `failures[]`,
+  `warnings[]` (non-fatal downgrade notices, e.g. legacy un-domain-separated
+  rows when `CORCEPT_ALLOW_LEGACY_HASH=1`).
+
+The process **exits non-zero** when `tamper_detected` is true (mirrors
+`doctor --strict`), so the tool is safe to wire directly into a CI gate without
+parsing JSON.
+
+**Common pitfalls:**
+
+- Hand-rolling SHA-256 to "double-check" the tool. The private domain prefix
+  guarantees your hand-rolled digest disagrees with the committed one — you will
+  report a clean ledger as tampered. Trust the tool's verdict.
+- Putting `--path` after `verify` on the CLI. clap rejects it
+  (`unexpected argument --path`) because `--path` lives on the `audit` parent.
+- Reading only stdout text and ignoring the exit code in a script. The exit code
+  is the fail-closed signal; `tamper_detected` is its structured twin.
+
+**See also:** `docs/adr/0006-event-ledger-hash-chain.md`,
+`docs/adr/0021-hardened-hash-domain-separation.md`,
+`crates/corcept-ledger/src/canonical.rs`,
+`crates/corcept-ledger/src/signed_row.rs`.
 
 ---
 

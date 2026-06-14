@@ -106,3 +106,45 @@ fn legacy_only_row_fails_by_default_but_warns_when_opted_in() {
 
     std::env::remove_var("CORCEPT_ALLOW_LEGACY_HASH");
 }
+
+#[test]
+fn tampered_row_sets_typed_top_level_verdict() {
+    // Intentionally does NOT mutate process-global signing env vars: the
+    // hash-chain tamper verdict is independent of signing mode (verified with
+    // require_signed=false), so this test stays isolation-safe even when run in
+    // parallel with the env-mutating signing tests in this file. The tamper is
+    // a hard HashMismatch (kept-old-hash), which is rejected regardless of the
+    // legacy-hash opt-in, so this test reads no signing/legacy env vars either.
+    let dir = tempfile::tempdir().unwrap();
+    // Two clean, hardened rows from append_event.
+    append_event(dir.path(), sample_event(LedgerEventKind::SessionStarted)).unwrap();
+    let second = append_event(dir.path(), sample_event(LedgerEventKind::SessionStarted)).unwrap();
+
+    // Sanity: clean ledger -> no tamper, empty tampered_lines.
+    let clean = verify_ledger(dir.path(), false).unwrap();
+    assert!(clean.is_pass(), "{clean:?}");
+    assert!(!clean.tamper_detected, "{clean:?}");
+    assert!(clean.tampered_lines.is_empty(), "{clean:?}");
+
+    // Tamper: rewrite the second row's payload but keep its committed hash, so a
+    // naive hand-rolled SHA-256 would never reproduce the (domain-separated)
+    // digest. Only the canonical verifier owns this verdict.
+    let raw = std::fs::read_to_string(ledger_path(dir.path())).unwrap();
+    let mut lines: Vec<String> = raw.lines().map(str::to_string).collect();
+    let mut tampered: corcept_types::LedgerEvent =
+        serde_json::from_str(&lines[1]).unwrap();
+    tampered.decision = Some("deny".to_string());
+    tampered.hash = second.hash.clone(); // keep the OLD hash -> mismatch
+    lines[1] = serde_json::to_string(&tampered).unwrap();
+    std::fs::write(ledger_path(dir.path()), format!("{}\n", lines.join("\n"))).unwrap();
+
+    let report = verify_ledger(dir.path(), false).unwrap();
+    assert!(!report.is_pass(), "{report:?}");
+    assert!(report.tamper_detected, "{report:?}");
+    assert_eq!(report.status, "fail");
+    assert_eq!(report.tampered_lines, vec![2], "{report:?}");
+    assert!(report
+        .failures
+        .iter()
+        .any(|f| f.reason == VerifyFailureReason::HashMismatch));
+}

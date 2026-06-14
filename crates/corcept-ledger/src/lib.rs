@@ -252,18 +252,22 @@ pub fn verify_ledger(path: impl AsRef<Path>, require_signed: bool) -> Result<Ver
         }
     }
 
-    let status = if failures.is_empty() && hash_chain_valid {
-        "pass"
-    } else {
-        "fail"
-    }
-    .to_string();
+    let tamper_detected = !failures.is_empty() || !hash_chain_valid;
+    let status = if tamper_detected { "fail" } else { "pass" }.to_string();
+    // De-duplicated, ascending line numbers of every failing row, surfaced as a
+    // top-level field so a consumer never has to re-derive integrity from the
+    // (domain-separated, privately-prefixed) hash chain by hand.
+    let mut tampered_lines: Vec<usize> = failures.iter().map(|f| f.line).collect();
+    tampered_lines.sort_unstable();
+    tampered_lines.dedup();
 
     Ok(VerifyReport {
         status,
         hash_chain_valid,
         signed_mode: require_signed,
         rows_scanned: events.len(),
+        tamper_detected,
+        tampered_lines,
         failures,
         warnings,
     })

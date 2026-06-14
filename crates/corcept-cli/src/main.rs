@@ -186,10 +186,15 @@ fn main() -> Result<()> {
         }
         Commands::Audit { path, command } => match command {
             Some(AuditCommands::Verify { signed }) => {
-                println!(
-                    "{}",
-                    serde_json::to_string_pretty(&verify_ledger(&path, signed)?)?
-                );
+                let report = verify_ledger(&path, signed)?;
+                println!("{}", serde_json::to_string_pretty(&report)?);
+                // Fail closed: ledger verification is an integrity gate, so a
+                // tampered chain must be a non-zero exit, not just printed JSON
+                // (mirrors `doctor`). Otherwise the gate is advisory and a weak
+                // caller can ignore the verdict.
+                if report.tamper_detected {
+                    std::process::exit(1);
+                }
             }
             None => {
                 println!("{}", serde_json::to_string_pretty(&audit(path)?)?);

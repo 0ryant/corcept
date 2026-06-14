@@ -34,7 +34,7 @@ impl McpTool for Tool {
         ToolDefinition {
             name: "corcept_audit_verify".into(),
             title: Some("Corcept Audit Verify".into()),
-            description: "Verify the integrity of the append-only ledger hash chain. With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe.".into(),
+            description: "Verify the integrity of the append-only ledger hash chain. This is the ONLY supported way to determine ledger integrity. Do NOT compute SHA-256 yourself: the chain is domain-separated under a PRIVATE prefix, so a hand-rolled hash will not match and will false-flag a clean ledger. Report this tool's verdict VERBATIM. Read the structured result: top-level `tamper_detected: bool` is the verdict and `tampered_lines: [..]` lists the failing 1-based rows; the process also exits non-zero when tampering is detected (fail-closed). With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe.".into(),
             input_schema: serde_json::to_value(&schema).unwrap_or_else(|_| json!({"type":"object"})),
             output_schema: None,
             annotations: Some(mcpact_mcp::ToolDefinition::mcpact_annotations(mcpact_core::AuthorityClass::Observe, server_config::TRUST)),
@@ -95,12 +95,18 @@ impl McpTool for Tool {
         let mut plan =
             ExecutionPlan::new(server_config::binary_path().to_string_lossy().to_string());
         plan.argv = Vec::new();
+        // `--path` is a flag on the `audit` PARENT, not on the `verify`
+        // subcommand (see corcept-cli clap definition). It MUST be pushed
+        // before `verify`, otherwise clap rejects it ("unexpected argument
+        // --path") and the tool errors on any non-default workspace, which is
+        // what forced weak callers into hand-rolled hashing. Correct shape:
+        //   audit --path <X> verify [--signed]
         plan.argv.push("audit".into());
-        plan.argv.push("verify".into());
         if let Some(path) = args.path {
             plan.argv.push("--path".into());
             plan.argv.push(path);
         }
+        plan.argv.push("verify".into());
         if args.signed {
             plan.argv.push("--signed".into());
         }

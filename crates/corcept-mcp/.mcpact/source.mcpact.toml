@@ -2,7 +2,7 @@ schema_version = "mcpact.manifest.v1"
 
 [package]
 name = "corcept-mcp"
-version = "0.6.0-pre"
+version = "0.6.0-pre.2"
 description = "MCP adapter for corcept — Claude Code hook governance + append-only audit ledger surface"
 # Package-level trust ceiling. Per-tool ceilings are annotated in each tool's
 # description (Reviewed / Signed / Verified) and enforced via the policy
@@ -233,7 +233,7 @@ allow = []
 [[tools]]
 name = "corcept_audit_verify"
 title = "Corcept Audit Verify"
-description = "Verify the integrity of the append-only ledger hash chain. With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe."
+description = "Verify the integrity of the append-only ledger hash chain. This is the ONLY supported way to determine ledger integrity. Do NOT compute SHA-256 yourself: the chain is domain-separated under a PRIVATE prefix, so a hand-rolled hash will not match and will false-flag a clean ledger. Report this tool's verdict VERBATIM. Read the structured result: top-level `tamper_detected: bool` is the verdict and `tampered_lines: [..]` lists the failing 1-based rows; the process also exits non-zero when tampering is detected (fail-closed). With signed=true also verifies Ed25519 signatures on every row (Trust ceiling: Verified). Without signed, hash-chain integrity only (Trust ceiling: Signed). Authority: Observe."
 command = ["audit", "verify"]
 
 [tools.args.path]

@@ -1,9 +1,9 @@
 schema_version = "mcpact.lock.v1"
 package_name = "corcept-mcp"
-package_version = "0.6.0-pre"
+package_version = "0.6.0-pre.2"
 generator = "mcpact-generate 0.1.0"
 trust = "Reviewed"
-source_manifest_sha256 = "b613824d5b9543852fa6aae91d9e2d69b2d73894e86371a159d209dc6e6a2fd3"
+source_manifest_sha256 = "4fcaf2b967413ed90c3ec6cfe84a9c6a7bd649d478aebf899480d418786c3436"
 
 [[generated_files]]
 path = ".mcpact/hosts/claude.json"
@@ -22,8 +22,8 @@ sha256 = "60d906fdc04ccf13d13fc559941d393a0f1da952bd7f526b39d4e5815f6664ee"
 
 [[generated_files]]
 path = ".mcpact/source.mcpact.toml"
-bytes = 9879
-sha256 = "b613824d5b9543852fa6aae91d9e2d69b2d73894e86371a159d209dc6e6a2fd3"
+bytes = 10350
+sha256 = "4fcaf2b967413ed90c3ec6cfe84a9c6a7bd649d478aebf899480d418786c3436"
 
 [[generated_files]]
 path = ".mcpact/tools/corcept_audit_verify.json"
@@ -72,8 +72,8 @@ sha256 = "995c04cf814fcd6eb84234635a38b214a97220c99ce4d5346bc074f3c4c9a35a"
 
 [[generated_files]]
 path = "Cargo.toml"
-bytes = 679
-sha256 = "608347991a782341da6d54c716b789500a3bf572d061bcd87224e3ea719a2e68"
+bytes = 645
+sha256 = "0407dc53cb071b6848877d354a9b7f20b793b47eda7a09067bad7bb427a14bc9"
 
 [[generated_files]]
 path = "README.md"
@@ -92,8 +92,8 @@ sha256 = "8c298861e20303647b7c08caeaa9672c4c419f87182ebffdb984d7822290deea"
 
 [[generated_files]]
 path = "src/tools/corcept_audit_verify.rs"
-bytes = 5847
-sha256 = "7094514b01ad1e29922beb05a779ec2f04e2c5c7c7cf8fc817cf15a334a2b38f"
+bytes = 6744
+sha256 = "5316571100ac474c90407efc18d2047decb1d7ef6be5e545191e0a539b6d7e90"
 
 [[generated_files]]
 path = "src/tools/corcept_doctor.rs"
