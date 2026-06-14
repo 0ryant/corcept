@@ -1,6 +1,10 @@
 /target/
 /target-mcpfix/
 /target-*/
+# Build/target dirs at ANY depth (root /target-*/ above is root-anchored and
+# misses nested ones like crates/<x>/target-hooks-v2/ — see GH001 push block).
+**/target-*/
+target-hooks-v2/
 /dist/
 /results/
 /supply-chain-reports/
