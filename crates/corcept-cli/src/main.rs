@@ -170,16 +170,19 @@ fn main() -> Result<()> {
             validate_perms,
             strict,
         } => {
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&doctor_with_options(
-                    path,
-                    DoctorOptions {
-                        validate_perms,
-                        strict,
-                    },
-                )?)?
-            );
+            let report = doctor_with_options(
+                path,
+                DoctorOptions {
+                    validate_perms,
+                    strict,
+                },
+            )?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            // Fail closed: `--strict` is a CI gate, so a failing report must be a
+            // non-zero exit, not just printed JSON. Without this the gate is advisory.
+            if report.status == "fail" {
+                std::process::exit(1);
+            }
         }
         Commands::Audit { path, command } => match command {
             Some(AuditCommands::Verify { signed }) => {

@@ -4,7 +4,9 @@ use corcept_doctrine::{default_documents, validate as validate_doctrine};
 use corcept_guards::{
     evaluate_pre_tool, evaluate_stop, extract_command, extract_path, StopVerdict,
 };
-use corcept_ledger::{ensure_ledger, read_events, verify_hash_chain_readonly};
+use corcept_ledger::{
+    ensure_ledger, read_events, verify_hash_chain_readonly, verify_ledger, VerifyFailureReason,
+};
 use corcept_memory::ensure_dirs as ensure_memory_dirs;
 use corcept_sink::{build_ledger_event, SinkDispatcher, SinkRecord};
 use corcept_types::{
@@ -293,6 +295,9 @@ pub fn doctor_with_options(path: impl AsRef<Path>, options: DoctorOptions) -> Re
             schema_ok,
             "Ledger events validate against corcept.ledger_event.v1 schema",
         );
+
+        let (signed_ok, signed_detail) = ledger_signing_check(root);
+        push_check(&mut checks, "ledger_signed", signed_ok, &signed_detail);
     }
 
     if options.validate_perms {
@@ -342,6 +347,68 @@ fn validate_ledger_schema(root: &Path) -> bool {
         }
     }
     true
+}
+
+/// Strict-mode tamper-evidence check: every audit-bearing ledger row must carry
+/// a valid Ed25519 signature that verifies against the operator trust store.
+///
+/// An unsigned hash-chain alone is NOT tamper-evident against an adversary who can
+/// rewrite `events.jsonl` and recompute the chain (the hash chain links rows to each
+/// other, but nothing binds them to a key the attacker does not hold). `corcept doctor
+/// --strict` therefore HARD-FAILS on an unsigned audit-bearing ledger rather than
+/// silently passing. An empty ledger (nothing to protect yet) passes.
+///
+/// Returns `(passed, human-readable detail)`.
+fn ledger_signing_check(root: &Path) -> (bool, String) {
+    let report = match verify_ledger(root, true) {
+        Ok(report) => report,
+        Err(err) => {
+            return (
+                false,
+                format!("Ledger signature verification could not run: {err}"),
+            );
+        }
+    };
+
+    if report.rows_scanned == 0 {
+        return (
+            true,
+            "Ledger is empty; no audit rows require signatures".to_string(),
+        );
+    }
+
+    if report.is_pass() {
+        return (
+            true,
+            format!(
+                "All {} audit rows carry a valid Ed25519 signature (tamper-evident)",
+                report.rows_scanned
+            ),
+        );
+    }
+
+    // Surface the dominant failure class so the operator knows whether the ledger is
+    // unsigned (the default-posture gap) or signed-but-broken (key/tamper problem).
+    let unsigned_rows = report
+        .failures
+        .iter()
+        .filter(|f| matches!(f.reason, VerifyFailureReason::MissingSignature))
+        .count();
+    let detail = if unsigned_rows > 0 {
+        format!(
+            "{unsigned_rows} of {} audit rows are UNSIGNED — an unsigned hash chain is not \
+             tamper-evident; generate a key (`corcept key generate`) and enable signed history \
+             (CORCEPT_TRUSTED_HISTORY=1)",
+            report.rows_scanned
+        )
+    } else {
+        format!(
+            "{} of {} audit rows failed signature verification (key/tamper)",
+            report.failures.len(),
+            report.rows_scanned
+        )
+    };
+    (false, detail)
 }
 
 fn push_check(checks: &mut Vec<CheckResult>, name: &str, pass: bool, detail: &str) {
