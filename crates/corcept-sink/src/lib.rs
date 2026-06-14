@@ -268,6 +268,16 @@ pub fn build_ledger_event(
         hash: None,
         metadata,
         signature: None,
+        // cex* correlation fields are stamped at the runtime emission seam
+        // (append_hook_event); build_ledger_event leaves them None so the
+        // ledger row stays additive when no cex context is supplied.
+        cexauthorityclass: None,
+        cextrustceiling: None,
+        cexsessionid: None,
+        cexparenttrace: None,
+        cexdoctrinecite: None,
+        cexreceipthash: None,
+        cexrevocation: None,
     }
 }
 

@@ -24,7 +24,20 @@
     "prev_hash": { "type": ["string", "null"] },
     "hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
     "metadata": { "type": "object" },
-    "signature": { "$ref": "#/$defs/row_signature" }
+    "signature": { "$ref": "#/$defs/row_signature" },
+    "cexauthorityclass": {
+      "type": ["string", "null"],
+      "enum": ["observe", "analyze", "plan", "mutate", "destroy", "credential", null]
+    },
+    "cextrustceiling": {
+      "type": ["string", "null"],
+      "enum": ["inferred", "reviewed", "signed", "verified", null]
+    },
+    "cexsessionid": { "type": ["string", "null"] },
+    "cexparenttrace": { "type": ["string", "null"] },
+    "cexdoctrinecite": { "type": ["string", "null"] },
+    "cexreceipthash": { "type": ["string", "null"], "pattern": "^blake3:[0-9a-f]{64}$" },
+    "cexrevocation": { "type": ["string", "null"] }
   },
   "$defs": {
     "row_signature": {

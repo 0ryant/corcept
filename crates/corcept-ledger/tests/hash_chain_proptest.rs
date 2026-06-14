@@ -38,6 +38,13 @@ proptest! {
                     hash: None,
                     metadata: Default::default(),
                     signature: None,
+                    cexauthorityclass: None,
+                    cextrustceiling: None,
+                    cexsessionid: None,
+                    cexparenttrace: None,
+                    cexdoctrinecite: None,
+                    cexreceipthash: None,
+                    cexrevocation: None,
                 },
             ).unwrap();
         }

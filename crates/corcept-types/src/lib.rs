@@ -50,6 +50,26 @@ impl std::fmt::Display for AuthorityLevel {
     }
 }
 
+impl AuthorityLevel {
+    /// Map the corcept `AuthorityLevel` ladder onto the cex envelope-v2
+    /// `cexauthorityclass` value space {observe|analyze|plan|mutate|destroy|
+    /// credential} so aegress corridor-verify can ingest corcept rows.
+    ///
+    /// SYN-1 cex emission seam (envelope-v2). The mapping is intentionally
+    /// lossy: corcept's L1_propose is a *plan* and L2_modify_local is treated
+    /// as *analyze* (local-only, reversible inspection-grade change) per the
+    /// SYN-1 seam spec; L3/L4 escalate to mutate/destroy.
+    pub fn cex_authority_class(self) -> &'static str {
+        match self {
+            AuthorityLevel::L0Observe => "observe",
+            AuthorityLevel::L1Propose => "plan",
+            AuthorityLevel::L2ModifyLocal => "analyze",
+            AuthorityLevel::L3ExecuteLocal => "mutate",
+            AuthorityLevel::L4ExternalSideEffect => "destroy",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PermissionDecision {
@@ -401,6 +421,40 @@ pub struct LedgerEvent {
     pub metadata: BTreeMap<String, Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub signature: Option<RowSignature>,
+    // --- SYN-1 cex emission seam (envelope-v2) ---------------------------
+    // Additive, optional cex* correlation fields. Field names + value spaces
+    // match `aegress_core::CexCloudEvent` so aegress corridor-verify can
+    // ingest projected corcept rows. Every field is `Option<String>` with
+    // `skip_serializing_if = "Option::is_none"`, so stripping the cex* fields
+    // leaves a valid CloudEvent / ledger row. These do NOT participate in the
+    // existing SHA-256 ledger hash chain semantics beyond being part of the
+    // canonical body like any other field; `cexreceipthash`, when present, is
+    // BLAKE3 (ADR-0003) of the row canonical body and is computed at the
+    // CloudEvents projection over the finalized row — it is NOT the SHA-256
+    // ledger `hash`.
+    /// cex authority class: observe|analyze|plan|mutate|destroy|credential.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexauthorityclass: Option<String>,
+    /// cex trust ceiling: inferred|reviewed|signed|verified.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cextrustceiling: Option<String>,
+    /// cex session id (mirrors `session_id`; the natural cex correlation key).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexsessionid: Option<String>,
+    /// cex parent-trace id. corcept is the only tool with a natural parent
+    /// link: the upstream `tool_use_id` of the Claude tool call being hooked.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexparenttrace: Option<String>,
+    /// cex doctrine cite for the emitting seam.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexdoctrinecite: Option<String>,
+    /// cex receipt hash: BLAKE3 (ADR-0003) of the row canonical body when
+    /// emitted. Distinct from the SHA-256 ledger `hash` chain.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexreceipthash: Option<String>,
+    /// cex revocation/identity status of the signing key (envelope-v2 §ADR-0002).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cexrevocation: Option<String>,
 }
 
 /// Ed25519 per-row signature (ADR-0025).

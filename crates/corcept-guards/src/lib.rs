@@ -1722,6 +1722,13 @@ mod tests {
                 hash: None,
                 metadata: Default::default(),
                 signature: None,
+                cexauthorityclass: None,
+                cextrustceiling: None,
+                cexsessionid: None,
+                cexparenttrace: None,
+                cexdoctrinecite: None,
+                cexreceipthash: None,
+                cexrevocation: None,
             },
         )
         .unwrap();
@@ -2165,6 +2172,13 @@ mod tests {
                 hash: None,
                 metadata: Default::default(),
                 signature: None,
+                cexauthorityclass: None,
+                cextrustceiling: None,
+                cexsessionid: None,
+                cexparenttrace: None,
+                cexdoctrinecite: None,
+                cexreceipthash: None,
+                cexrevocation: None,
             };
         append_event(
             dir.path(),

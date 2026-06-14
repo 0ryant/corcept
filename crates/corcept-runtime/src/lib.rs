@@ -560,7 +560,7 @@ fn append_hook_event(
     if let Some(tool_input) = &input.tool_input {
         metadata.insert("tool_input".to_string(), sanitize_value(tool_input));
     }
-    let event = build_ledger_event(
+    let mut event = build_ledger_event(
         input.session_id.clone(),
         input
             .agent_type
@@ -574,6 +574,32 @@ fn append_hook_event(
         reason.map(ToOwned::to_owned),
         metadata,
     );
+    // --- SYN-1 cex emission seam (envelope-v2) ---------------------------
+    // All 5 hooks converge on this control point, so stamping the cex*
+    // correlation fields here covers every emitted ledger row. The fields are
+    // additive (Option<String>, skip_serializing_if = None); stripping them
+    // leaves a valid CloudEvent / ledger row. Field names + value spaces match
+    // aegress_core::CexCloudEvent so aegress corridor-verify can ingest the
+    // projected rows.
+    //
+    // cexsessionid    = the session_id that already flows through the envelope.
+    // cexparenttrace  = the upstream tool_use_id; corcept is the only tool with
+    //                   a natural parent link to the Claude tool call it hooks.
+    // cextrustceiling = "reviewed": corcept's verdict is a typed/governed
+    //                   review, not merely inferred. Value space is
+    //                   {inferred|reviewed|signed|verified}.
+    // cexauthorityclass = AuthorityLevel ladder mapped onto the envelope-v2
+    //                   {observe|analyze|plan|mutate|destroy|credential} space.
+    // cexreceipthash  = intentionally left None here; it is BLAKE3 (ADR-0003)
+    //                   of the row canonical body and is computed at the
+    //                   CloudEvents projection over the FINALIZED row (after
+    //                   id/ts/hash are assigned by append_event). It is NOT the
+    //                   SHA-256 ledger hash chain — that chain is untouched.
+    event.cexsessionid = input.session_id.clone();
+    event.cexparenttrace = input.tool_use_id.clone();
+    event.cextrustceiling = Some("reviewed".to_string());
+    event.cexauthorityclass = Some(authority_level.cex_authority_class().to_string());
+    event.cexdoctrinecite = Some("corcept:syn-1:cex-spine".to_string());
     let correlation = input
         .session_id
         .clone()

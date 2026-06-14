@@ -118,6 +118,13 @@ mod tests {
             hash: None,
             metadata: BTreeMap::new(),
             signature: None,
+            cexauthorityclass: None,
+            cextrustceiling: None,
+            cexsessionid: None,
+            cexparenttrace: None,
+            cexdoctrinecite: None,
+            cexreceipthash: None,
+            cexrevocation: None,
         }
     }
 

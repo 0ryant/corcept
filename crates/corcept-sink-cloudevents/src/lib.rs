@@ -38,6 +38,60 @@ pub struct CloudEventV1 {
     pub provenanceversion: String,
     pub provenancekind: String,
     pub corcepteventfingerprint: String,
+    // --- SYN-1 cex emission extension attributes (envelope-v2) -----------
+    // Copied from the ledger row's cex* fields. All optional + skipped when
+    // None, so stripping the cex* extension attrs leaves a valid CloudEvent.
+    // Names + value spaces match aegress_core::CexCloudEvent so aegress
+    // corridor-verify can ingest these rows.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexauthorityclass: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cextrustceiling: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexsessionid: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexparenttrace: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexdoctrinecite: Option<String>,
+    /// BLAKE3 (ADR-0003) of the finalized row canonical body. NOT the SHA-256
+    /// ledger hash chain.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexreceipthash: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cexrevocation: Option<String>,
+}
+
+/// cex content addressing is BLAKE3 (ADR-0003; SHA-256-as-content-address is
+/// FORBIDDEN). `cexreceipthash` is BLAKE3 of the row canonical body per
+/// envelope-v2 — distinct from corcept's SHA-256 ledger hash chain, which is
+/// left untouched (the deferred breaking migration).
+///
+/// Canonical body = the ledger event serialized to JSON with object keys
+/// recursively sorted (RFC-8785-style JCS ordering), with the volatile
+/// `cexreceipthash` field itself excluded so the hash is self-consistent.
+pub fn cex_receipt_hash(event: &LedgerEvent) -> Option<String> {
+    let mut value = serde_json::to_value(event).ok()?;
+    if let Value::Object(map) = &mut value {
+        map.remove("cexreceipthash");
+    }
+    let canonical = serde_json::to_string(&canonicalize_for_cex(&value)).ok()?;
+    let digest = blake3::hash(canonical.as_bytes());
+    Some(format!("blake3:{}", digest.to_hex()))
+}
+
+/// Recursively sort object keys for a stable canonical body (JCS ordering).
+fn canonicalize_for_cex(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let sorted: std::collections::BTreeMap<_, _> = map
+                .iter()
+                .map(|(k, v)| (k.clone(), canonicalize_for_cex(v)))
+                .collect();
+            Value::Object(sorted.into_iter().collect())
+        }
+        Value::Array(items) => Value::Array(items.iter().map(canonicalize_for_cex).collect()),
+        other => other.clone(),
+    }
 }
 
 pub fn ce_type_for(kind: LedgerEventKind) -> &'static str {
@@ -140,6 +194,21 @@ pub fn project_event(event: &LedgerEvent) -> CloudEventV1 {
         provenanceversion: PROVENANCE_VERSION.to_string(),
         provenancekind: PROVENANCE_KIND.to_string(),
         corcepteventfingerprint: fingerprint,
+        // SYN-1 cex emission: copy the row's cex* fields onto extension attrs.
+        // cexreceipthash is recomputed here as BLAKE3 of the finalized row
+        // canonical body (the seam leaves it None because id/ts/hash are not
+        // assigned until append_event). If the row carried a precomputed
+        // cexreceipthash it is preserved; otherwise we compute one.
+        cexauthorityclass: event.cexauthorityclass.clone(),
+        cextrustceiling: event.cextrustceiling.clone(),
+        cexsessionid: event
+            .cexsessionid
+            .clone()
+            .or_else(|| event.session_id.clone()),
+        cexparenttrace: event.cexparenttrace.clone(),
+        cexdoctrinecite: event.cexdoctrinecite.clone(),
+        cexreceipthash: event.cexreceipthash.clone().or_else(|| cex_receipt_hash(event)),
+        cexrevocation: event.cexrevocation.clone(),
     }
 }
 
@@ -188,6 +257,13 @@ mod tests {
                 json!({"command": "rm -rf /", "api_key": "sk-secret"}),
             )]),
             signature: None,
+            cexauthorityclass: None,
+            cextrustceiling: None,
+            cexsessionid: None,
+            cexparenttrace: None,
+            cexdoctrinecite: None,
+            cexreceipthash: None,
+            cexrevocation: None,
         }
     }
 
@@ -214,5 +290,107 @@ mod tests {
     fn fingerprint_is_stable() {
         let event = sample_event();
         assert_eq!(event_fingerprint(&event), event_fingerprint(&event));
+    }
+
+    /// A row as stamped by the SYN-1 runtime emission seam (append_hook_event):
+    /// cexsessionid/cexparenttrace/cextrustceiling/cexauthorityclass populated,
+    /// cexreceipthash left None (computed at projection over the finalized row).
+    fn cex_stamped_event() -> LedgerEvent {
+        let mut event = sample_event();
+        event.cexsessionid = Some("sess-1".to_string());
+        event.cexparenttrace = Some("toolu_parent_123".to_string());
+        event.cextrustceiling = Some("reviewed".to_string());
+        // L3ExecuteLocal -> mutate per the SYN-1 ladder mapping.
+        event.cexauthorityclass = Some(AuthorityLevel::L3ExecuteLocal.cex_authority_class().to_string());
+        event.cexdoctrinecite = Some("corcept:syn-1:cex-spine".to_string());
+        event
+    }
+
+    #[test]
+    fn cex_authority_ladder_maps_to_envelope_v2_space() {
+        assert_eq!(AuthorityLevel::L0Observe.cex_authority_class(), "observe");
+        assert_eq!(AuthorityLevel::L1Propose.cex_authority_class(), "plan");
+        assert_eq!(AuthorityLevel::L2ModifyLocal.cex_authority_class(), "analyze");
+        assert_eq!(AuthorityLevel::L3ExecuteLocal.cex_authority_class(), "mutate");
+        assert_eq!(
+            AuthorityLevel::L4ExternalSideEffect.cex_authority_class(),
+            "destroy"
+        );
+    }
+
+    #[test]
+    fn projection_populates_cex_fields() {
+        let ce = project_event(&cex_stamped_event());
+        // Stamped-at-seam fields flow through to extension attrs.
+        assert_eq!(ce.cexauthorityclass.as_deref(), Some("mutate"));
+        assert_eq!(ce.cextrustceiling.as_deref(), Some("reviewed"));
+        assert_eq!(ce.cexsessionid.as_deref(), Some("sess-1"));
+        assert_eq!(ce.cexparenttrace.as_deref(), Some("toolu_parent_123"));
+        assert_eq!(ce.cexdoctrinecite.as_deref(), Some("corcept:syn-1:cex-spine"));
+        // cexreceipthash is computed at projection: BLAKE3 (ADR-0003), NOT SHA-256.
+        let hash = ce.cexreceipthash.expect("cexreceipthash present");
+        assert!(hash.starts_with("blake3:"), "cex content addressing must be BLAKE3, got {hash}");
+        assert!(!hash.starts_with("sha256:"), "SHA-256-as-content-address is FORBIDDEN");
+
+        // Value spaces match aegress envelope-v2 so corridor-verify can ingest.
+        const AUTHORITY_SPACE: &[&str] =
+            &["observe", "analyze", "plan", "mutate", "destroy", "credential"];
+        const TRUST_SPACE: &[&str] = &["inferred", "reviewed", "signed", "verified"];
+        assert!(AUTHORITY_SPACE.contains(&ce.cexauthorityclass.as_deref().unwrap()));
+        assert!(TRUST_SPACE.contains(&ce.cextrustceiling.as_deref().unwrap()));
+    }
+
+    #[test]
+    fn cex_fields_are_additive_stripping_leaves_valid_cloudevent() {
+        let ce = project_event(&cex_stamped_event());
+        let mut value = serde_json::to_value(&ce).expect("serialize CE");
+        let obj = value.as_object_mut().expect("CE is a JSON object");
+
+        // The serialized CE carries the cex* extension attrs.
+        for k in [
+            "cexauthorityclass",
+            "cextrustceiling",
+            "cexsessionid",
+            "cexparenttrace",
+            "cexdoctrinecite",
+            "cexreceipthash",
+        ] {
+            assert!(obj.contains_key(k), "expected cex attr {k} in projection");
+        }
+
+        // Strip every cex* extension attr. What remains must still be a valid
+        // CloudEvent 1.0 envelope: required core attrs present + no cex* leakage.
+        let cex_keys: Vec<String> = obj
+            .keys()
+            .filter(|k| k.starts_with("cex"))
+            .cloned()
+            .collect();
+        for k in &cex_keys {
+            obj.remove(k);
+        }
+        for required in ["specversion", "id", "source", "type"] {
+            assert!(
+                obj.contains_key(required),
+                "stripped CE missing required CloudEvents attr {required}"
+            );
+        }
+        assert_eq!(obj.get("specversion").and_then(Value::as_str), Some("1.0"));
+        assert!(
+            !obj.keys().any(|k| k.starts_with("cex")),
+            "no cex* attrs should remain after stripping"
+        );
+    }
+
+    #[test]
+    fn cex_receipt_hash_is_stable_and_self_consistent() {
+        let event = cex_stamped_event();
+        let h1 = cex_receipt_hash(&event).expect("hash");
+        // Recomputing yields the same hash (canonical body is deterministic).
+        assert_eq!(h1, cex_receipt_hash(&event).expect("hash"));
+        // Setting the row's own cexreceipthash to the computed value must NOT
+        // change the recomputed hash (the field is excluded from the body).
+        let mut with_hash = event;
+        with_hash.cexreceipthash = Some(h1.clone());
+        assert_eq!(cex_receipt_hash(&with_hash).expect("hash"), h1);
     }
 }
