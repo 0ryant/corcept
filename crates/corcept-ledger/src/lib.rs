@@ -256,7 +256,7 @@ pub fn verify_ledger(path: impl AsRef<Path>, require_signed: bool) -> Result<Ver
     let status = if tamper_detected { "fail" } else { "pass" }.to_string();
     // De-duplicated, ascending line numbers of every failing row, surfaced as a
     // top-level field so a consumer never has to re-derive integrity from the
-    // (domain-separated, privately-prefixed) hash chain by hand.
+    // (canonicalized, publicly domain-separated) hash chain by hand.
     let mut tampered_lines: Vec<usize> = failures.iter().map(|f| f.line).collect();
     tampered_lines.sort_unstable();
     tampered_lines.dedup();

@@ -160,11 +160,25 @@ ledger-derived fact, after copying a `.corcept/ledger/` between machines, or as
 a CI gate. This is a verdict you MUST NOT reconstruct by hand.
 
 **This is the ONLY supported way to determine ledger integrity. Do NOT compute
-SHA-256 over the rows yourself.** The hash chain is domain-separated under a
-**private prefix** (`HASH_DOMAIN` in `crates/corcept-ledger/src/canonical.rs`;
-signatures additionally use `SIGN_DOMAIN`), so a naive `sha256(row_bytes)` will
-**never** reproduce the committed digest and will **false-flag a clean ledger**.
-Run the tool and report its verdict **verbatim**.
+SHA-256 over the rows yourself.** The hash chain is canonicalized and
+domain-separated under a **public, source-visible prefix** (`HASH_DOMAIN =
+"corcept:ledger:v1:"` in `crates/corcept-ledger/src/canonical.rs`; signatures
+additionally use `SIGN_DOMAIN`), so a naive `sha256(row_bytes)` will **never**
+reproduce the committed digest and will **false-flag a clean ledger**. Run the
+tool and report its verdict **verbatim**.
+
+**Honest ceiling — `verify` vs `verify --signed`.** Because the prefix is
+public, the keyless `verify` (signed=false) is a tamper-**detection** checksum:
+it catches accidental corruption and a *naive* editor who does not recompute the
+chain. It does NOT make the ledger tamper-**evident** against an adversary who
+can read this source: such an adversary can rewrite a row AND recompute the whole
+chain over the public prefix, and plain `verify` will **false-PASS** it. For
+tamper-evidence in that threat model use `verify --signed`, which requires a
+valid Ed25519 signature on every row from a key the adversary does not hold; it
+catches the recompute attack and names the failing row. Enforce signing at
+`corcept doctor --strict` and append signed rows with `CORCEPT_SIGN_LEDGER=1`.
+See the reproducible proof under
+`docs/demo/corcept-ledger-recompute-attack/`.
 
 **How (golden invocation):**
 
@@ -199,9 +213,13 @@ parsing JSON.
 
 **Common pitfalls:**
 
-- Hand-rolling SHA-256 to "double-check" the tool. The private domain prefix
-  guarantees your hand-rolled digest disagrees with the committed one — you will
-  report a clean ledger as tampered. Trust the tool's verdict.
+- Hand-rolling SHA-256 to "double-check" the tool. The canonicalization plus the
+  public domain prefix guarantee your hand-rolled digest disagrees with the
+  committed one — you will report a clean ledger as tampered. Trust the tool's
+  verdict.
+- Treating a plain `verify` PASS as proof against a malicious editor. It is not:
+  a source-reading adversary can recompute the chain and pass. Use
+  `verify --signed` when the threat model includes a deliberate rewrite.
 - Putting `--path` after `verify` on the CLI. clap rejects it
   (`unexpected argument --path`) because `--path` lives on the `audit` parent.
 - Reading only stdout text and ignoring the exit code in a script. The exit code
