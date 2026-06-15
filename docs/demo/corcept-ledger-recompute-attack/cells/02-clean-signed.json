@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "hash_chain_valid": true,
+  "signed_mode": true,
+  "rows_scanned": 3,
+  "tamper_detected": false,
+  "tampered_lines": [],
+  "failures": [],
+  "warnings": []
+}

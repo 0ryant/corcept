@@ -1,0 +1,28 @@
+Recompute-attack proof (signed vs unsigned)
+===========================================
+
+Threat model: a SOURCE-READING adversary. The hash domain prefix
+HASH_DOMAIN = "corcept:ledger:v1:" is PUBLIC (crates/corcept-ledger/src/canonical.rs),
+so the attacker can rewrite a row AND recompute the whole chain.
+
+Attack: row 2 ("rm -rf /") flipped from deny -> allow, then the entire
+prev_hash/hash chain recomputed over the public prefix (signatures left stale).
+
+Result:
+  - 03-attacked-keyless-FALSE-PASS.json : `audit verify`          -> status=pass tamper_detected=False
+    The keyless chain is a tamper-DETECTION checksum (catches accidental
+    corruption + naive edits). It does NOT make the ledger tamper-EVIDENT
+    against this adversary: it FALSE-PASSES.
+  - 04-attacked-signed-CATCHES.json     : `audit verify --signed` -> status=fail tamper_detected=True tampered_lines=2,3 exit=1
+    Signing IS the load-bearing element: the stale Ed25519 signature no longer
+    matches the rewritten preimage and the attacker cannot forge one without the
+    operator's private key. The exact altered row is named (BadSignature).
+
+Enforcement (unchanged by this demo): sign at append with CORCEPT_SIGN_LEDGER=1
+and gate at `corcept doctor --strict` (fail-closed, non-zero exit). The default
+keyless mode is honestly labelled as detection, not evidence.
+
+Honest ceiling: signing proves a row was produced by a holder of the operator
+key; it does NOT prove the *content* of a decision was correct, nor protect a
+key that itself leaks. Non-repudiation across machines is the tsign / cex-spine
+path, deferred.

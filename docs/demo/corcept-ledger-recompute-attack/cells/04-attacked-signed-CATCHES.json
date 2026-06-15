@@ -1,0 +1,24 @@
+{
+  "status": "fail",
+  "hash_chain_valid": true,
+  "signed_mode": true,
+  "rows_scanned": 3,
+  "tamper_detected": true,
+  "tampered_lines": [
+    2,
+    3
+  ],
+  "failures": [
+    {
+      "line": 2,
+      "event_id": "evt_4dc0891f12b94ba38a67becde95d6442",
+      "reason": "bad_signature"
+    },
+    {
+      "line": 3,
+      "event_id": "evt_9f1ba9de76b24326b98782652581b605",
+      "reason": "bad_signature"
+    }
+  ],
+  "warnings": []
+}

@@ -42,10 +42,17 @@ pub struct VerifyReport {
     pub rows_scanned: usize,
     /// Explicit, top-level tamper verdict. `true` iff the chain failed
     /// integrity (status == "fail"). A consumer must never re-derive this by
-    /// hand-hashing rows: the chain is domain-separated under a private prefix
-    /// (see `HASH_DOMAIN` / `SIGN_DOMAIN`), so a naive SHA-256 over the row
-    /// bytes will not reproduce the committed digest and will false-flag a
-    /// clean ledger. Read this field verbatim.
+    /// hand-hashing rows: the chain is canonicalized and domain-separated under
+    /// a PUBLIC, source-visible prefix (see `HASH_DOMAIN` / `SIGN_DOMAIN`), so a
+    /// naive SHA-256 over the raw row bytes will not reproduce the committed
+    /// digest and will false-flag a clean ledger. Read this field verbatim.
+    ///
+    /// Honest ceiling: because the prefix is public, this keyless verdict is a
+    /// tamper-DETECTION checksum, not tamper-EVIDENCE against a source-reading
+    /// adversary. Such an adversary can rewrite a row and recompute the entire
+    /// chain, which a `signed_mode == false` verdict will FALSE-PASS. Only a
+    /// `signed_mode == true` verdict (valid Ed25519 over every row, from a key
+    /// the adversary does not hold) is tamper-evident in that threat model.
     #[serde(default)]
     pub tamper_detected: bool,
     /// 1-based line numbers (matching `failures[].line`) of every row that
