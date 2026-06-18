@@ -22,7 +22,7 @@
     "decision_reason": { "type": ["string", "null"] },
     "evidence_refs": { "type": "array", "items": { "type": "string" } },
     "prev_hash": { "type": ["string", "null"] },
-    "hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "hash": { "type": ["string", "null"], "pattern": "^blake3:[0-9a-f]{64}$" },
     "metadata": { "type": "object" },
     "signature": { "$ref": "#/$defs/row_signature" },
     "cexauthorityclass": {

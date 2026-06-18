@@ -5,7 +5,6 @@ use corcept_ledger::read_events_file;
 use corcept_types::{LedgerEvent, LedgerEventKind};
 use serde::Serialize;
 use serde_json::{json, Value};
-use sha2::{Digest, Sha256};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::Path;
@@ -63,35 +62,26 @@ pub struct CloudEventV1 {
 
 /// cex content addressing is BLAKE3 (ADR-0003; SHA-256-as-content-address is
 /// FORBIDDEN). `cexreceipthash` is BLAKE3 of the row canonical body per
-/// envelope-v2 — distinct from corcept's SHA-256 ledger hash chain, which is
-/// left untouched (the deferred breaking migration).
+/// envelope-v2 — distinct from corcept's ledger hash chain.
 ///
-/// Canonical body = the ledger event serialized to JSON with object keys
-/// recursively sorted (RFC-8785-style JCS ordering), with the volatile
-/// `cexreceipthash` field itself excluded so the hash is self-consistent.
+/// # AXIOM conformance (Phase-3 reconcile)
+///
+/// The canonical form is now the shared **RFC-8785 (JCS)** canonicalizer
+/// ([`axiom_canonical::to_jcs_bytes`]) and the digest is the shared
+/// [`axiom_hash::blake3_hex`] — the SAME path aegress's corridor oracle
+/// (`aegress_core::blake3_jcs_value`) uses. corcept stamps `cextrustceiling =
+/// "reviewed"`, so its rows are not subject to aegress's `signed`/`verified`
+/// receipt-hash recompute; this hash is self-consistent within corcept and
+/// carries the `blake3:` prefix corcept's own surfaces expect. The volatile
+/// `cexreceipthash` field is excluded from the body so the hash cannot cover
+/// itself.
 pub fn cex_receipt_hash(event: &LedgerEvent) -> Option<String> {
     let mut value = serde_json::to_value(event).ok()?;
     if let Value::Object(map) = &mut value {
         map.remove("cexreceipthash");
     }
-    let canonical = serde_json::to_string(&canonicalize_for_cex(&value)).ok()?;
-    let digest = blake3::hash(canonical.as_bytes());
-    Some(format!("blake3:{}", digest.to_hex()))
-}
-
-/// Recursively sort object keys for a stable canonical body (JCS ordering).
-fn canonicalize_for_cex(value: &Value) -> Value {
-    match value {
-        Value::Object(map) => {
-            let sorted: std::collections::BTreeMap<_, _> = map
-                .iter()
-                .map(|(k, v)| (k.clone(), canonicalize_for_cex(v)))
-                .collect();
-            Value::Object(sorted.into_iter().collect())
-        }
-        Value::Array(items) => Value::Array(items.iter().map(canonicalize_for_cex).collect()),
-        other => other.clone(),
-    }
+    let bytes = axiom_canonical::to_jcs_bytes(&value).ok()?;
+    Some(format!("blake3:{}", axiom_hash::blake3_hex(&bytes)))
 }
 
 pub fn ce_type_for(kind: LedgerEventKind) -> &'static str {
@@ -110,6 +100,12 @@ pub fn ce_type_for(kind: LedgerEventKind) -> &'static str {
 }
 
 /// Stable 32-hex fingerprint shared across ledger projection surfaces.
+///
+/// BLAKE3 per ADR-0003 (a content address of the row identity tuple, not a MAC).
+/// The 32-hex truncation preserves the field width; only the hash function
+/// changes. This `corcepteventfingerprint` is corcept-internal to the CloudEvents
+/// projection — it is not part of the aegress cex corridor recompute (which keys
+/// on the `cex*` extension attrs), so the migration does not regress the corridor.
 pub fn event_fingerprint(event: &LedgerEvent) -> String {
     let material = format!(
         "{}|{}|{}|{}",
@@ -118,8 +114,7 @@ pub fn event_fingerprint(event: &LedgerEvent) -> String {
         event.decision.as_deref().unwrap_or(""),
         event.session_id.as_deref().unwrap_or("")
     );
-    let digest = Sha256::digest(material.as_bytes());
-    hex::encode(digest)[..32].to_string()
+    axiom_hash::blake3_hex(material.as_bytes())[..32].to_string()
 }
 
 fn redact_value(value: &Value) -> Value {

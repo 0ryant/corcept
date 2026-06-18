@@ -27,7 +27,10 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+chrono.workspace = true
 serde_json.workspace = true
+axiom-exit.workspace = true
+axiom-audit.workspace = true
 corcept-runtime = { path = "../corcept-runtime", version = "0.6.0-pre" }
 corcept-memory = { path = "../corcept-memory", version = "0.6.0-pre" }
 corcept-doctrine = { path = "../corcept-doctrine", version = "0.6.0-pre" }

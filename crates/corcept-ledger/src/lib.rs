@@ -9,12 +9,19 @@ use uuid::Uuid;
 mod canonical;
 mod keys;
 mod signed_row;
+mod trail;
 
 pub use canonical::{
-    allow_legacy_hash, classify_event_hash, hash_event_hardened, hash_event_legacy,
-    verify_event_hash, HashMatch, HASH_DOMAIN,
+    allow_legacy_hash, canonicalize, classify_event_hash, hash_event_hardened, hash_event_legacy,
+    verify_event_hash, HashMatch, HASH_DOMAIN, HASH_PREFIX,
 };
 pub use keys::{generate_operator_key, load_active_signing_key, show_operator_key, KeyInfo};
+pub use axiom_audit::ReceiptLink;
+pub use trail::{
+    append_audit, pinned_public_key_hex, verify_receipt, verify_trail, Artifact, AuditLink,
+    ChainVerdict, Receipt, ReceiptBody, ReceiptVerdict, TrailError, TrailLock, AUDIT_SCHEMA,
+    GENESIS_HASH, PINNED_KEY_ID, RECEIPT_SCHEMA, TOOL_NAME, TOOL_VERSION, TRAIL_FILENAME,
+};
 pub use signed_row::{
     sign_event, trusted_history_enabled, verify_row_signature, VerifyFailure, VerifyFailureReason,
     VerifyReport, ATTESTATION_SCHEMA_VERSION, SIGN_DOMAIN,

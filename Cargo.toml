@@ -30,6 +30,14 @@ readme = "README.md"
 [workspace.dependencies]
 anyhow = "1.0"
 blake3 = "1.5"
+# Shared AXIOM doctrine crates (git-pinned to one rev; NO crates.io publish —
+# git-pin is the permanent dep model, products ship as license-gated binaries
+# on R2). Phase-3 conformance: HASH/AUDIT/RECEIPT/EXIT.
+axiom-hash = { git = "https://github.com/0ryant/axiom-doctrine-rs.git", rev = "3f09282" }
+axiom-canonical = { git = "https://github.com/0ryant/axiom-doctrine-rs.git", rev = "3f09282" }
+axiom-exit = { git = "https://github.com/0ryant/axiom-doctrine-rs.git", rev = "3f09282" }
+axiom-audit = { git = "https://github.com/0ryant/axiom-doctrine-rs.git", rev = "3f09282" }
+axiom-receipt = { git = "https://github.com/0ryant/axiom-doctrine-rs.git", rev = "3f09282" }
 chrono = { version = "0.4", features = ["serde", "clock"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 hex = "0.4"

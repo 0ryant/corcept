@@ -1,55 +1,74 @@
 //! Domain-separated canonical JSON for ledger hashing (ADR-0021).
+//!
+//! # AXIOM conformance (ADR-0003 / pattern 03)
+//!
+//! Content addressing is **BLAKE3** via [`axiom_hash::blake3_hex`], and the
+//! canonical byte form is **RFC-8785 (JCS)** via [`axiom_canonical::to_jcs_bytes`].
+//! This replaces the previous SHA-256 + hand-rolled key-sort. The stored hash
+//! therefore carries the `blake3:` prefix. This is a BREAKING re-key of the
+//! ledger hash chain: rows hashed under the old SHA-256 scheme will not verify
+//! unless the operator opts into the legacy scheme (`CORCEPT_ALLOW_LEGACY_HASH`),
+//! which exists only as a downgrade-with-warning bridge.
+//!
+//! The domain-separation prefix ([`HASH_DOMAIN`]) is retained: it binds a digest
+//! to "this is a corcept ledger row" so a bare BLAKE3 of the same bytes cannot be
+//! replayed into the chain. It is distinct from the cex corridor's
+//! `cexreceipthash` (also BLAKE3, computed over a different body), which is left
+//! untouched.
 
 use anyhow::Result;
 use corcept_types::LedgerEvent;
-use serde_json::{Map, Value};
-use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+use serde_json::Value;
 
+/// Domain prefix bound into the hashed bytes (ADR-0021). Binds a digest to the
+/// corcept ledger so a bare content hash cannot be replayed into the chain.
 pub const HASH_DOMAIN: &str = "corcept:ledger:v1:";
 
-pub fn canonicalize(value: &Value) -> Value {
-    match value {
-        Value::Object(map) => {
-            let sorted: BTreeMap<_, _> = map
-                .iter()
-                .map(|(k, v)| (k.clone(), canonicalize(v)))
-                .collect();
-            Value::Object(sorted.into_iter().collect::<Map<_, _>>())
-        }
-        Value::Array(items) => Value::Array(items.iter().map(canonicalize).collect()),
-        other => other.clone(),
-    }
-}
+/// BLAKE3 content-address prefix for hardened ledger hashes (ADR-0003).
+pub const HASH_PREFIX: &str = "blake3:";
 
+/// Legacy SHA-256 prefix, retained only so [`classify_event_hash`] can detect a
+/// downgrade and surface it. No new hashes are written with this prefix.
+const LEGACY_PREFIX: &str = "sha256:";
+
+/// Compute the hardened content address of an event: `blake3:<hex>` over
+/// `HASH_DOMAIN || JCS(event sans hash/signature)`.
+///
+/// JCS (RFC-8785) sorts object keys recursively, so the digest is independent of
+/// serialization order. `hash` and `signature` are excluded so the digest is
+/// self-consistent (it cannot cover itself).
 pub fn hash_event_hardened(event: &LedgerEvent) -> Result<String> {
     let mut clone = event.clone();
     clone.hash = None;
     clone.signature = None;
-    let value = serde_json::to_value(&clone)?;
-    let canonical = serde_json::to_string(&canonicalize(&value))?;
-    let mut hasher = Sha256::new();
-    hasher.update(HASH_DOMAIN.as_bytes());
-    hasher.update(canonical.as_bytes());
-    Ok(format!("sha256:{}", hex::encode(hasher.finalize())))
+    let canonical = axiom_canonical::to_jcs_bytes(&clone)?;
+    let mut material = HASH_DOMAIN.as_bytes().to_vec();
+    material.extend_from_slice(&canonical);
+    Ok(format!("{HASH_PREFIX}{}", axiom_hash::blake3_hex(&material)))
 }
 
+/// Legacy un-domain-separated SHA-256 hash kept ONLY for downgrade detection.
+///
+/// This reproduces the pre-ADR-0003 (and pre-ADR-0021) scheme so
+/// [`classify_event_hash`] can recognise an old row and report the downgrade.
+/// It is never written for new rows.
 pub fn hash_event_legacy(event: &LedgerEvent) -> Result<String> {
+    use sha2::{Digest, Sha256};
     let mut clone = event.clone();
     clone.hash = None;
     clone.signature = None;
     let canonical = serde_json::to_string(&clone)?;
     let mut hasher = Sha256::new();
     hasher.update(canonical.as_bytes());
-    Ok(format!("sha256:{}", hex::encode(hasher.finalize())))
+    Ok(format!("{LEGACY_PREFIX}{}", hex::encode(hasher.finalize())))
 }
 
-/// True when the operator has explicitly opted into accepting the legacy,
-/// un-domain-separated hash format (`CORCEPT_ALLOW_LEGACY_HASH=1|true`).
+/// True when the operator has explicitly opted into accepting the legacy
+/// SHA-256, un-domain-separated hash format (`CORCEPT_ALLOW_LEGACY_HASH=1|true`).
 ///
-/// The legacy format predates ADR-0021 and is NOT domain-separated or
-/// canonicalized. Accepting it silently defeats the ADR-0021 hardening, so it
-/// must be opt-in and off by default.
+/// The legacy format predates ADR-0003/ADR-0021 and is neither BLAKE3,
+/// domain-separated, nor JCS-canonicalized. Accepting it silently defeats the
+/// hardening, so it must be opt-in and off by default.
 pub fn allow_legacy_hash() -> bool {
     std::env::var("CORCEPT_ALLOW_LEGACY_HASH")
         .ok()
@@ -59,9 +78,9 @@ pub fn allow_legacy_hash() -> bool {
 /// Result of matching a stored hash against the known schemes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HashMatch {
-    /// Matches the ADR-0021 hardened (domain-separated, canonicalized) scheme.
+    /// Matches the ADR-0003 hardened (BLAKE3, domain-separated, JCS) scheme.
     Hardened,
-    /// Matches only the legacy un-hardened scheme (downgrade — surfaces a warning).
+    /// Matches only the legacy SHA-256 scheme (downgrade — surfaces a warning).
     Legacy,
     /// Matches neither scheme (tampered or missing).
     None,
@@ -82,10 +101,10 @@ pub fn classify_event_hash(event: &LedgerEvent) -> Result<HashMatch> {
     Ok(HashMatch::None)
 }
 
-/// Verify a row's stored hash. The legacy un-domain-separated format is only
-/// accepted when the operator opts in via `CORCEPT_ALLOW_LEGACY_HASH`; by
-/// default only the ADR-0021 hardened scheme is accepted so that the
-/// hardening is enforced rather than advisory.
+/// Verify a row's stored hash. The legacy SHA-256 format is only accepted when
+/// the operator opts in via `CORCEPT_ALLOW_LEGACY_HASH`; by default only the
+/// ADR-0003 hardened BLAKE3 scheme is accepted so that the hardening is enforced
+/// rather than advisory.
 pub fn verify_event_hash(event: &LedgerEvent) -> Result<bool> {
     Ok(match classify_event_hash(event)? {
         HashMatch::Hardened => true,
@@ -94,10 +113,28 @@ pub fn verify_event_hash(event: &LedgerEvent) -> Result<bool> {
     })
 }
 
+/// Recursively sort object keys. Retained for callers that need a stable
+/// `serde_json::Value` ordering for display; the *hash* path uses JCS directly.
+#[must_use]
+pub fn canonicalize(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let sorted: std::collections::BTreeMap<_, _> = map
+                .iter()
+                .map(|(k, v)| (k.clone(), canonicalize(v)))
+                .collect();
+            Value::Object(sorted.into_iter().collect())
+        }
+        Value::Array(items) => Value::Array(items.iter().map(canonicalize).collect()),
+        other => other.clone(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use corcept_types::{AuthorityLevel, LEDGER_EVENT_SCHEMA};
+    use serde_json::Value;
     use std::collections::BTreeMap;
 
     fn sample_event() -> LedgerEvent {
@@ -129,6 +166,16 @@ mod tests {
     }
 
     #[test]
+    fn hardened_hash_is_blake3_prefixed() {
+        let event = sample_event();
+        let h = hash_event_hardened(&event).unwrap();
+        assert!(h.starts_with("blake3:"), "expected blake3 prefix, got {h}");
+        assert!(!h.starts_with("sha256:"));
+        // blake3: + 64 lowercase hex chars.
+        assert_eq!(h.len(), "blake3:".len() + 64);
+    }
+
+    #[test]
     fn key_reorder_does_not_change_hardened_hash() {
         let event = sample_event();
         let h1 = hash_event_hardened(&event).unwrap();
@@ -155,7 +202,7 @@ mod tests {
 
     #[test]
     fn legacy_hash_rejected_by_default() {
-        // Legacy (un-domain-separated) rows must NOT verify unless the
+        // Legacy (SHA-256, un-domain-separated) rows must NOT verify unless the
         // operator explicitly opts in. classify_event_hash still reports the
         // downgrade so operators can be warned.
         let event = sample_event();

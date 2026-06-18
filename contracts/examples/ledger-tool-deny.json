@@ -12,6 +12,6 @@
   "decision_reason": "Destructive command blocked by policy",
   "evidence_refs": [],
   "prev_hash": null,
-  "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
   "metadata": {}
 }

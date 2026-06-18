@@ -5,7 +5,6 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 use chrono::{SecondsFormat, Utc};
 use corcept_types::{LedgerEvent, RowSignature};
 use ed25519_dalek::{Signer, SigningKey, Verifier, VerifyingKey};
-use sha2::{Digest, Sha256};
 use std::path::Path;
 
 use crate::canonical::hash_event_hardened;
@@ -73,9 +72,15 @@ impl VerifyReport {
     }
 }
 
+/// Content-address an Ed25519 public key as `fp:<first-16-bytes-of-BLAKE3-hex>`.
+///
+/// BLAKE3 per ADR-0003 (the key id is a content address of the pubkey bytes, not
+/// a MAC). The 16-byte (32 hex char) truncation matches the prior layout; only
+/// the hash function changes. This is a BREAKING re-key of `key_id`, so existing
+/// `<key_id>.pub` trust files and signed rows must be regenerated.
 pub fn key_fingerprint(pubkey: &VerifyingKey) -> String {
-    let digest = Sha256::digest(pubkey.as_bytes());
-    format!("fp:{}", hex::encode(&digest[..16]))
+    let hex = axiom_hash::blake3_hex(pubkey.as_bytes());
+    format!("fp:{}", &hex[..32])
 }
 
 pub fn signing_preimage(event: &LedgerEvent) -> Result<Vec<u8>> {

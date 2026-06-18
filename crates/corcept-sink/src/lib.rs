@@ -14,6 +14,13 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+/// Internal sink-dispatch DIAGNOSTIC schema. This is NOT the doctrine receipt.
+///
+/// The load-bearing `axiom.receipt.v1` receipt (pattern 07) is emitted by the
+/// CLI verbs via `corcept_ledger::Receipt` — tool / operation / outcome /
+/// inputs+outputs (BLAKE3) / audit_chain linkage, signed Ed25519. `SinkRecord`
+/// remains a lightweight per-emit dispatch breadcrumb for the telemetry / debug
+/// / receipt-dispatch sinks and is intentionally kept separate.
 pub const SINK_RECORD_SCHEMA: &str = "corcept.sink_record.v1";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
