@@ -128,7 +128,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 [[package]]
 name = "axiom-audit"
 version = "0.1.0"
-source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=3f09282#3f09282d0e0db2fc9277f6d742eaf4bf3fe59786"
+source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=bc8fc58b604614c3597d374fe204439f97c9128d#bc8fc58b604614c3597d374fe204439f97c9128d"
 dependencies = [
  "axiom-canonical",
  "axiom-hash",
@@ -140,7 +140,7 @@ dependencies = [
 [[package]]
 name = "axiom-canonical"
 version = "0.1.0"
-source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=3f09282#3f09282d0e0db2fc9277f6d742eaf4bf3fe59786"
+source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=bc8fc58b604614c3597d374fe204439f97c9128d#bc8fc58b604614c3597d374fe204439f97c9128d"
 dependencies = [
  "serde",
  "serde_json",
@@ -151,12 +151,12 @@ dependencies = [
 [[package]]
 name = "axiom-exit"
 version = "0.1.0"
-source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=3f09282#3f09282d0e0db2fc9277f6d742eaf4bf3fe59786"
+source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=bc8fc58b604614c3597d374fe204439f97c9128d#bc8fc58b604614c3597d374fe204439f97c9128d"
 
 [[package]]
 name = "axiom-hash"
 version = "0.1.0"
-source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=3f09282#3f09282d0e0db2fc9277f6d742eaf4bf3fe59786"
+source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=bc8fc58b604614c3597d374fe204439f97c9128d#bc8fc58b604614c3597d374fe204439f97c9128d"
 dependencies = [
  "blake3",
  "thiserror 2.0.18",
@@ -165,9 +165,10 @@ dependencies = [
 [[package]]
 name = "axiom-receipt"
 version = "0.1.0"
-source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=3f09282#3f09282d0e0db2fc9277f6d742eaf4bf3fe59786"
+source = "git+https://github.com/0ryant/axiom-doctrine-rs.git?rev=bc8fc58b604614c3597d374fe204439f97c9128d#bc8fc58b604614c3597d374fe204439f97c9128d"
 dependencies = [
  "axiom-canonical",
+ "axiom-hash",
  "ed25519-dalek",
  "hex",
  "serde",
