@@ -116,6 +116,27 @@ pub fn dir_permissions_secure(path: &Path) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, MutexGuard};
+
+    /// Serializes the tests that mutate process-global path env vars
+    /// (`CORCEPT_STATE_HOME`, `HOME`, `CORCEPT_TEST_EMPTY`). `cargo test` runs
+    /// the tests in this binary on parallel threads, and `std::env::set_var`/
+    /// `remove_var` are process-wide, so without this lock one path test can
+    /// clobber another's env mid-run (e.g. `xdg_overrides_win` removing
+    /// `CORCEPT_STATE_HOME` while `default_operator_state_via_override` is
+    /// reading it) — a 1-in-5 flake under `cargo test --workspace`. Holding the
+    /// guard for the whole test body guarantees at most one env-mutating path
+    /// test touches these vars at a time.
+    static PATH_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    /// Acquire the path-env lock, recovering from poisoning so that one
+    /// panicking (failed-assertion) test does not turn every serialized sibling
+    /// into a confusing `PoisonError` instead of its real verdict.
+    fn lock_path_env() -> MutexGuard<'static, ()> {
+        PATH_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
 
     #[test]
     fn project_ledger_under_corcept() {
@@ -125,6 +146,7 @@ mod tests {
 
     #[test]
     fn xdg_overrides_win() {
+        let _env_guard = lock_path_env();
         let tmp = tempfile::tempdir().unwrap();
         let state = tmp.path().join("state");
         std::env::set_var("CORCEPT_STATE_HOME", &state);
@@ -136,6 +158,7 @@ mod tests {
 
     #[test]
     fn env_path_rejects_empty() {
+        let _env_guard = lock_path_env();
         std::env::set_var("CORCEPT_TEST_EMPTY", "");
         assert!(env_path("CORCEPT_TEST_EMPTY").is_none());
         std::env::remove_var("CORCEPT_TEST_EMPTY");
@@ -143,6 +166,7 @@ mod tests {
 
     #[test]
     fn default_operator_state_via_override() {
+        let _env_guard = lock_path_env();
         let tmp = tempfile::tempdir().unwrap();
         let state = tmp.path().join("state");
         std::env::set_var("CORCEPT_STATE_HOME", &state);
