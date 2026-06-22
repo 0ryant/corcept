@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
 mod canonical;
+mod key;
 mod keys;
 mod signed_row;
 mod trail;
@@ -14,6 +15,11 @@ mod trail;
 pub use canonical::{
     allow_legacy_hash, canonicalize, classify_event_hash, hash_event_hardened, hash_event_legacy,
     verify_event_hash, HashMatch, HASH_DOMAIN, HASH_PREFIX,
+};
+pub use key::{
+    active_key_class, active_key_id, active_public_key_hex, active_signer, pinned_signer,
+    DEPLOYMENT_KEY_ID_DEFAULT, PINNED_KEY_ID as RECEIPT_PINNED_KEY_ID,
+    PINNED_SEED as RECEIPT_PINNED_SEED,
 };
 pub use keys::{generate_operator_key, load_active_signing_key, show_operator_key, KeyInfo};
 pub use axiom_audit::ReceiptLink;

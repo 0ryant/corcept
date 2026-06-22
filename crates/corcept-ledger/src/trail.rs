@@ -27,9 +27,11 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use axiom_audit::{AuditEntry, ReceiptLink};
-use axiom_receipt::{Ed25519Signer, Jcs};
+use axiom_receipt::{Ed25519Signer, Jcs, KeyClass};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+use crate::key;
 
 pub use axiom_audit::{ChainVerdict, AUDIT_SCHEMA, GENESIS_HASH, TRAIL_FILENAME};
 
@@ -42,16 +44,9 @@ pub const TOOL_NAME: &str = "corcept";
 /// corcept version stamped into rows/receipts.
 pub const TOOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Identifier of the pinned in-process signing key.
-pub const PINNED_KEY_ID: &str = "corcept-pinned-ed25519-v1";
-
-/// RFC-8032 ed25519 test-vector seed. NOT a secret — pinned and public on
-/// purpose so any verifier can reconstruct the public key. The same seed the
-/// reference tools (tflip / axiom-receipt) use.
-const PINNED_SEED: [u8; 32] = [
-    0x9d, 0x61, 0xb1, 0x9d, 0xef, 0xfd, 0x5a, 0x60, 0xba, 0x84, 0x4a, 0xf4, 0x92, 0xec, 0x2c, 0xc4,
-    0x44, 0x49, 0xc5, 0x69, 0x7b, 0x32, 0x69, 0x19, 0x70, 0x3b, 0xac, 0x03, 0x1c, 0xae, 0x7f, 0x60,
-];
+/// Identifier of the pinned in-process receipt-signing key. Re-exported from
+/// [`crate::key`], the single source of truth for the receipt signer.
+pub const PINNED_KEY_ID: &str = key::PINNED_KEY_ID;
 
 /// Errors from the audit-trail / receipt path.
 #[derive(Debug, Error)]
@@ -76,10 +71,11 @@ pub enum TrailError {
 /// Convenience result alias.
 pub type Result<T> = std::result::Result<T, TrailError>;
 
-/// The pinned in-process signer.
+/// The pinned in-process receipt signer (the verification anchor; the *active*
+/// signer used to produce receipts may be a deployment key, see [`key`]).
 #[must_use]
 fn signer() -> Ed25519Signer {
-    Ed25519Signer::from_seed(PINNED_SEED, PINNED_KEY_ID)
+    key::pinned_signer()
 }
 
 /// A cross-process advisory lock guarding read-then-append on a single
@@ -288,8 +284,13 @@ pub struct ReceiptBody {
     pub doctrine_citations: Vec<String>,
     /// RFC-3339 creation timestamp.
     pub created_at: String,
-    /// Identifier of the pinned key the signature is under.
+    /// Identifier of the key the signature is under.
     pub key_id: String,
+    /// Signing-key tier: `dev` (the pinned demo key — mechanism, not origin) or
+    /// `deployment` (a configured `CORCEPT_SIGNING_SEED_HEX` deployment key —
+    /// origin-grade once its trust root is published). Stamped inside the signed
+    /// body so it cannot be relabelled after signing.
+    pub key_class: KeyClass,
 }
 
 impl ReceiptBody {
@@ -307,7 +308,8 @@ impl ReceiptBody {
             audit_chain: None,
             doctrine_citations: default_citations(),
             created_at: created_at.to_string(),
-            key_id: PINNED_KEY_ID.to_string(),
+            key_id: key::active_key_id(),
+            key_class: key::active_key_class(),
         }
     }
 }
@@ -334,12 +336,15 @@ pub struct Receipt {
 }
 
 impl Receipt {
-    /// Sign `body` under the pinned key, producing a complete receipt.
+    /// Sign `body` under the **active** receipt key (a deployment key from
+    /// `CORCEPT_SIGNING_SEED_HEX` if configured, else the pinned dev key),
+    /// producing a complete receipt. The `key_id` / `key_class` already stamped
+    /// into the body by [`ReceiptBody::new`] describe that same active key.
     ///
     /// # Errors
     /// [`TrailError::Receipt`] if the body cannot be canonicalized/signed.
     pub fn sign(body: ReceiptBody) -> Result<Self> {
-        let (sig, _key_id) = axiom_receipt::sign_bytes(&Jcs(&body), &signer())?;
+        let (sig, _key_id) = axiom_receipt::sign_bytes(&Jcs(&body), &key::active_signer())?;
         Ok(Self {
             body,
             signature: hex_encode(&sig),
@@ -372,10 +377,19 @@ pub enum ReceiptVerdict {
     Invalid(String),
 }
 
-/// Offline-verify a receipt against the pinned public key:
+/// Offline-verify a receipt against the **pinned dev** public key:
 /// 1. schema must be `axiom.receipt.v1`;
-/// 2. `key_id` must match the pinned key;
+/// 2. `key_class` must be `dev` and `key_id` must match the pinned key;
 /// 3. the Ed25519 signature must verify over the JCS canonical body.
+///
+/// This is the in-tree verifier and it is anchored on the pinned dev key by
+/// design (mechanism, not origin). A `deployment`-class receipt
+/// (`CORCEPT_SIGNING_SEED_HEX` was set at sign time) is **out of scope** here:
+/// its authenticity is rooted in the deployment's own published
+/// [`axiom_receipt::TrustRoot`], not in this pinned anchor. Such a receipt is
+/// returned as [`ReceiptVerdict::Invalid`] with an explicit
+/// deployment-trust-root message rather than silently treated as a forgery, so
+/// the boundary is never confused with tamper.
 ///
 /// Returns a typed [`ReceiptVerdict`]; never panics.
 ///
@@ -388,6 +402,13 @@ pub fn verify_receipt(receipt: &Receipt) -> Result<ReceiptVerdict> {
         return Ok(ReceiptVerdict::Invalid(format!(
             "unsupported schema: {}",
             receipt.body.schema
+        )));
+    }
+    if receipt.body.key_class.is_deployment() {
+        return Ok(ReceiptVerdict::Invalid(format!(
+            "deployment-class receipt (key_id {}): verify against the deployment's \
+             published trust root, not the pinned dev anchor",
+            receipt.body.key_id
         )));
     }
     if receipt.body.key_id != PINNED_KEY_ID {
@@ -584,6 +605,28 @@ mod tests {
                 "a line concatenated two rows: {line}"
             );
         }
+    }
+
+    #[test]
+    fn receipt_key_class_defaults_dev_and_is_tamper_proof() {
+        // With no CORCEPT_SIGNING_SEED_HEX in this process, the active receipt
+        // signer is the pinned dev key, so a fresh receipt self-labels `dev`
+        // (mechanism, not origin) and verifies against the pinned anchor.
+        let body = ReceiptBody::new("audit verify", "ok", "2026-06-16T00:00:00Z");
+        assert_eq!(body.key_class, KeyClass::Dev);
+        assert_eq!(body.key_id, PINNED_KEY_ID);
+        let receipt = Receipt::sign(body).unwrap();
+        assert_eq!(verify_receipt(&receipt).unwrap(), ReceiptVerdict::Valid);
+
+        // key_class lives INSIDE the signed body: relabelling a dev receipt as
+        // `deployment` after signing breaks the signature (fail-closed). The
+        // deployment-class short-circuit reports out-of-scope, never Valid.
+        let mut forged = receipt.clone();
+        forged.body.key_class = KeyClass::Deployment;
+        assert!(matches!(
+            verify_receipt(&forged).unwrap(),
+            ReceiptVerdict::Invalid(_)
+        ));
     }
 
     #[test]

@@ -328,7 +328,20 @@ fn run(cli: Cli) -> Result<Exit> {
                 Ok(Exit::Ok)
             }
             KeyCommands::Show => {
-                println!("{}", serde_json::to_string_pretty(&show_operator_key()?)?);
+                // The operator (ledger-row) key and, separately, the active
+                // receipt-signing key. The latter declares its class so a reader
+                // can tell whether corcept's `axiom.receipt.v1` receipts are
+                // currently dev-grade (pinned) or deployment-grade
+                // (CORCEPT_SIGNING_SEED_HEX configured).
+                let out = serde_json::json!({
+                    "operator_key": show_operator_key()?,
+                    "receipt_key": {
+                        "key_id": corcept_ledger::active_key_id(),
+                        "key_class": corcept_ledger::active_key_class().as_str(),
+                        "public_key_hex": corcept_ledger::active_public_key_hex(),
+                    },
+                });
+                println!("{}", serde_json::to_string_pretty(&out)?);
                 Ok(Exit::Ok)
             }
         },
