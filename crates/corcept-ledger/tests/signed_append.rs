@@ -6,6 +6,26 @@ use corcept_ledger::{
 };
 use corcept_types::{AuthorityLevel, LedgerEventKind, LEDGER_EVENT_SCHEMA};
 use std::collections::BTreeMap;
+use std::sync::{Mutex, MutexGuard};
+
+/// Serializes the tests that mutate process-global signing env vars
+/// (`CORCEPT_DATA_HOME`, `CORCEPT_TRUSTED_HISTORY`, `CORCEPT_SIGN_LEDGER`,
+/// `CORCEPT_ALLOW_LEGACY_HASH`). `cargo test` runs the tests in this binary on
+/// parallel threads, and `std::env::set_var`/`remove_var` are process-wide, so
+/// without this lock one signing test can clobber another's env mid-run — a
+/// 1-in-5 flake under `cargo test --workspace`. Holding the guard for the whole
+/// test body guarantees at most one env-mutating test touches these vars at a
+/// time. The hash-chain tamper test deliberately takes no lock (see its note).
+static SIGNING_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+/// Acquire the signing-env lock, recovering from poisoning so that one panicking
+/// (failed-assertion) test does not turn every serialized sibling into a
+/// confusing `PoisonError` instead of its real verdict.
+fn lock_signing_env() -> MutexGuard<'static, ()> {
+    SIGNING_ENV_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 fn sample_event(kind: LedgerEventKind) -> corcept_types::LedgerEvent {
     corcept_types::LedgerEvent {
@@ -43,6 +63,7 @@ fn clear_signing_env() {
 
 #[test]
 fn signed_and_unsigned_verify_modes() {
+    let _env_guard = lock_signing_env();
     clear_signing_env();
 
     let unsigned_dir = tempfile::tempdir().unwrap();
@@ -78,6 +99,7 @@ fn signed_and_unsigned_verify_modes() {
 
 #[test]
 fn legacy_only_row_fails_by_default_but_warns_when_opted_in() {
+    let _env_guard = lock_signing_env();
     clear_signing_env();
     std::env::remove_var("CORCEPT_ALLOW_LEGACY_HASH");
 
