@@ -25,6 +25,11 @@ anyhow.workspace = true
 serde_json.workspace = true
 corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
 corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
+hex = "0.4"
+# Verify-before-load reuses mcpverify's in-process verifier (no subprocess).
+# git-pinned to the cohort pattern; mcpverify-core pins axiom-* at the SAME rev
+# (bc8fc58) as corcept, so there is no duplicate axiom-* build.
+mcpverify-core = { git = "https://github.com/0ryant/mcpverify.git", rev = "1882409269c831b25e2375303e3c51112d36e689" }
 
 [dev-dependencies]
 tempfile.workspace = true
@@ -32,3 +37,4 @@ serde_yaml.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
+ed25519-dalek = "2"

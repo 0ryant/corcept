@@ -212,6 +212,7 @@ impl Default for CorceptConfig {
                     allow_webfetch: true,
                     require_citation_for_external_claims: true,
                 },
+                verify_before_load: None,
             },
             testing: TestingConfig {
                 stale_after_source_change: true,
@@ -255,6 +256,31 @@ pub struct GuardConfig {
     pub filesystem: FilesystemGuardConfig,
     pub bash: BashGuardConfig,
     pub network: NetworkGuardConfig,
+    /// Optional verify-before-load policy. When set, the `PreToolUse` guard
+    /// verifies the currently-advertised tool/skill definition against its
+    /// signed pin and DENIES fail-closed on drift / missing pin. Absent by
+    /// default, so existing configs are unaffected.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verify_before_load: Option<VerifyBeforeLoadConfig>,
+}
+
+/// Operator-supplied paths for the runtime verify-before-load gate.
+///
+/// The raw `PreToolUse` hook payload carries only `tool_name` + `tool_input`
+/// (the call args), NOT the tool's description — so the gate verifies the
+/// **currently-advertised** definition that the host snapshots into
+/// `advertised_dir` against the signed pin in `pins_dir`. This is the honest
+/// ceiling: the gate proves the advertised definition is the pinned one; it
+/// cannot see a description the host never surfaced to it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VerifyBeforeLoadConfig {
+    /// Directory of signed pins, one `<tool_name>.manifest.json` per approved tool.
+    pub pins_dir: String,
+    /// Directory of currently-advertised definitions, one `<tool_name>.json` each
+    /// (host-snapshotted from the live MCP tools/list).
+    pub advertised_dir: String,
+    /// Path to the approved 32-byte Ed25519 verifying key (hex).
+    pub pubkey: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

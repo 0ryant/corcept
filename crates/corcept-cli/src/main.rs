@@ -477,6 +477,12 @@ fn run(cli: Cli) -> Result<Exit> {
             // Fail-closed verify-before-load. Anything but a valid signed pin
             // DENIES; a verifier that cannot run DENIES (never falls open).
             let decision = artifact_load::classify(&def, &manifest, &pubkey);
+            let exit = match decision.exit_code {
+                0 => Exit::Ok,
+                1 => Exit::AssertionFailed,
+                64 => Exit::ToolSpecific(64),
+                _ => Exit::Preflight,
+            };
             let hook = decision.guard.to_hook_output();
             println!(
                 "{}",
@@ -486,14 +492,14 @@ fn run(cli: Cli) -> Result<Exit> {
                     "verdict": decision.verdict,
                     "reason": decision.guard.reason,
                     "authority_level": decision.guard.authority_level,
-                    "exit": decision.exit.code(),
+                    "exit": decision.exit_code,
                     "hook": hook,
                     "ceiling": "pins the signed DEFINITION byte-for-byte; NOT runtime behavior or content safety (provenance != safety)",
                 }))?
             );
             // Record the gate decision on the axiom.audit.v1 chain (best-effort;
             // the trail never flips the gate's own verdict).
-            let outcome = if decision.exit.code() == 0 {
+            let outcome = if decision.exit_code == 0 {
                 "allow"
             } else {
                 "deny"
@@ -509,15 +515,8 @@ fn run(cli: Cli) -> Result<Exit> {
                     inputs.push(a);
                 }
             }
-            emit_receipt(
-                &repo,
-                "artifact-load",
-                outcome,
-                decision.exit,
-                inputs,
-                Vec::new(),
-            );
-            Ok(decision.exit)
+            emit_receipt(&repo, "artifact-load", outcome, exit, inputs, Vec::new());
+            Ok(exit)
         }
     }
 }

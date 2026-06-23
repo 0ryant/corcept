@@ -6,6 +6,8 @@ use corcept_types::{
 use serde_json::Value;
 use std::path::{Component, Path, PathBuf};
 
+pub mod verify_before_load;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GuardVerdict {
     pub decision: PermissionDecision,
@@ -73,7 +75,7 @@ pub enum StopVerdict {
 }
 
 pub fn evaluate_pre_tool(input: &HookEnvelope, config: &CorceptConfig) -> GuardVerdict {
-    match input.tool_name.as_deref().unwrap_or_default() {
+    let base = match input.tool_name.as_deref().unwrap_or_default() {
         "Bash" => evaluate_bash(input.tool_input.as_ref(), config),
         "Read" => evaluate_read(input.cwd.as_deref(), input.tool_input.as_ref(), config),
         "Grep" | "Glob" => evaluate_search(input.cwd.as_deref(), input.tool_input.as_ref(), config),
@@ -91,7 +93,22 @@ pub fn evaluate_pre_tool(input: &HookEnvelope, config: &CorceptConfig) -> GuardV
             }
         }
         _ => GuardVerdict::allow("Tool has no CORCEPT guard rule and is allowed."),
+    };
+
+    // Verify-before-load: when the operator configures it, EVERY PreToolUse
+    // additionally verifies the advertised tool/skill definition against its
+    // signed pin and composes strictest-wins (fail-closed). This is what makes
+    // the gate fire automatically through the hook, not just on the explicit
+    // `corcept artifact-load` verb. Absent config = unchanged behavior.
+    if let Some(vbl_cfg) = &config.guards.verify_before_load {
+        if let Some(tool) = input.tool_name.as_deref() {
+            if !tool.is_empty() {
+                let vbl = verify_before_load::guard_for_tool(tool, vbl_cfg);
+                return compose_guard_verdicts([base, vbl]);
+            }
+        }
     }
+    base
 }
 
 pub fn evaluate_bash(tool_input: Option<&Value>, config: &CorceptConfig) -> GuardVerdict {
