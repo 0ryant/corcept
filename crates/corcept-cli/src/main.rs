@@ -1,3 +1,4 @@
+mod artifact_load;
 mod mcp;
 
 use std::path::{Path, PathBuf};
@@ -86,6 +87,24 @@ enum Commands {
     Serve {
         #[arg(long, default_value = ".")]
         path: PathBuf,
+    },
+    /// Verify-before-load gate: prove an MCP tool/skill DEFINITION is the
+    /// byte-for-byte artifact an approved key signed, BEFORE it loads.
+    /// Fail-closed — anything but a valid signed pin DENIES (non-zero exit).
+    /// Honest ceiling: pins what loaded, NOT runtime behavior or content safety.
+    ArtifactLoad {
+        /// Presented tool/skill definition JSON (what the server advertises now).
+        #[arg(long)]
+        def: PathBuf,
+        /// Signed pin (manifest) for this artifact. Missing ⇒ DENY (no pin).
+        #[arg(long)]
+        manifest: PathBuf,
+        /// Approved verifying key — 32-byte Ed25519 public key, hex.
+        #[arg(long)]
+        pubkey: PathBuf,
+        /// Repo root that owns the `audit-trail.jsonl` chain.
+        #[arg(long, default_value = ".")]
+        repo: PathBuf,
     },
 }
 
@@ -202,7 +221,11 @@ fn emit_receipt(
 ) -> Option<PathBuf> {
     let ts = now_ts();
     let receipts_dir = repo.join(".corcept").join("receipts");
-    let receipt_name = format!("{}-{}.json", operation.replace(' ', "-"), ts.replace(':', ""));
+    let receipt_name = format!(
+        "{}-{}.json",
+        operation.replace(' ', "-"),
+        ts.replace(':', "")
+    );
     let receipt_path = receipts_dir.join(&receipt_name);
     let receipt_rel = format!(".corcept/receipts/{receipt_name}");
 
@@ -210,7 +233,14 @@ fn emit_receipt(
         let _lock = TrailLock::acquire(repo)?;
 
         // 1. Append the audit row first so the receipt can link the committed tip.
-        let row = append_audit(repo, operation, outcome, exit.as_i32(), &ts, ReceiptLink::None)?;
+        let row = append_audit(
+            repo,
+            operation,
+            outcome,
+            exit.as_i32(),
+            &ts,
+            ReceiptLink::None,
+        )?;
 
         // 2. Build + sign the receipt, linking the row we just appended.
         let mut body = ReceiptBody::new(operation, outcome, &ts);
@@ -295,7 +325,11 @@ fn run(cli: Cli) -> Result<Exit> {
                 } else {
                     Vec::new()
                 };
-                let outcome = if report.tamper_detected { "failed" } else { "ok" };
+                let outcome = if report.tamper_detected {
+                    "failed"
+                } else {
+                    "ok"
+                };
                 emit_receipt(&path, "audit verify", outcome, exit, inputs, Vec::new());
                 Ok(exit)
             }
@@ -434,6 +468,57 @@ fn run(cli: Cli) -> Result<Exit> {
             mcp::serve(path)?;
             Ok(Exit::Ok)
         }
+        Commands::ArtifactLoad {
+            def,
+            manifest,
+            pubkey,
+            repo,
+        } => {
+            // Fail-closed verify-before-load. Anything but a valid signed pin
+            // DENIES; a verifier that cannot run DENIES (never falls open).
+            let decision = artifact_load::classify(&def, &manifest, &pubkey);
+            let hook = decision.guard.to_hook_output();
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "gate": "verify-before-load",
+                    "decision": decision.guard.decision,
+                    "verdict": decision.verdict,
+                    "reason": decision.guard.reason,
+                    "authority_level": decision.guard.authority_level,
+                    "exit": decision.exit.code(),
+                    "hook": hook,
+                    "ceiling": "pins the signed DEFINITION byte-for-byte; NOT runtime behavior or content safety (provenance != safety)",
+                }))?
+            );
+            // Record the gate decision on the axiom.audit.v1 chain (best-effort;
+            // the trail never flips the gate's own verdict).
+            let outcome = if decision.exit.code() == 0 {
+                "allow"
+            } else {
+                "deny"
+            };
+            let mut inputs = Vec::new();
+            if def.is_file() {
+                if let Ok(a) = Artifact::of_file("presented-def", &def.to_string_lossy(), &def) {
+                    inputs.push(a);
+                }
+            }
+            if manifest.is_file() {
+                if let Ok(a) = Artifact::of_file("pin", &manifest.to_string_lossy(), &manifest) {
+                    inputs.push(a);
+                }
+            }
+            emit_receipt(
+                &repo,
+                "artifact-load",
+                outcome,
+                decision.exit,
+                inputs,
+                Vec::new(),
+            );
+            Ok(decision.exit)
+        }
     }
 }
 
@@ -453,7 +538,11 @@ fn emit_export_receipt(ledger: &Path, out: &Path, count: usize) {
             outputs.push(a);
         }
     }
-    let outcome = if count > 0 || out.is_file() { "ok" } else { "degraded" };
+    let outcome = if count > 0 || out.is_file() {
+        "ok"
+    } else {
+        "degraded"
+    };
     emit_receipt(&repo, "export", outcome, Exit::Ok, inputs, outputs);
 }
 

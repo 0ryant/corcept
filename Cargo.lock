@@ -369,10 +369,15 @@ dependencies = [
  "chrono",
  "clap",
  "corcept-doctrine",
+ "corcept-guards",
  "corcept-ledger",
  "corcept-memory",
  "corcept-runtime",
  "corcept-sink-cloudevents",
+ "corcept-types",
+ "ed25519-dalek",
+ "hex",
+ "mcpverify-core",
  "serde_json",
  "tempfile",
 ]
@@ -1313,6 +1318,24 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "mcpverify-core"
+version = "0.1.0"
+source = "git+https://github.com/0ryant/mcpverify.git?rev=1882409269c831b25e2375303e3c51112d36e689#1882409269c831b25e2375303e3c51112d36e689"
+dependencies = [
+ "axiom-canonical",
+ "axiom-exit",
+ "axiom-hash",
+ "axiom-receipt",
+ "chrono",
+ "ed25519-dalek",
+ "hex",
+ "serde",
+ "serde_json",
+ "subtle",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
