@@ -11,3 +11,4 @@
 # the on-disk copy on every platform.
 *.lock text eol=lf
 .mcpact/mcpact.lock text eol=lf
+* text=auto eol=lf
