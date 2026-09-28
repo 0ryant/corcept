@@ -1,9 +1,7 @@
 use anyhow::{Context, Result};
 use corcept_contract::validate_value;
 use corcept_doctrine::{default_documents, validate as validate_doctrine};
-use corcept_guards::{
-    evaluate_pre_tool, evaluate_stop, extract_command, extract_path, StopVerdict,
-};
+use corcept_guards::{evaluate_stop, extract_command, extract_path, StopVerdict};
 use corcept_ledger::{
     ensure_ledger, read_events, verify_hash_chain_readonly, verify_ledger, VerifyFailureReason,
 };
@@ -18,6 +16,8 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+pub mod delegation;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
@@ -437,9 +437,30 @@ pub fn audit(path: impl AsRef<Path>) -> Result<AuditReport> {
 }
 
 pub fn handle_hook(raw_json: &str, command: &str) -> Result<HookOutput> {
+    let result = handle_hook_inner(raw_json, command);
+    if command == "pretool-guard" && result.is_err() {
+        // Native command-hook failures can otherwise be treated as advisory by
+        // the host. Return an explicit machine-readable denial on every error.
+        if let Ok(input) = serde_json::from_str::<HookEnvelope>(raw_json) {
+            if let Some(cwd) = input.cwd.as_deref() {
+                let signed = delegation::AuthoritySource::configured();
+                if let Ok(denied) = delegation::record_failure(cwd, &input, signed) {
+                    return Ok(denied);
+                }
+            }
+        }
+        return Ok(HookOutput::pretool(
+            corcept_types::PermissionDecision::Deny,
+            "CORCEPT admission failed: input, configuration, authority, or audit evidence unavailable.",
+        ));
+    }
+    result
+}
+
+fn handle_hook_inner(raw_json: &str, command: &str) -> Result<HookOutput> {
     let input: HookEnvelope = serde_json::from_str(raw_json).context("parsing hook input JSON")?;
     let cwd = input.cwd.clone().unwrap_or(std::env::current_dir()?);
-    let config = load_config(&cwd).unwrap_or_default();
+    let config = load_config(&cwd)?;
 
     match command {
         "session-start" => {
@@ -471,35 +492,31 @@ pub fn handle_hook(raw_json: &str, command: &str) -> Result<HookOutput> {
             Ok(HookOutput::context("UserPromptSubmit", context))
         }
         "pretool-guard" => {
-            let verdict = evaluate_pre_tool(&input, &config);
-            let target = extract_path(input.tool_input.as_ref())
-                .or_else(|| extract_command(input.tool_input.as_ref()));
-            append_hook_event(
-                &cwd,
-                &input,
-                "pretool-guard",
-                LedgerEventKind::ToolRequested,
-                verdict.authority_level,
-                target,
-                Some(&verdict.decision.to_string()),
-                Some(&verdict.reason),
-            )?;
-            Ok(verdict.to_hook_output())
+            let source = delegation::AuthoritySource::from_env()?;
+            delegation::handle_pretool(&cwd, &input, &config, source.as_ref())
         }
         "posttool-audit" => {
             let event_kind = classify_posttool_event(&input);
             let decision = classify_posttool_decision(&input);
             let target = extract_path(input.tool_input.as_ref())
                 .or_else(|| extract_command(input.tool_input.as_ref()));
-            append_hook_event(
+            let active = delegation::AuthoritySource::configured();
+            let delegated = active || input.extra.contains_key("delegation");
+            append_hook_event_with_metadata(
                 &cwd,
                 &input,
                 "posttool-audit",
                 event_kind,
                 AuthorityLevel::L3ExecuteLocal,
-                target,
+                if delegated { None } else { target },
                 Some(&decision),
                 Some("PostToolUse audited"),
+                if delegated {
+                    Some(delegation::posttool_evidence(&input)?)
+                } else {
+                    None
+                },
+                active,
             )?;
             Ok(HookOutput::context(
                 "PostToolUse",
@@ -551,24 +568,79 @@ fn append_hook_event(
     decision: Option<&str>,
     reason: Option<&str>,
 ) -> Result<()> {
+    append_hook_event_with_metadata(
+        root,
+        input,
+        command,
+        kind,
+        authority_level,
+        target,
+        decision,
+        reason,
+        None,
+        delegation::AuthoritySource::configured(),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn append_hook_event_with_metadata(
+    root: &Path,
+    input: &HookEnvelope,
+    command: &str,
+    kind: LedgerEventKind,
+    authority_level: AuthorityLevel,
+    target: Option<String>,
+    decision: Option<&str>,
+    reason: Option<&str>,
+    delegation: Option<Value>,
+    require_signed: bool,
+) -> Result<()> {
     let transition = transition_for(command, kind, decision);
     let mut metadata = BTreeMap::new();
     metadata.insert(
         "transition_id".to_string(),
         serde_json::Value::String(transition.id().to_string()),
     );
-    if let Some(tool_input) = &input.tool_input {
-        metadata.insert("tool_input".to_string(), sanitize_value(tool_input));
+    let suppress_inputs = delegation
+        .as_ref()
+        .is_some_and(|value| value.get("status").and_then(Value::as_str) != Some("not_configured"));
+    if let Some(delegation) = delegation {
+        // Delegated inputs may contain credentials or personal data. Their
+        // exact canonical digest is in the decision basis; persist no raw args.
+        metadata.insert("delegation".to_string(), delegation);
+    }
+    if !suppress_inputs {
+        if let Some(tool_input) = &input.tool_input {
+            metadata.insert("tool_input".to_string(), sanitize_value(tool_input));
+        }
     }
     let mut event = build_ledger_event(
-        input.session_id.clone(),
-        input
-            .agent_type
-            .clone()
-            .unwrap_or_else(|| "corcept-runtime".to_string()),
+        if suppress_inputs {
+            input
+                .session_id
+                .as_deref()
+                .map(delegation::host_reference_digest)
+        } else {
+            input.session_id.clone()
+        },
+        if suppress_inputs {
+            "corcept-runtime".to_string()
+        } else {
+            input
+                .agent_type
+                .clone()
+                .unwrap_or_else(|| "corcept-runtime".to_string())
+        },
         kind,
         authority_level,
-        input.tool_name.clone(),
+        if suppress_inputs {
+            input
+                .tool_name
+                .as_deref()
+                .map(delegation::host_reference_digest)
+        } else {
+            input.tool_name.clone()
+        },
         target,
         decision.map(ToOwned::to_owned),
         reason.map(ToOwned::to_owned),
@@ -595,19 +667,30 @@ fn append_hook_event(
     //                   CloudEvents projection over the FINALIZED row (after
     //                   id/ts/hash are assigned by append_event). It is NOT the
     //                   SHA-256 ledger hash chain — that chain is untouched.
-    event.cexsessionid = input.session_id.clone();
-    event.cexparenttrace = input.tool_use_id.clone();
+    event.cexsessionid = event.session_id.clone();
+    event.cexparenttrace = if suppress_inputs {
+        input
+            .tool_use_id
+            .as_deref()
+            .map(delegation::host_reference_digest)
+    } else {
+        input.tool_use_id.clone()
+    };
     event.cextrustceiling = Some("reviewed".to_string());
     event.cexauthorityclass = Some(authority_level.cex_authority_class().to_string());
     event.cexdoctrinecite = Some("corcept:syn-1:cex-spine".to_string());
-    let correlation = input
+    let correlation = event
         .session_id
         .clone()
         .unwrap_or_else(|| "unknown".to_string());
     let outcome = decision.unwrap_or("recorded");
     let record = SinkRecord::new(correlation, kind, outcome);
     let dispatcher = SinkDispatcher::hook_default(root);
-    dispatcher.emit_all(&record, Some(&event))?;
+    if require_signed {
+        dispatcher.emit_signed(root, &record, event)?;
+    } else {
+        dispatcher.emit_all(&record, Some(&event))?;
+    }
     Ok(())
 }
 
@@ -719,8 +802,8 @@ fn render_project_settings() -> Result<String> {
         "hooks": {
             "SessionStart": [{ "matcher": "", "hooks": [{ "type": "command", "command": "corcept hook session-start" }] }],
             "UserPromptSubmit": [{ "matcher": "", "hooks": [{ "type": "command", "command": "corcept hook user-prompt-submit" }] }],
-            "PreToolUse": [{ "matcher": "Bash|Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|WebFetch|WebSearch", "hooks": [{ "type": "command", "command": "corcept hook pretool-guard" }] }],
-            "PostToolUse": [{ "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit", "hooks": [{ "type": "command", "command": "corcept hook posttool-audit" }] }],
+            "PreToolUse": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "corcept hook pretool-guard" }] }],
+            "PostToolUse": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "corcept hook posttool-audit" }] }],
             "Stop": [{ "matcher": "", "hooks": [{ "type": "command", "command": "corcept hook stop-check" }] }]
         }
     });

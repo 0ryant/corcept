@@ -44,7 +44,10 @@ pub fn hash_event_hardened(event: &LedgerEvent) -> Result<String> {
     let canonical = axiom_canonical::to_jcs_bytes(&clone)?;
     let mut material = HASH_DOMAIN.as_bytes().to_vec();
     material.extend_from_slice(&canonical);
-    Ok(format!("{HASH_PREFIX}{}", axiom_hash::blake3_hex(&material)))
+    Ok(format!(
+        "{HASH_PREFIX}{}",
+        axiom_hash::blake3_hex(&material)
+    ))
 }
 
 /// Legacy un-domain-separated SHA-256 hash kept ONLY for downgrade detection.

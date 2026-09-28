@@ -60,6 +60,14 @@ for the rest of the hook lifecycle and use the existing operator data/key paths
 when configuring the host. The snapshot-attestor key and ledger-signing key
 serve different purposes; pin the intended attestor's public key.
 
+While any delegation variable is configured, all native hook rows require an
+operator signature. Admission verifies the existing signed ledger chain and
+its tip before appending. An existing unsigned or damaged history denies;
+preserve and migrate historical evidence through an operator-controlled process
+before enabling this gate. A crashed ledger writer may leave `append.lock`;
+recover it only after confirming the writer has stopped. Locks are never
+reclaimed automatically by age.
+
 For example, after the operator has provisioned the files and directory:
 
 ```bash
@@ -168,6 +176,9 @@ Required authority must stay within the grant, capability, and configured
 `authority.default_max_level` ceilings. The default project ceiling is
 `L3_execute_local`; an `L4_external_side_effect` invocation requires the
 operator to configure that higher ceiling as well as matching signed authority.
+With `authority.l4_requires_user_invocation: true` (the default), it also requires
+a verified approval bound to the exact invocation, even if the grant does not
+otherwise require an approval.
 
 The signed required authority must also meet Corcept's conservative tool floor:
 
@@ -200,6 +211,9 @@ invocation ID and any valid approval ID presented under
 A crash or signing/audit
 failure after reservation burns those IDs and denies. Reissue new invocation
 and approval IDs through the trusted issuer rather than retrying the old ones.
+Files are synced and Unix directory entries are synced before admission. Windows
+power-loss durability depends on the protected filesystem and its recovery;
+the tests cover concurrent execution and process failure, not sudden power loss.
 
 The gate stores the exact signed snapshot bytes under
 `snapshots/<blake3-of-signed-JSON-bytes>.json`. This archive digest differs from
@@ -213,6 +227,14 @@ BLAKE3 of its lowercase public-key hex. The verifier must select its trusted
 public key independently; a key digest in a row cannot establish its own trust.
 A corrupt or missing archive weakens later reconstruction even if a historical
 row still verifies.
+
+Caller-provided host identifiers and unmatched requested references are stored
+as BLAKE3 digests. Only references resolved against the signed attestation are
+retained as opaque IDs. `guard_config_schema_version` is the config format
+version; `guard_policy_digest` commits JCS of the evaluated `authority` and
+`guards` configuration. Retain that matching operator configuration separately
+to reconstruct the base guard rules. The signed snapshot archive reconstructs
+the delegation policy and grant chain.
 
 Run `corcept audit verify --signed` to verify ledger signatures and the hash
 chain. Independently verify the archived snapshot against the pin used at

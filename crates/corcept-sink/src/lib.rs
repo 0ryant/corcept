@@ -2,7 +2,7 @@
 
 use anyhow::{Context, Result};
 use chrono::{SecondsFormat, Utc};
-use corcept_ledger::append_event;
+use corcept_ledger::{append_event, append_event_signed};
 use corcept_sink_cloudevents::project_event;
 use corcept_types::{
     debug_log_path, receipts_dir, telemetry_path, AuthorityLevel, LedgerEvent, LedgerEventKind,
@@ -240,6 +240,21 @@ impl SinkDispatcher {
                     return Err(err);
                 }
                 eprintln!("corcept sink {} best-effort failure: {err}", sink.id());
+            }
+        }
+        Ok(())
+    }
+
+    /// Delegated admission commits signed authority evidence first, then sends
+    /// the finalized row to derived sinks. It cannot fall back to unsigned rows.
+    pub fn emit_signed(&self, root: &Path, record: &SinkRecord, event: LedgerEvent) -> Result<()> {
+        let finalized = append_event_signed(root, event)?;
+        for sink in &self.sinks {
+            if sink.is_authority() {
+                continue;
+            }
+            if let Err(error) = sink.emit(record, Some(&finalized)) {
+                eprintln!("corcept sink {} best-effort failure: {error}", sink.id());
             }
         }
         Ok(())

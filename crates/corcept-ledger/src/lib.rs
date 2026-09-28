@@ -4,6 +4,7 @@ use corcept_types::{trust_keys_dir, LedgerEvent};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 mod canonical;
@@ -12,6 +13,7 @@ mod keys;
 mod signed_row;
 mod trail;
 
+pub use axiom_audit::ReceiptLink;
 pub use canonical::{
     allow_legacy_hash, canonicalize, classify_event_hash, hash_event_hardened, hash_event_legacy,
     verify_event_hash, HashMatch, HASH_DOMAIN, HASH_PREFIX,
@@ -22,15 +24,14 @@ pub use key::{
     PINNED_SEED as RECEIPT_PINNED_SEED,
 };
 pub use keys::{generate_operator_key, load_active_signing_key, show_operator_key, KeyInfo};
-pub use axiom_audit::ReceiptLink;
+pub use signed_row::{
+    sign_event, trusted_history_enabled, verify_row_signature, VerifyFailure, VerifyFailureReason,
+    VerifyReport, ATTESTATION_SCHEMA_VERSION, SIGN_DOMAIN,
+};
 pub use trail::{
     append_audit, pinned_public_key_hex, verify_receipt, verify_trail, Artifact, AuditLink,
     ChainVerdict, Receipt, ReceiptBody, ReceiptVerdict, TrailError, TrailLock, AUDIT_SCHEMA,
     GENESIS_HASH, PINNED_KEY_ID, RECEIPT_SCHEMA, TOOL_NAME, TOOL_VERSION, TRAIL_FILENAME,
-};
-pub use signed_row::{
-    sign_event, trusted_history_enabled, verify_row_signature, VerifyFailure, VerifyFailureReason,
-    VerifyReport, ATTESTATION_SCHEMA_VERSION, SIGN_DOMAIN,
 };
 
 pub fn ledger_path(root: impl AsRef<Path>) -> PathBuf {
@@ -127,9 +128,44 @@ pub fn last_hash(root: impl AsRef<Path>) -> Result<Option<String>> {
     Ok(event.hash)
 }
 
-pub fn append_event(root: impl AsRef<Path>, mut event: LedgerEvent) -> Result<LedgerEvent> {
-    let root = root.as_ref();
+pub fn append_event(root: impl AsRef<Path>, event: LedgerEvent) -> Result<LedgerEvent> {
+    append_event_inner(root.as_ref(), event, false)
+}
+
+/// Append authority evidence with a mandatory operator signature. A missing or
+/// unreadable key is an error, never an unsigned fallback.
+pub fn append_event_signed(root: impl AsRef<Path>, event: LedgerEvent) -> Result<LedgerEvent> {
+    append_event_inner(root.as_ref(), event, true)
+}
+
+fn append_event_inner(
+    root: &Path,
+    mut event: LedgerEvent,
+    require_signed: bool,
+) -> Result<LedgerEvent> {
+    let signing_key = if require_signed || should_sign_append() {
+        load_active_signing_key()?
+    } else {
+        None
+    };
+    if require_signed && signing_key.is_none() {
+        anyhow::bail!("delegated admission requires an operator ledger signing key");
+    }
+    // Hold the lock across tip read, append and sidecar update. Do not reclaim
+    // a lock by age: a slow live writer must never lose mutual exclusion.
+    let _lock = LedgerAppendLock::acquire(root)?;
     let path = ensure_ledger(root)?;
+    if require_signed {
+        anyhow::ensure!(
+            verify_ledger(root, true)?.is_pass(),
+            "delegated admission requires an intact signed ledger history"
+        );
+        let recorded_tip = read_events(root)?.last().and_then(|row| row.hash.clone());
+        anyhow::ensure!(
+            last_hash(root)? == recorded_tip,
+            "ledger sidecar differs from signed tip"
+        );
+    }
     if event.id.trim().is_empty() {
         event.id = format!("evt_{}", Uuid::new_v4().simple());
     }
@@ -138,18 +174,48 @@ pub fn append_event(root: impl AsRef<Path>, mut event: LedgerEvent) -> Result<Le
     }
     event.prev_hash = last_hash(root)?;
     event.hash = Some(hash_event(&event)?);
-    if should_sign_append() {
-        if let Some(signing_key) = load_active_signing_key()? {
-            event.signature = Some(sign_event(&event, &signing_key)?);
-        }
+    if let Some(signing_key) = signing_key {
+        event.signature = Some(sign_event(&event, &signing_key)?);
     }
 
     let mut file = OpenOptions::new().create(true).append(true).open(&path)?;
     writeln!(file, "{}", serde_json::to_string(&event)?)?;
+    file.sync_all()?;
     if let Some(hash) = &event.hash {
         fs::write(last_hash_path(root), hash.as_bytes())?;
     }
     Ok(event)
+}
+
+struct LedgerAppendLock(PathBuf);
+
+impl LedgerAppendLock {
+    fn acquire(root: &Path) -> Result<Self> {
+        let directory = root.join(".corcept/ledger");
+        fs::create_dir_all(&directory)?;
+        let path = directory.join("append.lock");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        loop {
+            match OpenOptions::new().write(true).create_new(true).open(&path) {
+                Ok(_) => return Ok(Self(path)),
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                    if Instant::now() >= deadline {
+                        anyhow::bail!(
+                            "ledger append lock held; operator recovery required after a crash"
+                        );
+                    }
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+    }
+}
+
+impl Drop for LedgerAppendLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.0);
+    }
 }
 
 /// Verify the hash chain. This is a read-only integrity check and never

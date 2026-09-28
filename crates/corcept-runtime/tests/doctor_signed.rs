@@ -110,7 +110,8 @@ fn strict_doctor_fails_closed_on_unsigned_and_passes_when_signed() {
 
     // Without --strict the same ledger must NOT add the check and must not fail
     // (preserves existing non-strict behaviour for ordinary local use).
-    let lenient_report = doctor_with_options(unsigned_dir.path(), DoctorOptions::default()).unwrap();
+    let lenient_report =
+        doctor_with_options(unsigned_dir.path(), DoctorOptions::default()).unwrap();
     assert!(
         lenient_report
             .checks

@@ -524,8 +524,11 @@ mod tests {
     #[test]
     fn receipt_signs_and_verifies() {
         let mut body = ReceiptBody::new("audit verify", "ok", "2026-06-16T00:00:00Z");
-        body.inputs
-            .push(Artifact::of_bytes("ledger", ".corcept/ledger/events.jsonl", b"{}"));
+        body.inputs.push(Artifact::of_bytes(
+            "ledger",
+            ".corcept/ledger/events.jsonl",
+            b"{}",
+        ));
         body.audit_chain = Some(AuditLink {
             trail_path: TRAIL_FILENAME.to_string(),
             seq: 0,
@@ -592,7 +595,11 @@ mod tests {
         }
         let trail = repo.join(TRAIL_FILENAME);
         let rows = axiom_audit::read_rows(&trail).unwrap();
-        assert_eq!(rows.len(), THREADS, "every locked append must be its own row");
+        assert_eq!(
+            rows.len(),
+            THREADS,
+            "every locked append must be its own row"
+        );
         match verify_trail(&repo).unwrap() {
             ChainVerdict::Valid { rows: n, .. } => assert_eq!(n, THREADS),
             other => panic!("expected Valid chain, got {other:?}"),
