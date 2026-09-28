@@ -189,6 +189,20 @@ pub fn evaluate_delegation(
     if validate_envelope(&envelope).is_err() {
         return result.deny("delegation_invalid");
     }
+    result.evidence["correlation_id"] = json!(reference_digest(&envelope.correlation_id));
+    result.evidence["requested_claim_state"] = json!(ClaimState::Asserted);
+    result.evidence["requested_subjects"] = json!({
+        "caller_id": reference_digest(&envelope.caller_id),
+        "agent_id": reference_digest(&envelope.agent_id),
+        "user_id": reference_digest(&envelope.user_id),
+        "organisation_id": reference_digest(&envelope.organisation_id),
+    });
+    result.evidence["requested_scope"] = json!({
+        "target_service": reference_digest(&envelope.target_service),
+        "capability": reference_digest(&envelope.capability),
+        "action": reference_digest(&envelope.action),
+        "resource": reference_digest(&envelope.resource),
+    });
     let Some(session_id) = input.session_id.as_deref().filter(|id| opaque(id)) else {
         return result.deny("session_id_invalid");
     };
@@ -233,6 +247,14 @@ pub fn evaluate_delegation(
         return result.deny("required_authority_understated");
     }
     result.invocation_id = Some(binding.id.clone());
+    result.evidence["bound_correlation_id"] = json!(binding.delegation.correlation_id);
+    result.evidence["bound_tool_name"] = json!(binding.tool_name);
+    result.evidence["evaluated_subjects"] = json!({
+        "caller_id": binding.delegation.caller_id,
+        "agent_id": binding.delegation.agent_id,
+        "user_id": binding.delegation.user_id,
+        "organisation_id": binding.delegation.organisation_id,
+    });
     let grant = snapshot
         .grants
         .iter()
@@ -369,12 +391,34 @@ pub fn evaluate_delegation(
 
 fn safe_jcs_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, &'static str> {
     let value = serde_json::to_value(value).map_err(|_| "canonical_json_invalid")?;
+    if !canonical_numbers_safe(&value) {
+        return Err("canonical_json_unsafe");
+    }
     axiom_canonical::assert_jcs_safe(&value).map_err(|_| "canonical_json_unsafe")?;
     let bytes = axiom_canonical::to_jcs_bytes(&value).map_err(|_| "canonical_json_invalid")?;
     if bytes.len() > MAX_JSON_BYTES {
         return Err("canonical_json_too_large");
     }
     Ok(bytes)
+}
+
+fn canonical_numbers_safe(value: &Value) -> bool {
+    match value {
+        Value::Number(number) => {
+            if let Some(integer) = number.as_u64() {
+                integer <= MAX_SAFE_INTEGER
+            } else if let Some(integer) = number.as_i64() {
+                integer.unsigned_abs() <= MAX_SAFE_INTEGER
+            } else {
+                number.as_f64().is_some_and(|number| {
+                    number.is_finite() && number.abs() <= MAX_SAFE_INTEGER as f64
+                })
+            }
+        }
+        Value::Array(values) => values.iter().all(canonical_numbers_safe),
+        Value::Object(values) => values.values().all(canonical_numbers_safe),
+        _ => true,
+    }
 }
 
 fn opaque(value: &str) -> bool {
@@ -639,6 +683,12 @@ fn policy_evidence(policy: &PolicyRule) -> Value {
         "claim": policy.claim,
         "decision": policy.decision,
     })
+}
+
+fn reference_digest(reference: &str) -> String {
+    let mut material = b"corcept:delegation-request-reference:v1:".to_vec();
+    material.extend_from_slice(reference.as_bytes());
+    format!("blake3:{}", blake3::hash(&material).to_hex())
 }
 
 fn authority_rank(level: AuthorityLevel) -> u8 {
