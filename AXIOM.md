@@ -131,3 +131,9 @@ remain deployment assumptions. McPact #45 is a proposal; no upstream schema
 interoperability is claimed. Base guard reconstruction needs matching retained
 operator config identified by its recorded digest. Live runtime deployment is
 outside this source change.
+
+Delivery: observed CMD(git push, exit=0) and CMD(gh pr view, exit=0):
+[draft PR #14](https://github.com/0ryant/corcept/pull/14) is open from
+feat/delegated-authority to main and attached to this task. No merge or issue
+closure was performed. GitHub reported no CI results at the delivery probe;
+local checks above are the verification evidence.
