@@ -6,7 +6,13 @@ use corcept_types::{
 use serde_json::Value;
 use std::path::{Component, Path, PathBuf};
 
+pub mod delegation;
 pub mod verify_before_load;
+
+pub use delegation::{
+    authority_signing_bytes, evaluate_delegation, invocation_digest, load_authority,
+    parse_authority, DelegationEvaluation,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GuardVerdict {

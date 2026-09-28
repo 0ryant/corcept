@@ -22,6 +22,10 @@ search_aliases = ["corcept-guards", "CORCEPT", "Claude Code runtime", "agent gov
 
 [dependencies]
 anyhow.workspace = true
+axiom-canonical.workspace = true
+blake3.workspace = true
+ed25519-dalek.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 corcept-types = { path = "../corcept-types", version = "0.6.0-pre" }
 corcept-ledger = { path = "../corcept-ledger", version = "0.6.0-pre" }
