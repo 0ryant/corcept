@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json",
+  "title": "CORCEPT Delegation Envelope v1 (provisional)",
+  "description": "Candidate references for a delegated invocation. Validation proves structure only; authority requires an operator-pinned signed snapshot and the PreToolUse gate.",
+  "type": "object",
+  "required": [
+    "schema",
+    "correlation_id",
+    "caller_id",
+    "agent_id",
+    "user_id",
+    "organisation_id",
+    "target_service",
+    "capability",
+    "action",
+    "resource",
+    "grant_id"
+  ],
+  "properties": {
+    "schema": { "const": "corcept.delegation.v1" },
+    "correlation_id": { "$ref": "#/$defs/opaqueReference" },
+    "caller_id": { "$ref": "#/$defs/opaqueReference" },
+    "agent_id": { "$ref": "#/$defs/opaqueReference" },
+    "user_id": { "$ref": "#/$defs/opaqueReference" },
+    "organisation_id": { "$ref": "#/$defs/opaqueReference" },
+    "target_service": { "$ref": "#/$defs/opaqueReference" },
+    "capability": { "$ref": "#/$defs/opaqueReference" },
+    "action": { "$ref": "#/$defs/opaqueReference" },
+    "resource": { "$ref": "#/$defs/opaqueReference" },
+    "grant_id": { "$ref": "#/$defs/opaqueReference" },
+    "approval_id": {
+      "description": "An exact invocation approval reference. Omission or null means no approval is presented.",
+      "anyOf": [
+        { "$ref": "#/$defs/opaqueReference" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "opaqueReference": {
+      "description": "Opaque reference only. Credentials, email addresses, URLs and raw resource paths are forbidden.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$",
+      "not": { "pattern": "[^A-Za-z0-9_.:-]" }
+    }
+  }
+}
