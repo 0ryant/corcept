@@ -1,0 +1,23 @@
+{
+  "session_id": "session:delegation-1",
+  "cwd": "/tmp/project",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "mcp__records__get_record",
+  "tool_input": { "record_ref": "record:42" },
+  "tool_use_id": "toolu_delegation_1",
+  "agent_id": "agent:worker-1",
+  "delegation": {
+    "schema": "corcept.delegation.v1",
+    "correlation_id": "corr:delegation-1",
+    "caller_id": "principal:cli-1",
+    "agent_id": "agent:worker-1",
+    "user_id": "principal:user-1",
+    "organisation_id": "organisation:team-1",
+    "target_service": "service:records",
+    "capability": "record.read",
+    "action": "read",
+    "resource": "record:42",
+    "grant_id": "grant:record-read-v3",
+    "approval_id": "approval:record-read-1"
+  }
+}

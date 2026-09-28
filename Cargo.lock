@@ -403,6 +403,8 @@ name = "corcept-guards"
 version = "0.6.0-pre.2"
 dependencies = [
  "anyhow",
+ "axiom-canonical",
+ "blake3",
  "corcept-ledger",
  "corcept-types",
  "ed25519-dalek",
@@ -476,6 +478,8 @@ name = "corcept-runtime"
 version = "0.6.0-pre.2"
 dependencies = [
  "anyhow",
+ "axiom-canonical",
+ "blake3",
  "chrono",
  "corcept-contract",
  "corcept-doctrine",
@@ -485,6 +489,8 @@ dependencies = [
  "corcept-sink",
  "corcept-sink-cloudevents",
  "corcept-types",
+ "ed25519-dalek",
+ "hex",
  "serde",
  "serde_json",
  "serde_yaml",

@@ -10,6 +10,7 @@ Corcept is a governed Claude Code runtime: a Rust workspace plus a Claude Code p
 It is intentionally not a giant prompt pack. The system is built around a smaller set of enforceable primitives:
 
 - **PreToolUse guards** for filesystem, bash, secret, production-risk policy, package mutation, shell-mediated secret reads, and adversarial command variants.
+- **Opt-in delegated authority** that binds tool invocations to operator-pinned signed grants, subject attestations, target-service and organisation policy, exact approvals, protected replay state, and signed decisions.
 - **PostToolUse audit** that records tool calls, file mutations, and test evidence.
 - **Stop gates** that prevent premature completion when tests are stale or evidence is missing.
 - **Doctrine** as explicit authority.
@@ -129,6 +130,20 @@ Stop              -> corcept hook stop-check
 ```
 
 Each hook reads Claude Code hook JSON from stdin and writes Claude Code hook JSON to stdout.
+
+The delegated-authority gate applies to every tool delivered to `PreToolUse`,
+including MCP tools, through the `*` matcher. Configure the absolute
+`CORCEPT_DELEGATION_POLICY`, pinned `CORCEPT_DELEGATION_PUBKEY`, and protected
+`CORCEPT_DELEGATION_STATE_DIR` in the trusted host environment. Any partial
+configuration or presented delegation without a configured gate denies.
+Without either, the audit records `not_configured` and existing guard behavior
+continues. Signed snapshots attest the external issuer's assertions; Corcept
+does not authenticate the user or query target-service policy itself.
+
+See [Delegated authority](docs/DELEGATED_AUTHORITY.md) for operator setup,
+approval and replay handling, audit reconstruction, and host enforcement limits.
+The native CLI/plugin hook is the supported admission path; the generated MCP
+`corcept_hook_pretool_guard` wrapper does not yet forward the operator environment.
 
 ## Release
 

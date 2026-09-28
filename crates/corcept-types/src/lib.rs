@@ -3,11 +3,18 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+pub mod delegation;
 pub mod event_type;
 pub mod hook_fsm;
 pub mod paths;
 pub mod policy;
 
+pub use delegation::{
+    AuthorityClaim, AuthoritySnapshot, CapabilityRule, ClaimState, DelegationApproval,
+    DelegationEnvelope, DelegationGrant, DelegationPolicyDecision, DelegationScope,
+    InvocationBinding, PolicyRule, Provenance, SignedAuthoritySnapshot, VersionedReference,
+    AUTHORITY_SNAPSHOT_SCHEMA, DELEGATION_DECISION_SCHEMA, DELEGATION_SCHEMA,
+};
 pub use event_type::{LedgerEventKind, LEDGER_EVENT_SCHEMA};
 pub use hook_fsm::{transition_for, HookState, HookTransition};
 pub use paths::{

@@ -1,0 +1,24 @@
+{
+  "hook_event_name": "PreToolUse",
+  "session_id": "session:fixture-1",
+  "tool_use_id": "tool-use:fixture-1",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "document.txt",
+    "content": "delegation-argument-sentinel"
+  },
+  "agent_id": "agent:fixture-1",
+  "delegation": {
+    "schema": "corcept.delegation.v1",
+    "caller_id": "caller:fixture-1",
+    "agent_id": "agent:fixture-1",
+    "user_id": "user:fixture-1",
+    "organisation_id": "organisation:fixture-1",
+    "target_service": "service:workspace",
+    "capability": "files.write",
+    "action": "write",
+    "resource": "resource:document-1",
+    "grant_id": "grant:fixture-1",
+    "correlation_id": "correlation:fixture-1"
+  }
+}

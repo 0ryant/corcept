@@ -17,7 +17,26 @@
     "prompt": { "type": "string" },
     "stop_hook_active": { "type": "boolean" },
     "agent_id": { "type": "string" },
-    "agent_type": { "type": "string" }
+    "agent_type": { "type": "string" },
+    "delegation": {
+      "$ref": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json"
+    }
   },
+  "allOf": [
+    {
+      "if": { "required": ["delegation"] },
+      "then": {
+        "required": ["cwd", "session_id", "tool_use_id", "tool_name", "tool_input"],
+        "properties": {
+          "hook_event_name": { "const": "PreToolUse" },
+          "cwd": { "minLength": 1, "description": "Absolute native path; the admission gate binds it to the selected project root." },
+          "session_id": { "$ref": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json#/$defs/opaqueReference" },
+          "tool_use_id": { "$ref": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json#/$defs/opaqueReference" },
+          "tool_name": { "$ref": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json#/$defs/opaqueReference" },
+          "agent_id": { "$ref": "https://schemas.corcept.dev/corcept-delegation-v1.schema.json#/$defs/opaqueReference" }
+        }
+      }
+    }
+  ],
   "additionalProperties": true
 }

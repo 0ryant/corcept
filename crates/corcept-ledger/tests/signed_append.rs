@@ -160,8 +160,7 @@ fn tampered_row_sets_typed_top_level_verdict() {
     // digest. Only the canonical verifier owns this verdict.
     let raw = std::fs::read_to_string(ledger_path(dir.path())).unwrap();
     let mut lines: Vec<String> = raw.lines().map(str::to_string).collect();
-    let mut tampered: corcept_types::LedgerEvent =
-        serde_json::from_str(&lines[1]).unwrap();
+    let mut tampered: corcept_types::LedgerEvent = serde_json::from_str(&lines[1]).unwrap();
     tampered.decision = Some("deny".to_string());
     tampered.hash = second.hash.clone(); // keep the OLD hash -> mismatch
     lines[1] = serde_json::to_string(&tampered).unwrap();

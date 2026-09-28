@@ -202,7 +202,10 @@ pub fn project_event(event: &LedgerEvent) -> CloudEventV1 {
             .or_else(|| event.session_id.clone()),
         cexparenttrace: event.cexparenttrace.clone(),
         cexdoctrinecite: event.cexdoctrinecite.clone(),
-        cexreceipthash: event.cexreceipthash.clone().or_else(|| cex_receipt_hash(event)),
+        cexreceipthash: event
+            .cexreceipthash
+            .clone()
+            .or_else(|| cex_receipt_hash(event)),
         cexrevocation: event.cexrevocation.clone(),
     }
 }
@@ -296,7 +299,11 @@ mod tests {
         event.cexparenttrace = Some("toolu_parent_123".to_string());
         event.cextrustceiling = Some("reviewed".to_string());
         // L3ExecuteLocal -> mutate per the SYN-1 ladder mapping.
-        event.cexauthorityclass = Some(AuthorityLevel::L3ExecuteLocal.cex_authority_class().to_string());
+        event.cexauthorityclass = Some(
+            AuthorityLevel::L3ExecuteLocal
+                .cex_authority_class()
+                .to_string(),
+        );
         event.cexdoctrinecite = Some("corcept:syn-1:cex-spine".to_string());
         event
     }
@@ -305,8 +312,14 @@ mod tests {
     fn cex_authority_ladder_maps_to_envelope_v2_space() {
         assert_eq!(AuthorityLevel::L0Observe.cex_authority_class(), "observe");
         assert_eq!(AuthorityLevel::L1Propose.cex_authority_class(), "plan");
-        assert_eq!(AuthorityLevel::L2ModifyLocal.cex_authority_class(), "analyze");
-        assert_eq!(AuthorityLevel::L3ExecuteLocal.cex_authority_class(), "mutate");
+        assert_eq!(
+            AuthorityLevel::L2ModifyLocal.cex_authority_class(),
+            "analyze"
+        );
+        assert_eq!(
+            AuthorityLevel::L3ExecuteLocal.cex_authority_class(),
+            "mutate"
+        );
         assert_eq!(
             AuthorityLevel::L4ExternalSideEffect.cex_authority_class(),
             "destroy"
@@ -321,15 +334,30 @@ mod tests {
         assert_eq!(ce.cextrustceiling.as_deref(), Some("reviewed"));
         assert_eq!(ce.cexsessionid.as_deref(), Some("sess-1"));
         assert_eq!(ce.cexparenttrace.as_deref(), Some("toolu_parent_123"));
-        assert_eq!(ce.cexdoctrinecite.as_deref(), Some("corcept:syn-1:cex-spine"));
+        assert_eq!(
+            ce.cexdoctrinecite.as_deref(),
+            Some("corcept:syn-1:cex-spine")
+        );
         // cexreceipthash is computed at projection: BLAKE3 (ADR-0003), NOT SHA-256.
         let hash = ce.cexreceipthash.expect("cexreceipthash present");
-        assert!(hash.starts_with("blake3:"), "cex content addressing must be BLAKE3, got {hash}");
-        assert!(!hash.starts_with("sha256:"), "SHA-256-as-content-address is FORBIDDEN");
+        assert!(
+            hash.starts_with("blake3:"),
+            "cex content addressing must be BLAKE3, got {hash}"
+        );
+        assert!(
+            !hash.starts_with("sha256:"),
+            "SHA-256-as-content-address is FORBIDDEN"
+        );
 
         // Value spaces match aegress envelope-v2 so corridor-verify can ingest.
-        const AUTHORITY_SPACE: &[&str] =
-            &["observe", "analyze", "plan", "mutate", "destroy", "credential"];
+        const AUTHORITY_SPACE: &[&str] = &[
+            "observe",
+            "analyze",
+            "plan",
+            "mutate",
+            "destroy",
+            "credential",
+        ];
         const TRUST_SPACE: &[&str] = &["inferred", "reviewed", "signed", "verified"];
         assert!(AUTHORITY_SPACE.contains(&ce.cexauthorityclass.as_deref().unwrap()));
         assert!(TRUST_SPACE.contains(&ce.cextrustceiling.as_deref().unwrap()));
