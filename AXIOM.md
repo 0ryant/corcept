@@ -137,3 +137,61 @@ Delivery: observed CMD(git push, exit=0) and CMD(gh pr view, exit=0):
 feat/delegated-authority to main and attached to this task. No merge or issue
 closure was performed. GitHub reported no CI results at the delivery probe;
 local checks above are the verification evidence.
+
+## Merge follow-up
+
+Operator instruction: observed USER("Merge if happy"). Assess and merge PR #14
+only after current source, review, and GitHub gates support it. Deployment remains
+outside scope. The evidence-classification-for-release skill bounds source-local
+tests to checkout behavior; a GitHub merge observation proves integration only.
+
+- CHK[7]: Current candidate matches verified source and GitHub merge prerequisites.
+  Probe: fetch/ref comparison, workflow/run/check inspection, source-local checks.
+- CHK[8]: Independent final boundary review has no unresolved merge blocker.
+  Probe: read-only review joined against actual diff, tests, and documented limits.
+- CHK[9]: GitHub reports merged PR and integrated main; local checkout is clean.
+  Probe: merge with expected head, GitHub PR/issue probe, fetch and local refs.
+ANTI[4]: No deployment or false CI/live-host verification claim accompanies merge.
+
+Initial merge probe: observed CMD(gh pr view, exit=0): draft a390b55, base 43da6f4,
+MERGEABLE/CLEAN, no checks/review decision. CMD(branch protection API, exit=1):
+HTTP 404, branch not protected. CMD(git status --short, exit=0): clean. A guessed
+ci.yml path was absent; discovered quality/governance workflows will be inspected.
+
+Merge evidence and decision:
+
+- observed CMD(git fetch/ref probes, exit=0): main remains 43da6f4; candidate
+  matches origin/feat/delegated-authority at a390b55. Source outside these two
+  execution records is unchanged from the tested 4313c8b implementation.
+- observed TOOL(GitHub Actions permissions): enabled=false;
+  CMD(run/check probes, exit=0): zero runs and zero checks for this head.
+  This establishes CI absence, not a passing external witness.
+- observed CMD(cargo audit --json, exit=1), repeated against the main lockfile:
+  both report quinn-proto 0.11.14 (RUSTSEC-2026-0185), rustls 0.23.40
+  (RUSTSEC-2026-0285), and anyhow 1.0.102 unsoundness (RUSTSEC-2026-0190).
+- observed CMD(cargo deny check, exit=1): advisories, six existing git-source
+  rejections, and BUSL/AGPL license allowlist rejections. Package identity,
+  version, source and checksum sets are exactly identical to main; deny.toml
+  and manifest license/source declarations are unchanged. These checks FAIL.
+- observed FILE(admission, ledger and sink source), DIFF(runtime/lib.rs and
+  ledger/lib.rs): root review supports the read-only reviewer's no-feature-
+  blocker finding. Existing replay, approval, privacy, and signed audit tests
+  remain the source-local verification evidence.
+
+DEC[10]: Merge is approved for source integration under the operator's delegated
+judgment. The reviewer recommended holding for the inherited supply-chain
+failures; root accepts that baseline debt for this bounded non-regression merge.
+CONTRIBUTING.md's format/lint/test requirements and the ADR requirement are met.
+No package versions/source pins are introduced, and the opt-in admission path
+adds independently verified denial boundaries. The failed supply-chain checks
+remain explicit in the PR and this record; no policy relaxation, CI setting
+change, dependency repair, distribution approval or production-readiness claim
+is included. The alternative is to hold source integration for a separate
+dependency/license-policy repair; it does not change this feature's checked
+behavior. An expected-head merge prevents integrating a different candidate.
+
+CHK[7]: PASS for source/ref and GitHub prerequisites; source-local checks passed.
+The additional supply-chain checks FAIL as recorded above; no CI is available.
+CHK[8]: PASS for feature boundary review, with the gate recommendation disagreement
+resolved explicitly by DEC[10]. CHK[9] is checked from GitHub/local refs after merge.
+ANTI[4]: PASS to this point: no deployment or CI/live-host verification claimed.

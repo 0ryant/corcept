@@ -53,3 +53,24 @@ Clippy with warnings denied, formatting, contract tests (12), and whitespace
 checks passed. Review findings on Ask handoff, integer hashing, identity privacy,
 archive publication, lifecycle signing and policy identification were corrected
 and covered by fixtures/integration tests. Worktree commits remain recoverable.
+
+Merge follow-up (operator: "Merge if happy"): implementation lanes above are
+complete. The current candidate is a390b55 and the working checkout is clean.
+
+- LANE[5]: owner=root | scope=merge gates and final integration | isolation=main
+  | writes=AXIOM.md, docs/LANES.md | reads=workspace, GitHub PR/workflows/runs
+  | depends_on=none | clobber_risk=low | contract=observed merge decision and refs
+  | gate=source checks, independent review, expected-head merge
+- LANE[6]: owner=merge_review | scope=final admission and audit boundary review
+  | isolation=read-only | writes=none | reads=guards, runtime, ledger, sink, tests,
+    docs and diff | depends_on=none | clobber_risk=low
+  | contract=blocking findings with source evidence or bounded no-blocker result
+  | gate=root validates findings before merge
+NEXT[3]: lanes=LANE[5],LANE[6] | reason=GitHub gates and code review are independent
+| join=final merge decision; fixes require a new explicit write scope
+
+Merge review joined: the worker found no feature boundary blocker; root inspected
+the admission and signed ledger/sink changes against those findings. The worker
+recommended holding for failing inherited supply-chain checks. Root's bounded
+source-integration decision and that disagreement are recorded in AXIOM.md DEC[10].
+No dependency, license policy, CI setting, or runtime deployment change is made.
